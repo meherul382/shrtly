@@ -5,15 +5,18 @@ export default async function handler(req, res) {
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
     if (youtubeUrl && !isYouTubeUrl(youtubeUrl)) return res.status(400).json({ error: 'Please enter a valid YouTube URL.' });
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!supabaseUrl || !serviceKey) return res.status(500).json({ error: 'Shrtly backend is not configured yet. Add SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Vercel.' });
+    const supabaseUrl = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
+    const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+    if (!supabaseUrl || !serviceKey) {
+      const missing = [!supabaseUrl && 'SUPABASE_URL', !serviceKey && 'SUPABASE_SERVICE_ROLE_KEY'].filter(Boolean).join(' and ');
+      return res.status(500).json({ error: `Shrtly backend is not configured. Missing ${missing} in this Vercel deployment.` });
+    }
 
     let code = cleanAlias(alias) || randomCode();
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
 
     let exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
-    if (!exists.ok) throw new Error('Database check failed');
+    if (!exists.ok) return res.status(500).json({ error: `Supabase database check failed (${exists.status}). Run supabase.sql in SQL Editor and confirm the service-role secret.` });
     let existing = await exists.json();
     if (existing.length) {
       if (alias) return res.status(409).json({ error: 'That custom alias is already in use.' });
@@ -32,9 +35,11 @@ export default async function handler(req, res) {
       const ext = extension(parsed.mime);
       const path = `interstitial/${code}-${Date.now()}.${ext}`;
       const upload = await fetch(`${supabaseUrl}/storage/v1/object/short-images/${path}`, {
-        method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' }, body: parsed.buffer
+        method: 'POST',
+        headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' },
+        body: parsed.buffer
       });
-      if (!upload.ok) throw new Error('Image upload failed');
+      if (!upload.ok) return res.status(500).json({ error: `Image upload failed (${upload.status}). Make sure the short-images bucket exists.` });
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
 
@@ -46,7 +51,7 @@ export default async function handler(req, res) {
     if (!insert.ok) {
       const detail = await insert.text();
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
-      throw new Error(detail || 'Database insert failed');
+      return res.status(500).json({ error: `Could not save the short link (${insert.status}). ${detail.slice(0, 180)}` });
     }
 
     const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
