@@ -3,9 +3,12 @@ create table if not exists public.links (
   code text not null unique,
   url text not null,
   image_url text,
+  youtube_url text,
   clicks bigint not null default 0,
   created_at timestamptz not null default now()
 );
+
+alter table public.links add column if not exists youtube_url text;
 
 create index if not exists links_code_idx on public.links(code);
 
@@ -13,5 +16,5 @@ insert into storage.buckets (id, name, public)
 values ('short-images', 'short-images', true)
 on conflict (id) do update set public = true;
 
--- The Vercel API uses the Supabase service-role key, so browser clients do not need direct table access.
+-- The Vercel API uses the Supabase service-role key.
 -- Keep SUPABASE_SERVICE_ROLE_KEY secret and never put it in index.html.
