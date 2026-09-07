@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://shrtigo.xyz/</loc><lastmod>2026-09-07</lastmod></url>
+  <url><loc>https://shrtigo.xyz/url-shortener.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/about.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/privacy.html</loc><lastmod>2026-09-07</lastmod></url>
@@ -8,10 +9,7 @@
   <url><loc>https://shrtigo.xyz/contact.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/what-is-a-url-shortener.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/how-to-shorten-a-url.html</loc><lastmod>2026-09-07</lastmod></url>
-  <url><loc>https://shrtigo.xyz/guides/free-url-shortener.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/short-links-for-social-media.html</loc><lastmod>2026-09-07</lastmod></url>
-  <url><loc>https://shrtigo.xyz/guides/shorten-url-for-instagram.html</loc><lastmod>2026-09-07</lastmod></url>
-  <url><loc>https://shrtigo.xyz/guides/shorten-url-for-whatsapp.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/url-shortener-vs-long-url.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/custom-short-url.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/benefits-of-short-links.html</loc><lastmod>2026-09-07</lastmod></url>
@@ -29,4 +27,7 @@
   <url><loc>https://shrtigo.xyz/guides/common-url-shortener-mistakes.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/mobile-short-links.html</loc><lastmod>2026-09-07</lastmod></url>
   <url><loc>https://shrtigo.xyz/guides/complete-short-url-guide.html</loc><lastmod>2026-09-07</lastmod></url>
+  <url><loc>https://shrtigo.xyz/guides/free-url-shortener.html</loc><lastmod>2026-09-07</lastmod></url>
+  <url><loc>https://shrtigo.xyz/guides/shorten-url-for-instagram.html</loc><lastmod>2026-09-07</lastmod></url>
+  <url><loc>https://shrtigo.xyz/guides/shorten-url-for-whatsapp.html</loc><lastmod>2026-09-07</lastmod></url>
 </urlset>
