@@ -1,8 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://shrtigo.xyz/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://shrtigo.xyz/guides.html</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
   <url><loc>https://shrtigo.xyz/about.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://shrtigo.xyz/privacy.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://shrtigo.xyz/terms.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://shrtigo.xyz/contact.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/what-is-a-url-shortener.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/how-to-shorten-a-url.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/short-links-for-social-media.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/url-shortener-vs-long-url.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/custom-short-url.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/benefits-of-short-links.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/how-url-shorteners-work.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/are-url-shorteners-safe.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/shorten-links-for-facebook.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/youtube-short-link.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/custom-url-alias.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/short-links-digital-marketing.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/short-links-email-marketing.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/short-urls-small-business.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/how-to-choose-url-shortener.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/short-links-vs-qr-codes.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/professional-short-links.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/common-url-shortener-mistakes.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/mobile-short-links.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://shrtigo.xyz/guides/complete-short-url-guide.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
 </urlset>
