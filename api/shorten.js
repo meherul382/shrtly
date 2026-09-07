@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) {
       const missing = [!supabaseUrl && 'SUPABASE_URL', !serviceKey && 'SUPABASE_SERVICE_ROLE_KEY'].filter(Boolean).join(' and ');
-      return res.status(500).json({ error: `Shrtly backend is not configured. Missing ${missing} in this Vercel deployment.` });
+      return res.status(500).json({ error: `Shrtigo backend is not configured. Missing ${missing} in this Vercel deployment.` });
     }
 
     let code = cleanAlias(alias) || randomCode();
