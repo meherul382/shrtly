@@ -1,15 +1,20 @@
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const { url, alias, image, youtubeUrl } = req.body || {};
+    const { url, alias, image, youtubeUrl, linkMode } = req.body || {};
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
     if (youtubeUrl && !isYouTubeUrl(youtubeUrl)) return res.status(400).json({ error: 'Please enter a valid YouTube URL.' });
 
+    const mode = linkMode === 'simple' ? 'simple' : 'advanced';
     const supabaseUrl = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) {
       const missing = [!supabaseUrl && 'SUPABASE_URL', !serviceKey && 'SUPABASE_SERVICE_ROLE_KEY'].filter(Boolean).join(' and ');
       return res.status(500).json({ error: `Shrtigo backend is not configured. Missing ${missing} in this Vercel deployment.` });
+    }
+
+    if (mode === 'simple' && (image || youtubeUrl || alias)) {
+      return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
     let code = cleanAlias(alias) || randomCode();
@@ -46,7 +51,7 @@ export default async function handler(req, res) {
     const insert = await fetch(`${supabaseUrl}/rest/v1/links`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0 })
+      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, link_mode: mode, clicks: 0 })
     });
     if (!insert.ok) {
       const detail = await insert.text();
@@ -55,7 +60,7 @@ export default async function handler(req, res) {
     }
 
     const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-    return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null });
+    return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
