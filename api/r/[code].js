@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) return res.status(500).send('Backend is not configured.');
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks,link_mode&code=eq.${encodeURIComponent(code)}&limit=1`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks&code=eq.${encodeURIComponent(code)}&limit=1`, {
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey }
     });
     if (!response.ok) return res.status(500).send('Database error');
@@ -21,7 +21,10 @@ export default async function handler(req, res) {
       body: JSON.stringify({ clicks: Number(link.clicks || 0) + 1 })
     });
 
-    const isSimple = link.link_mode === 'simple';
+    // Simple links are uniquely identified by an uppercase S prefix.
+    // They return the same 200 HTML page to crawlers and visitors and use
+    // JavaScript-only navigation instead of an HTTP/meta redirect.
+    const isSimple = /^S[a-z0-9]{4}$/.test(code);
     if (!isSimple && !link.image_url && !link.youtube_url) return res.redirect(302, link.url);
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
