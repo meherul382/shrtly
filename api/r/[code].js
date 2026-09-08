@@ -21,12 +21,6 @@ export default async function handler(req, res) {
       body: JSON.stringify({ clicks: Number(link.clicks || 0) + 1 })
     });
 
-    // Simple links are uniquely identified by an uppercase S prefix.
-    // They return the same 200 HTML page to crawlers and visitors and use
-    // JavaScript-only navigation instead of an HTTP/meta redirect.
-    const isSimple = /^S[a-z0-9]{4}$/.test(code);
-    if (!isSimple && !link.image_url && !link.youtube_url) return res.redirect(302, link.url);
-
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
 
@@ -35,6 +29,7 @@ export default async function handler(req, res) {
     const videoId = getYouTubeId(link.youtube_url);
     const shortUrl = `https://shrtigo.xyz/${encodeURIComponent(code)}`;
     const safeShortUrl = escapeHtml(shortUrl);
+    const isSimple = /^S[a-z0-9]{4}$/i.test(code);
 
     const image = link.image_url
       ? `<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`
@@ -58,17 +53,17 @@ export default async function handler(req, res) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 ${metaRefresh}
 <title>Shrtigo — Short Link</title>
-<meta name="description" content="A short link created with Shrtigo.">
+<meta name="description" content="A clean short link created with Shrtigo.">
 <link rel="canonical" href="${safeShortUrl}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Shrtigo — Short Link">
-<meta property="og:description" content="A short link created with Shrtigo.">
+<meta property="og:description" content="A clean, shareable link from Shrtigo.">
 <meta property="og:url" content="${safeShortUrl}">
 <meta property="og:site_name" content="Shrtigo">
 ${ogImage}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Shrtigo — Short Link">
-<meta name="twitter:description" content="A short link created with Shrtigo.">
+<meta name="twitter:description" content="A clean, shareable link from Shrtigo.">
 ${link.image_url ? `<meta name="twitter:image" content="${safeImage}">` : ''}
 <style>
 *{box-sizing:border-box}
