@@ -20,16 +20,13 @@ export default async function handler(req, res) {
     let code = mode === 'simple' ? `S${randomCode()}` : (cleanAlias(alias) || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
 
-    let exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
-    if (!exists.ok) return res.status(500).json({ error: `Supabase database check failed (${exists.status}). Run supabase.sql in SQL Editor and confirm the service-role secret.` });
-    let existing = await exists.json();
-    if (existing.length) {
-      if (alias) return res.status(409).json({ error: 'That custom alias is already in use.' });
-      do {
-        code = mode === 'simple' ? `S${randomCode()}` : randomCode();
-        exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
-        existing = exists.ok ? await exists.json() : [];
-      } while (existing.length);
+    // Simple/generated links do not need a separate availability request.
+    // The database insert itself is the uniqueness check, saving one network round-trip.
+    if (alias) {
+      const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
+      if (!exists.ok) return res.status(500).json({ error: `Supabase database check failed (${exists.status}). Run supabase.sql in SQL Editor and confirm the service-role secret.` });
+      const existing = await exists.json();
+      if (existing.length) return res.status(409).json({ error: 'That custom alias is already in use.' });
     }
 
     let imageUrl = null;
@@ -55,6 +52,20 @@ export default async function handler(req, res) {
     });
     if (!insert.ok) {
       const detail = await insert.text();
+      // A generated code collision is extremely unlikely, but retry once without
+      // making the user wait for a preliminary availability query.
+      if (insert.status === 409 && !alias) {
+        code = mode === 'simple' ? `S${randomCode()}` : randomCode();
+        const retry = await fetch(`${supabaseUrl}/rest/v1/links`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+          body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0 })
+        });
+        if (retry.ok) {
+          const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+          return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode });
+        }
+      }
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
       return res.status(500).json({ error: `Could not save the short link (${insert.status}). ${detail.slice(0, 180)}` });
     }
