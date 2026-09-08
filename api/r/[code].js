@@ -29,7 +29,6 @@ export default async function handler(req, res) {
     const videoId = getYouTubeId(link.youtube_url);
     const shortUrl = `https://shrtigo.xyz/${encodeURIComponent(code)}`;
     const safeShortUrl = escapeHtml(shortUrl);
-    const isSimple = /^S[a-z0-9]{4}$/i.test(code);
 
     const image = link.image_url
       ? `<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`
@@ -40,10 +39,11 @@ export default async function handler(req, res) {
       : '';
 
     const ogImage = link.image_url
-      ? `<meta property="og:image" content="${safeImage}">`
+      ? `<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview">`
       : '';
 
-    const metaRefresh = isSimple ? '' : `<meta http-equiv="refresh" content="2;url=${safeUrl}">`;
+    // Keep the same 200 OK preview response for every link. The browser redirect
+    // happens with JavaScript so social crawlers can read the Shrtigo metadata first.
     const redirectScript = `<script>setTimeout(function(){ window.location.replace(${JSON.stringify(link.url)}); },2000);</script>`;
 
     return res.status(200).send(`<!doctype html>
@@ -51,7 +51,6 @@ export default async function handler(req, res) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-${metaRefresh}
 <title>Shrtigo — Short Link</title>
 <meta name="description" content="A clean short link created with Shrtigo.">
 <link rel="canonical" href="${safeShortUrl}">
