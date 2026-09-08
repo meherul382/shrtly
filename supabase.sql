@@ -9,6 +9,7 @@ create table if not exists public.links (
 );
 
 alter table public.links add column if not exists youtube_url text;
+alter table public.links add column if not exists link_mode text not null default 'advanced';
 
 create index if not exists links_code_idx on public.links(code);
 
