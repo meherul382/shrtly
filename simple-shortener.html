@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Simple URL Shortener | Shrtigo</title>
-<meta name="description" content="Create a simple Shrtigo short link with one click. No image, YouTube or custom alias required.">
+<title>Quick Link Shortener | Shrtigo</title>
+<meta name="description" content="Create a clean, shareable Shrtigo short link quickly and easily.">
 <meta name="robots" content="index,follow">
 <meta name="theme-color" content="#2563eb">
 <link rel="canonical" href="https://shrtigo.xyz/simple-shortener.html">
@@ -16,14 +16,14 @@
 <body>
 <header><div class="wrap nav"><a class="brand" href="/"><span>S</span>Shrtigo</a><a class="back" href="/">← Back to Shrtigo</a></div></header>
 <main>
-<section class="hero wrap"><div class="eyebrow">⚡ Simple mode</div><h1>Short a link in seconds.</h1><p>Paste your website URL, generate a clean Shrtigo short link, and use it wherever you need. This mode uses a lightweight 200 OK preview page with JavaScript-only automatic redirect.</p></section>
-<section class="box"><div class="form"><input id="url" type="url" placeholder="Paste your long website URL here…" autocomplete="off"><button id="shorten" type="button">Shorten Link</button></div><div id="result" class="result"><strong>Your Shrtigo short URL</strong><div class="row"><a id="resultUrl" class="short" target="_blank" rel="noopener"></a><button id="copy" class="copy" type="button">Copy</button></div></div><div id="status" class="status"></div></section>
-<section class="info wrap"><article class="card"><b>🔗 One URL field</b><p>No image, YouTube or custom alias settings. Just paste and shorten.</p></article><article class="card"><b>⚡ Simple redirect</b><p>The generated short page returns normally and uses JavaScript for the automatic redirect.</p></article><article class="card"><b>📣 Ready to share</b><p>Use the generated Shrtigo URL in your social posts, ads and messages.</p></article></section>
+<section class="hero wrap"><div class="eyebrow">⚡ Quick & Simple</div><h1>Create a short link instantly.</h1><p>Paste your website address below and create a clean Shrtigo link in seconds. Perfect for quick sharing on social media, ads and messages.</p></section>
+<section class="box"><div class="form"><input id="url" type="url" placeholder="Paste your website URL here…" autocomplete="off"><button id="shorten" type="button">Create Short Link</button></div><div id="result" class="result"><strong>Your Shrtigo short URL</strong><div class="row"><a id="resultUrl" class="short" target="_blank" rel="noopener"></a><button id="copy" class="copy" type="button">Copy</button></div></div><div id="status" class="status"></div></section>
+<section class="info wrap"><article class="card"><b>🔗 Quick to use</b><p>Enter one website address and create your short link without extra settings.</p></article><article class="card"><b>✨ Clean sharing</b><p>Get a simple Shrtigo URL that is easy to copy, remember and share.</p></article><article class="card"><b>📣 Share anywhere</b><p>Use your short link in posts, ads, messages, emails and other places.</p></article></section>
 </main>
 <footer>Shrtigo — A simple, fast link shortener.</footer>
 <script>
 const url=document.getElementById('url'),shorten=document.getElementById('shorten'),result=document.getElementById('result'),resultUrl=document.getElementById('resultUrl'),copy=document.getElementById('copy'),status=document.getElementById('status');
-shorten.onclick=async()=>{const main=url.value.trim();if(!/^https?:\/\//i.test(main)){status.style.display='block';status.textContent='Please enter a valid http:// or https:// URL.';return}shorten.disabled=true;shorten.textContent='Creating…';status.style.display='block';status.textContent='Creating your simple short link…';result.style.display='none';try{const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:main,linkMode:'simple'})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Could not create the short link.');resultUrl.href=data.shortUrl;resultUrl.textContent=data.shortUrl;result.style.display='block';status.textContent='Simple short link created successfully.'}catch(e){status.textContent=e.message||'Could not create the short link.'}finally{shorten.disabled=false;shorten.textContent='Shorten Link'}};
+shorten.onclick=async()=>{const main=url.value.trim();if(!/^https?:\/\//i.test(main)){status.style.display='block';status.textContent='Please enter a valid http:// or https:// URL.';return}shorten.disabled=true;shorten.textContent='Creating…';status.style.display='block';status.textContent='Creating your short link…';result.style.display='none';try{const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:main,linkMode:'simple'})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Could not create the short link.');resultUrl.href=data.shortUrl;resultUrl.textContent=data.shortUrl;result.style.display='block';status.textContent='Your short link is ready.'}catch(e){status.textContent=e.message||'Could not create the short link.'}finally{shorten.disabled=false;shorten.textContent='Create Short Link'}};
 copy.onclick=async()=>{try{await navigator.clipboard.writeText(resultUrl.textContent);copy.textContent='Copied!';setTimeout(()=>copy.textContent='Copy',1200)}catch{alert('Copy failed. Please copy the link manually.')}};
 </script>
 </body>
