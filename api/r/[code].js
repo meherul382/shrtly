@@ -21,21 +21,25 @@ export default async function handler(req, res) {
       body: JSON.stringify({ clicks: Number(link.clicks || 0) + 1 })
     });
 
-    if (!link.image_url && !link.youtube_url) return res.redirect(302, link.url);
-
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
 
     const safeImage = link.image_url ? escapeHtml(link.image_url) : '';
     const safeUrl = escapeHtml(link.url);
     const videoId = getYouTubeId(link.youtube_url);
+    const shortUrl = `https://shrtigo.xyz/${encodeURIComponent(code)}`;
+    const safeShortUrl = escapeHtml(shortUrl);
 
     const image = link.image_url
-      ? `<img src="${safeImage}" alt="" loading="eager">`
+      ? `<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`
       : '';
 
     const video = videoId
-      ? `<div class="video"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&autoplay=1&mute=1" title="" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+      ? `<div class="video"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&autoplay=1&mute=1" title="Shrtigo video preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`
+      : '';
+
+    const ogImage = link.image_url
+      ? `<meta property="og:image" content="${safeImage}">`
       : '';
 
     return res.status(200).send(`<!doctype html>
@@ -44,7 +48,19 @@ export default async function handler(req, res) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="refresh" content="2;url=${safeUrl}">
-<title></title>
+<title>Shrtigo — Short Link</title>
+<meta name="description" content="A short link created with Shrtigo.">
+<link rel="canonical" href="${safeShortUrl}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Shrtigo — Short Link">
+<meta property="og:description" content="A short link created with Shrtigo.">
+<meta property="og:url" content="${safeShortUrl}">
+<meta property="og:site_name" content="Shrtigo">
+${ogImage}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Shrtigo — Short Link">
+<meta name="twitter:description" content="A short link created with Shrtigo.">
+${link.image_url ? `<meta name="twitter:image" content="${safeImage}">` : ''}
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;background:#fff}
