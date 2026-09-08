@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) return res.status(500).send('Backend is not configured.');
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks&code=eq.${encodeURIComponent(code)}&limit=1`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks,link_mode&code=eq.${encodeURIComponent(code)}&limit=1`, {
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey }
     });
     if (!response.ok) return res.status(500).send('Database error');
@@ -20,6 +20,9 @@ export default async function handler(req, res) {
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ clicks: Number(link.clicks || 0) + 1 })
     });
+
+    const isSimple = link.link_mode === 'simple';
+    if (!isSimple && !link.image_url && !link.youtube_url) return res.redirect(302, link.url);
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
@@ -42,12 +45,15 @@ export default async function handler(req, res) {
       ? `<meta property="og:image" content="${safeImage}">`
       : '';
 
+    const metaRefresh = isSimple ? '' : `<meta http-equiv="refresh" content="2;url=${safeUrl}">`;
+    const redirectScript = `<script>setTimeout(function(){ window.location.replace(${JSON.stringify(link.url)}); },2000);</script>`;
+
     return res.status(200).send(`<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="refresh" content="2;url=${safeUrl}">
+${metaRefresh}
 <title>Shrtigo — Short Link</title>
 <meta name="description" content="A short link created with Shrtigo.">
 <link rel="canonical" href="${safeShortUrl}">
@@ -73,9 +79,7 @@ img{display:block;width:100%;max-height:85vh;object-fit:contain;border-radius:12
 </head>
 <body>
 <main class="wrap">${image}${video}</main>
-<script>
-setTimeout(function(){ window.location.replace(${JSON.stringify(link.url)}); },2000);
-</script>
+${redirectScript}
 </body>
 </html>`);
   } catch (e) {
