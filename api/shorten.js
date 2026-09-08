@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    let code = cleanAlias(alias) || randomCode();
+    let code = mode === 'simple' ? `S${randomCode()}` : (cleanAlias(alias) || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
 
     let exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     if (existing.length) {
       if (alias) return res.status(409).json({ error: 'That custom alias is already in use.' });
       do {
-        code = randomCode();
+        code = mode === 'simple' ? `S${randomCode()}` : randomCode();
         exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
         existing = exists.ok ? await exists.json() : [];
       } while (existing.length);
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     const insert = await fetch(`${supabaseUrl}/rest/v1/links`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, link_mode: mode, clicks: 0 })
+      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0 })
     });
     if (!insert.ok) {
       const detail = await insert.text();
