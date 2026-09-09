@@ -1,6 +1,7 @@
 const urls = [
   "https://shrtigo.xyz/",
   "https://shrtigo.xyz/url-shortener.html",
+  "https://shrtigo.xyz/simple-shortener.html",
   "https://shrtigo.xyz/guides.html",
   "https://shrtigo.xyz/about.html",
   "https://shrtigo.xyz/privacy.html",
@@ -57,16 +58,21 @@ const urls = [
   "https://shrtigo.xyz/guides/short-url-for-small-business.html"
 ];
 
-module.exports = (req, res) => {
-  const lastmod = "2026-09-07";
+export default function handler(req, res) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    res.setHeader('Allow', 'GET, HEAD');
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  const lastmod = new Date().toISOString().slice(0, 10);
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
     `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
     urls.map((url) => `  <url><loc>${url}</loc><lastmod>${lastmod}</lastmod></url>`).join("\n") +
-    `\n</urlset>`;
+    `\n</urlset>\n`;
 
   res.status(200);
   res.setHeader("Content-Type", "application/xml; charset=utf-8");
-  res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
+  res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.end(xml);
-};
+  res.end(req.method === 'HEAD' ? '' : xml);
+}
