@@ -15,11 +15,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: `Shrtigo backend is not configured. Missing ${missing} in this Vercel deployment.` });
     }
 
-    if ((mode === 'simple' || mode === 'analytics') && (image || youtubeUrl || alias)) {
-      return res.status(400).json({ error: `${mode === 'simple' ? 'Simple Short Link' : 'Analytics Short Link'} only accepts the main website URL.` });
+    // Simple mode stays intentionally minimal. Analytics mode supports the same optional media/custom alias tools as the main shortener.
+    if (mode === 'simple' && (image || youtubeUrl || alias)) {
+      return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : (cleanAlias(alias) || randomCode());
+    const clean = cleanAlias(alias);
+    let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
     const ownerToken = mode === 'analytics' && /^[a-f0-9]{48}$/.test(String(requestedOwnerToken || '')) ? String(requestedOwnerToken) : mode === 'analytics' ? crypto.randomBytes(24).toString('hex') : null;
 
@@ -80,7 +82,7 @@ export default async function handler(req, res) {
 }
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
-function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 24); }
+function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
 function randomCode() { return Math.random().toString(36).slice(2, 6); }
 function extension(mime) { return ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[mime] || 'jpg'; }
 function parseDataUrl(value) { const m = String(value).match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/); if (!m) return null; return { mime: m[1], buffer: Buffer.from(m[2], 'base64') }; }
