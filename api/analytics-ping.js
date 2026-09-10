@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
@@ -7,15 +9,25 @@ export default async function handler(req, res) {
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) return res.status(500).json({ error: 'Backend is not configured.' });
 
-    const linkResponse = await fetch(`${supabaseUrl}/rest/v1/links?select=code,owner_token,link_mode&code=eq.${encodeURIComponent(String(code))}&limit=1`, {
-      headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey}
-    });
+    const linkResponse = await fetch(`${supabaseUrl}/rest/v1/links?select=code,owner_token,link_mode&code=eq.${encodeURIComponent(String(code))}&limit=1`, { headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey} });
     if (!linkResponse.ok) return res.status(500).json({ error: 'Could not validate analytics link.' });
     const links = await linkResponse.json();
-    if (!links.length || links[0].link_mode !== 'analytics' || !/^[a-f0-9]{48}$/.test(String(links[0].owner_token || ''))) return res.status(403).json({ error: 'Analytics link is not configured.' });
-    const ownerToken = String(links[0].owner_token);
-    const now = new Date().toISOString();
+    if (!links.length || links[0].link_mode !== 'analytics') return res.status(403).json({ error: 'Analytics link is not configured.' });
 
+    // Legacy analytics links created before private owner tokens existed are upgraded
+    // automatically on their next visit, so their live tracking starts working again.
+    let ownerToken = String(links[0].owner_token || '');
+    if (!/^[a-f0-9]{48}$/.test(ownerToken)) {
+      ownerToken = crypto.randomBytes(24).toString('hex');
+      const upgrade = await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(String(code))}&owner_token=is.null`, {
+        method:'PATCH',
+        headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'return=minimal'},
+        body:JSON.stringify({owner_token:ownerToken})
+      });
+      if (!upgrade.ok) return res.status(500).json({ error: 'Could not upgrade analytics link.' });
+    }
+
+    const now = new Date().toISOString();
     const response = await fetch(`${supabaseUrl}/rest/v1/analytics_visitors?on_conflict=code,visitor_id`, {
       method:'POST',
       headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},
@@ -30,10 +42,7 @@ export default async function handler(req, res) {
     });
     if (!eventResponse.ok) return res.status(500).json({ error: 'Could not store analytics history.' });
 
-    // Keep the detailed event table limited to the requested 90-day retention window.
-    await fetch(`${supabaseUrl}/rest/v1/analytics_events?visited_at=lt.${encodeURIComponent(new Date(Date.now()-90*24*60*60*1000).toISOString())}`, {
-      method:'DELETE', headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,Prefer:'return=minimal'}
-    });
+    await fetch(`${supabaseUrl}/rest/v1/analytics_events?visited_at=lt.${encodeURIComponent(new Date(Date.now()-90*24*60*60*1000).toISOString())}`, { method:'DELETE',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,Prefer:'return=minimal'} });
     return res.status(204).end();
   } catch(e){console.error(e);return res.status(500).json({error:'Could not record analytics.'});}
 }
