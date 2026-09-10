@@ -1,15 +1,42 @@
 export default async function handler(req, res) {
-  const code = String(req.query?.code || '').trim();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
-  if (!/^A[a-z0-9]{4}$/.test(code)) return res.status(400).json({ error: 'Invalid analytics link.' });
+  const code = String(req.query?.code || '').trim();
+  const all = req.query?.all === '1' || req.query?.all === 'true';
   try {
     const { supabaseUrl, serviceKey } = config();
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    if (all) {
+      const linksResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=code,url,clicks,created_at&link_mode=eq.analytics&order=created_at.desc&limit=1000`, serviceKey);
+      if (!linksResponse.ok) return res.status(500).json({ error: 'Could not load analytics links.' });
+      const links = await linksResponse.json();
+      const visitorsResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/analytics_visitors?select=code,visitor_id,last_seen&order=last_seen.desc&limit=10000`, serviceKey);
+      if (!visitorsResponse.ok) return res.status(500).json({ error: 'Analytics data is not ready yet. Please run the latest Supabase SQL setup.' });
+      const visitors = await visitorsResponse.json();
+
+      const analyticsCodes = new Set(links.map(link => link.code));
+      const scopedVisitors = visitors.filter(v => analyticsCodes.has(v.code));
+      const activeVisitors = scopedVisitors.filter(v => v.last_seen && v.last_seen >= fiveMinutesAgo);
+      const uniqueByVisitor = new Set(scopedVisitors.map(v => v.visitor_id));
+      const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
+      const activeByCode = {};
+      for (const visitor of activeVisitors) activeByCode[visitor.code] = (activeByCode[visitor.code] || 0) + 1;
+
+      return res.status(200).json({
+        totalLinks: links.length,
+        totalClicks,
+        uniqueVisitors: uniqueByVisitor.size,
+        activeVisitors: activeVisitors.length,
+        links: links.map(link => ({ ...link, activeVisitors: activeByCode[link.code] || 0 }))
+      });
+    }
+
+    if (!/^A[a-z0-9]{4}$/.test(code)) return res.status(400).json({ error: 'Invalid analytics link.' });
     const linkResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
     if (!linkResponse.ok) return res.status(500).json({ error: 'Database error.' });
     const links = await linkResponse.json();
     if (!links.length || links[0].link_mode !== 'analytics') return res.status(404).json({ error: 'Analytics link not found.' });
 
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const allResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/analytics_visitors?select=visitor_id,last_seen&code=eq.${encodeURIComponent(code)}&order=last_seen.desc&limit=1000`, serviceKey);
     if (!allResponse.ok) return res.status(500).json({ error: 'Analytics data is not ready yet. Please run the latest Supabase SQL setup.' });
     const visitors = await allResponse.json();
