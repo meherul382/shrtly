@@ -15,10 +15,14 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: `Shrtigo backend is not configured. Missing ${missing} in this Vercel deployment.` });
     }
 
-    // Simple mode stays intentionally minimal. Analytics mode supports the same optional media/custom alias tools as the main shortener.
     if (mode === 'simple' && (image || youtubeUrl || alias)) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
+
+    // If the user has signed in with Google, dashboard ownership is attached server-side.
+    // The browser stores the Supabase session; /api/auth/session exchanges its access token
+    // for this short-lived HttpOnly cookie, so the existing shortener pages need no auth UI changes.
+    const userId = await getUserIdFromRequest(req, supabaseUrl);
 
     const clean = cleanAlias(alias);
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
@@ -48,37 +52,61 @@ export default async function handler(req, res) {
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
 
-    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken };
-    const insert = await fetch(`${supabaseUrl}/rest/v1/links`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify(payload)
-    });
+    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId || null };
+    const insert = await insertLink(supabaseUrl, serviceKey, payload);
     if (!insert.ok) {
       const detail = await insert.text();
       if (insert.status === 409 && !alias) {
         code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
         payload.code = code;
-        const retry = await fetch(`${supabaseUrl}/rest/v1/links`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-          body: JSON.stringify(payload)
-        });
-        if (retry.ok) {
-          const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-          return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
-        }
+        const retry = await insertLink(supabaseUrl, serviceKey, payload);
+        if (retry.ok) return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
       }
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
       return res.status(500).json({ error: `Could not save the short link (${insert.status}). ${detail.slice(0, 180)}` });
     }
 
-    const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-    return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
+    return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
   }
+}
+
+async function getUserIdFromRequest(req, supabaseUrl) {
+  const token = readCookie(req.headers.cookie, 'shrtigo_session');
+  if (!token) return null;
+  try {
+    const r = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: { Authorization: `Bearer ${token}`, apikey: String(process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '') }
+    });
+    if (!r.ok) return null;
+    const user = await r.json();
+    return user?.id || null;
+  } catch { return null; }
+}
+
+function readCookie(header, name) {
+  const parts = String(header || '').split(';');
+  for (const part of parts) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return null;
+}
+
+async function insertLink(supabaseUrl, serviceKey, payload) {
+  return fetch(`${supabaseUrl}/rest/v1/links`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+    body: JSON.stringify(payload)
+  });
+}
+
+function respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken) {
+  const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+  return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
 }
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
