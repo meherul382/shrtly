@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shrtigo Dashboard — Analytics</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033;background:linear-gradient(180deg,#f6f8ff,#fff);min-height:100vh}.wrap{width:min(1080px,calc(100% - 32px));margin:auto}.top{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:23px;font-weight:900;text-decoration:none;color:#172033}.brand span{display:inline-grid;place-items:center;width:35px;height:35px;border-radius:10px;background:#2563eb;color:#fff;margin-right:8px;font-size:15px}.back{color:#526176;text-decoration:none;font-weight:800;font-size:14px}.hero{padding:34px 0 24px}.eyebrow{color:#2563eb;font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}.hero h1{font-size:clamp(34px,5vw,54px);line-height:1.05;letter-spacing:-2px;margin:10px 0}.hero p{color:#687386;line-height:1.7;margin:0;max-width:700px}.login,.panel{background:#fff;border:1px solid #e2e8f1;border-radius:22px;box-shadow:0 18px 50px rgba(23,32,51,.07)}.login{max-width:500px;margin:32px auto;padding:32px;text-align:center}.login h2{margin:0 0 8px}.muted{color:#687386;line-height:1.65}.google{margin-top:20px;width:100%;background:#fff;color:#172033;border:1px solid #d7dfeb;box-shadow:0 6px 18px rgba(23,32,51,.06)}.google:hover{border-color:#2563eb}.dashboard{display:none;padding-bottom:60px}.userbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin:8px 0 22px;padding:14px 16px;background:#eef4ff;border:1px solid #d7e4ff;border-radius:14px}.useremail{font-weight:800;color:#24436f;word-break:break-all}.logout{background:transparent;color:#2563eb;border:1px solid #cddcf7;padding:10px 14px}.periods{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.period{padding:11px 15px;border-radius:12px;border:1px solid #dce3ee;background:#fff;color:#536174;font-weight:800;cursor:pointer}.period.active{background:#2563eb;color:#fff;border-color:#2563eb}.section-title{font-size:20px;margin:24px 0 12px}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.metric{background:#fff;border:1px solid #e2e8f1;border-radius:18px;padding:20px}.metric b{display:block;font-size:12px;letter-spacing:.06em;color:#687386}.metric strong{display:block;font-size:34px;margin-top:7px}.metric p{margin:7px 0 0;color:#718096;font-size:13px;line-height:1.5}.panel{padding:20px}.linklist{display:grid;gap:10px}.link{border:1px solid #e5eaf2;border-radius:15px;padding:15px;display:flex;align-items:center;gap:12px}.linkmain{flex:1;min-width:0}.code{font-weight:900;color:#2563eb}.dest{color:#5f6b7a;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:5px}.linkactions{display:flex;gap:8px}.smallbtn{padding:10px 12px;border-radius:10px;background:#eef4ff;color:#2563eb}.delete{background:#fee2e2;color:#b91c1c}.details{display:none;margin-top:10px;padding:15px;border-radius:13px;background:#f7f9fc}.detailgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.detailgrid div{background:#fff;border:1px solid #e3e8f0;border-radius:12px;padding:12px}.detailgrid b{display:block;font-size:11px;color:#687386}.detailgrid strong{display:block;font-size:22px;margin-top:5px}.empty{padding:28px;text-align:center;color:#687386}.error{display:none;margin:14px 0;padding:12px 14px;border-radius:12px;background:#fee2e2;color:#991b1b}.note{font-size:12px;color:#718096;margin-top:12px;line-height:1.6}@media(max-width:700px){.metrics,.detailgrid{grid-template-columns:1fr}.link{align-items:flex-start;flex-wrap:wrap}.linkactions{width:100%}.linkactions button{flex:1}.userbar{align-items:flex-start;flex-direction:column}.logout{width:100%}}
+</style>
+</head>
+<body>
+<header><div class="wrap top"><a class="brand" href="/"><span>S</span>Shrtigo</a><a class="back" href="/">← Back to Shrtigo</a></div></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">📊 Private Dashboard</div><h1>All your traffic in one place.</h1><p>Sign in with Google to keep your Shrtigo links and analytics connected to your account. Your dashboard data is private to your account.</p></section>
+<div id="error" class="error"></div>
+<section id="login" class="login"><h2>Welcome to Shrtigo</h2><p class="muted">Create your private dashboard with your Google account. Your links and analytics stay connected even if you clear this browser.</p><button id="google" class="google">🔵 Continue with Google</button><div class="note">Google sign-in uses Supabase Auth. Only your own account data is shown.</div></section>
+<section id="dashboard" class="dashboard">
+<div class="userbar"><div><div style="font-size:12px;color:#687386;font-weight:800">SIGNED IN AS</div><div id="useremail" class="useremail"></div></div><button id="logout" class="logout">Log out</button></div>
+<div class="periods"><button class="period active" data-period="today">📅 Today</button><button class="period" data-period="7">7 Days</button><button class="period" data-period="30">30 Days</button><button class="period" data-period="90">90 Days</button></div>
+<div class="metrics"><article class="metric"><b>🟢 ACTIVE ONLINE</b><strong id="active">0</strong><p>Visitors seen in the last 5 minutes across your analytics links.</p></article><article class="metric"><b>👆 TOTAL CLICKS</b><strong id="clicks">0</strong><p>Recorded clicks across the selected period.</p></article><article class="metric"><b>👥 UNIQUE VISITORS</b><strong id="visitors">0</strong><p>Distinct anonymous visitors across the selected period.</p></article></div>
+<h2 class="section-title">📊 All Analytics Traffic</h2>
+<div class="panel"><div id="links" class="linklist"></div><div id="empty" class="empty" style="display:none">No links are connected to this Google account yet.<br>Create a link after signing in, then it will appear here.</div><div class="note">Analytics history is retained for the last 90 days. Active Online is based on visitors seen during the last 5 minutes; it cannot show activity after a visitor has left the destination site.</div></div>
+</section>
+</main>
+<script>
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id); let currentPeriod='today';
+function showError(msg){$('error').textContent=msg;$('error').style.display='block'}
+function hideError(){$('error').style.display='none'}
+async function establishSession(session){
+ if(!session?.access_token) return false;
+ const r=await fetch('/api/auth/session',{method:'POST',headers:{Authorization:'Bearer '+session.access_token}});
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok) throw new Error(d.error||'Could not start dashboard session.');
+ $('useremail').textContent=d.email||session.user.email||'Google account';
+ return true;
+}
+async function loadDashboard(){
+ hideError();
+ const r=await fetch('/api/dashboard?period='+encodeURIComponent(currentPeriod),{cache:'no-store'});
+ const d=await r.json().catch(()=>({}));
+ if(!r.ok) throw new Error(d.error||'Could not load your dashboard.');
+ $('active').textContent=Number(d.metrics?.activeOnline||0).toLocaleString();
+ $('clicks').textContent=Number(d.metrics?.totalClicks||0).toLocaleString();
+ $('visitors').textContent=Number(d.metrics?.uniqueVisitors||0).toLocaleString();
+ renderLinks(d.links||[]);
+}
+function renderLinks(items){
+ const box=$('links'); box.innerHTML=''; $('empty').style.display=items.length?'none':'block';
+ items.forEach(x=>{
+  const row=document.createElement('div');row.className='link';
+  const main=document.createElement('div');main.className='linkmain';
+  main.innerHTML='<div class="code">'+esc(x.code)+'</div><div class="dest" title="'+esc(x.url)+'">'+esc(x.url)+'</div><div style="font-size:11px;color:#8a95a5;margin-top:6px">'+new Date(x.created_at).toLocaleString()+'</div>';
+  const actions=document.createElement('div');actions.className='linkactions';
+  if(x.analyticsAvailable){const a=document.createElement('button');a.className='smallbtn';a.textContent='📊 Analytics';a.onclick=()=>toggleAnalytics(row,x.code);actions.appendChild(a)}
+  const del=document.createElement('button');del.className='smallbtn delete';del.textContent='Delete';del.onclick=()=>deleteLink(x.code);actions.appendChild(del);
+  const details=document.createElement('div');details.className='details';details.dataset.code=x.code;
+  row.appendChild(main);row.appendChild(actions);row.appendChild(details);box.appendChild(row);
+ });
+}
+async function toggleAnalytics(row,code){
+ const details=row.querySelector('.details'); if(details.style.display==='block'){details.style.display='none';return}
+ details.innerHTML='<div class="muted">Loading analytics…</div>';details.style.display='block';
+ try{const r=await fetch('/api/dashboard?code='+encodeURIComponent(code)+'&period='+encodeURIComponent(currentPeriod),{cache:'no-store'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unavailable');details.innerHTML='<div class="detailgrid"><div><b>ACTIVE ONLINE</b><strong>'+Number(d.activeOnline||0).toLocaleString()+'</strong></div><div><b>PERIOD CLICKS</b><strong>'+Number(d.periodClicks||0).toLocaleString()+'</strong></div><div><b>UNIQUE VISITORS</b><strong>'+Number(d.uniqueVisitors||0).toLocaleString()+'</strong></div></div><div class="note">'+esc(d.url)+'</div>'}catch(e){details.innerHTML='<div class="muted">'+esc(e.message)+'</div>'}
+}
+async function deleteLink(code){if(!confirm('Delete this Shrtigo link? This removes it from your dashboard and stops the short URL from working.'))return;try{const r=await fetch('/api/dashboard-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Delete failed');await loadDashboard()}catch(e){showError(e.message)}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+$('google').onclick=async()=>{hideError();try{const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/dashboard.html'}});if(error)throw error}catch(e){showError(e.message||'Google sign-in failed.')}};
+$('logout').onclick=async()=>{await supabase.auth.signOut();location.reload()};
+document.querySelectorAll('.period').forEach(b=>b.onclick=async()=>{document.querySelectorAll('.period').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentPeriod=b.dataset.period;try{await loadDashboard()}catch(e){showError(e.message)}});
+supabase.auth.onAuthStateChange(async(event,session)=>{if(session){try{await establishSession(session);$('login').style.display='none';$('dashboard').style.display='block';await loadDashboard()}catch(e){showError(e.message)}}else{$('login').style.display='block';$('dashboard').style.display='none'}});
+(async()=>{try{const {data}=await supabase.auth.getSession();if(data.session){await establishSession(data.session);$('login').style.display='none';$('dashboard').style.display='block';await loadDashboard()}}catch(e){showError(e.message)}})();
+</script>
+</body></html>
