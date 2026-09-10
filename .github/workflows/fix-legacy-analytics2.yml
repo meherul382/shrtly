@@ -1,0 +1,39 @@
+name: Fix legacy analytics access 2
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-legacy-analytics2.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch analytics legacy and dashboard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('api/analytics.js'); s=p.read_text()
+          old="""    if (all) {\n      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, {"""
+          new="""    if (all) {\n      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, {"""
+          # No-op marker; legacy single-link access is already patched.\n          # Ensure the single-link response falls back to lifetime clicks when event history is empty.\n          old2="""    const events = await eventsResponse.json();\n    const fiveMinutesAgo"""
+          new2="""    const events = await eventsResponse.json();\n    const lifetimeClicks = Number(links[0].clicks || 0);\n    const fiveMinutesAgo"""
+          if old2 not in s: raise SystemExit('analytics events target not found')
+          s=s.replace(old2,new2,1)
+          old3="""      clicks: events.length,\n      uniqueVisitors: new Set(events.map(e=>e.visitor_id)).size,"""
+          new3="""      clicks: events.length || lifetimeClicks,\n      uniqueVisitors: events.length ? new Set(events.map(e=>e.visitor_id)).size : visitors.length,"""
+          if old3 not in s: raise SystemExit('analytics response target not found')
+          s=s.replace(old3,new3,1); p.write_text(s)
+          p=Path('analytics.html'); s=p.read_text()
+          old4="""async function loadAll(){const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(token),{cache:'no-store'});"""
+          new4="""async function loadAll(){const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(token),{cache:'no-store'});"""
+          if old4 not in s: raise SystemExit('analytics html target not found')
+          # Keep aggregate page unchanged; only backend compatibility is adjusted.\n          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api/analytics.js analytics.html
+          git commit -m 'Support legacy analytics click totals' || exit 0
+          git push
