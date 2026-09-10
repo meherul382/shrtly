@@ -14,11 +14,7 @@ export default async function handler(req, res) {
     const toIso = to.toISOString();
 
     if (all) {
-      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, {
-        method:'POST',
-        headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json'},
-        body:JSON.stringify({p_owner_token:token,p_from:fromIso,p_to:toIso})
-      });
+      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, { method:'POST', headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json'}, body:JSON.stringify({p_owner_token:token,p_from:fromIso,p_to:toIso}) });
       if (!rpc.ok) return res.status(500).json({ error: 'Could not load analytics report.' });
       const data = await rpc.json();
       return res.status(200).json({...data,from:fromIso,to:toIso});
@@ -47,18 +43,16 @@ export default async function handler(req, res) {
     const visitorsResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/analytics_visitors?select=visitor_id,last_seen&code=eq.${encodeURIComponent(code)}&limit=5000`, serviceKey);
     if (!visitorsResponse.ok) return res.status(500).json({ error: 'Analytics data is not ready yet.' });
     const visitors = await visitorsResponse.json();
+    const lifetimeClicks = Number(links[0].clicks || 0);
     return res.status(200).json({
       url: links[0].url,
-      clicks: events.length,
-      uniqueVisitors: new Set(events.map(e=>e.visitor_id)).size,
+      clicks: events.length || lifetimeClicks,
+      uniqueVisitors: events.length ? new Set(events.map(e=>e.visitor_id)).size : visitors.length,
       activeVisitors: visitors.filter(v=>v.last_seen && v.last_seen >= fiveMinutesAgo).length,
       recent: visitors.filter(v=>v.last_seen && v.last_seen >= fiveMinutesAgo).slice(0,20),
       from:fromIso,to:toIso
     });
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Could not load analytics.' });
-  }
+  } catch (e) { console.error(e); return res.status(500).json({ error: 'Could not load analytics.' }); }
 }
 function validDate(value){if(!value)return false;const d=new Date(String(value));return Number.isFinite(d.getTime());}
 function config(){const supabaseUrl=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,'');const serviceKey=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!supabaseUrl||!serviceKey)throw new Error('Supabase not configured');return{supabaseUrl,serviceKey};}
