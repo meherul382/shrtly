@@ -25,9 +25,19 @@ export default async function handler(req, res) {
     }
 
     if (!/^A[a-z0-9]{4,23}$/.test(code)) return res.status(400).json({ error: 'Invalid analytics link.' });
-    const linkResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=eq.${encodeURIComponent(token)}&limit=1`, serviceKey);
+    let linkResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=eq.${encodeURIComponent(token)}&limit=1`, serviceKey);
     if (!linkResponse.ok) return res.status(500).json({ error: 'Database error.' });
-    const links = await linkResponse.json();
+    let links = await linkResponse.json();
+    if (!links.length) {
+      const legacyResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=is.null&limit=1`, serviceKey);
+      if (!legacyResponse.ok) return res.status(500).json({ error: 'Database error.' });
+      const legacy = await legacyResponse.json();
+      if (legacy.length && legacy[0].link_mode === 'analytics') {
+        const claim = await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(code)}&owner_token=is.null`, {method:'PATCH',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({owner_token:token})});
+        if (!claim.ok) return res.status(500).json({ error: 'Could not restore legacy analytics access.' });
+        links = await claim.json();
+      }
+    }
     if (!links.length || links[0].link_mode !== 'analytics') return res.status(403).json({ error: 'Private analytics access denied.' });
 
     const eventsResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/analytics_events?select=visitor_id,visited_at&code=eq.${encodeURIComponent(code)}&visited_at=gte.${encodeURIComponent(fromIso)}&visited_at=lt.${encodeURIComponent(toIso)}&order=visited_at.desc&limit=10000`, serviceKey);
