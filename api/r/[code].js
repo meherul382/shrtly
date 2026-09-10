@@ -51,7 +51,7 @@ export default async function handler(req, res) {
       ? `<script>(function(){try{var k='shrtigo_visitor_id',v=localStorage.getItem(k);if(!v){v=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem(k,v)}var body=JSON.stringify({code:${JSON.stringify(code)},visitorId:v});if(navigator.sendBeacon){navigator.sendBeacon('/api/analytics-ping',new Blob([body],{type:'application/json'}))}else{fetch('/api/analytics-ping',{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){})}}catch(e){}})();</script>`
       : '';
 
-    const redirectScript = `<script>setTimeout(function(){ window.location.replace(${JSON.stringify(link.url)}); },2000);</script>`;
+    const redirectScript = `<script>window.location.replace(${JSON.stringify(link.url)});</script>`;
 
     return res.status(200).send(`<!doctype html>
 <html lang="en">
@@ -73,9 +73,9 @@ ${ogImage}
 <meta name="twitter:title" content="Shrtigo — Short Link">
 <meta name="twitter:description" content="A clean, shareable link from Shrtigo.">
 ${link.image_url ? `<meta name="twitter:image" content="${safeImage}">` : ''}
-<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center;padding:12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:82vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.continue{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.06)}.copy{min-width:0}.label{font-size:13px;color:#6b7280;margin-bottom:3px}.host{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn{display:inline-block;padding:10px 15px;border-radius:9px;background:#111;color:#fff;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap}</style>
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:block;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:82vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.continue{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.06)}.copy{min-width:0}.label{font-size:13px;color:#6b7280;margin-bottom:3px}.host{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn{display:inline-block;padding:10px 15px;border-radius:9px;background:#111;color:#fff;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap}</style>
 </head>
-<body><main class="wrap">${image}${video}<section class="continue"><div class="copy"><div class="label">You are continuing to</div><div class="host">${safeDestinationHost}</div></div><a class="btn" href="${safeUrl}">Continue</a></section></main>${analyticsPing}${redirectScript}</body></html>`);
+<body><main class="wrap">${image}${video}</main>${analyticsPing}${redirectScript}</body></html>`);
   } catch (e) {
     console.error(e);
     return res.status(500).send('Could not open this short link.');
