@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
     if (youtubeUrl && !isYouTubeUrl(youtubeUrl)) return res.status(400).json({ error: 'Please enter a valid YouTube URL.' });
 
-    const mode = linkMode === 'simple' ? 'simple' : 'advanced';
+    const mode = ['simple', 'analytics'].includes(linkMode) ? linkMode : 'advanced';
     const supabaseUrl = String(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '');
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) {
@@ -13,15 +13,13 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: `Shrtigo backend is not configured. Missing ${missing} in this Vercel deployment.` });
     }
 
-    if (mode === 'simple' && (image || youtubeUrl || alias)) {
-      return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
+    if ((mode === 'simple' || mode === 'analytics') && (image || youtubeUrl || alias)) {
+      return res.status(400).json({ error: `${mode === 'simple' ? 'Simple Short Link' : 'Analytics Short Link'} only accepts the main website URL.` });
     }
 
-    let code = mode === 'simple' ? `S${randomCode()}` : (cleanAlias(alias) || randomCode());
+    let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : (cleanAlias(alias) || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
 
-    // Simple/generated links do not need a separate availability request.
-    // The database insert itself is the uniqueness check, saving one network round-trip.
     if (alias) {
       const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
       if (!exists.ok) return res.status(500).json({ error: `Supabase database check failed (${exists.status}). Run supabase.sql in SQL Editor and confirm the service-role secret.` });
@@ -48,18 +46,16 @@ export default async function handler(req, res) {
     const insert = await fetch(`${supabaseUrl}/rest/v1/links`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0 })
+      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode })
     });
     if (!insert.ok) {
       const detail = await insert.text();
-      // A generated code collision is extremely unlikely, but retry once without
-      // making the user wait for a preliminary availability query.
       if (insert.status === 409 && !alias) {
-        code = mode === 'simple' ? `S${randomCode()}` : randomCode();
+        code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
         const retry = await fetch(`${supabaseUrl}/rest/v1/links`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-          body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0 })
+          body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode })
         });
         if (retry.ok) {
           const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
