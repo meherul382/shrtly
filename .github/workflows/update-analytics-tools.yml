@@ -1,0 +1,45 @@
+name: Update analytics tools
+on:
+  push:
+    paths:
+      - '.github/workflows/update-analytics-tools.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch analytics page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          s=s.replace('.note{color:#687386;font-size:14px;line-height:1.7;margin:12px 0 0}', '.note{color:#687386;font-size:14px;line-height:1.7;margin:12px 0 0}.analytics-options{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:12px}.check{display:flex;gap:8px;align-items:center;color:#687386;font-size:14px}.analytics-extra{display:none;margin-top:10px;padding:12px;background:#f7f9fc;border-radius:14px}.analytics-extra.show{display:block}.analytics-extra input{width:100%;padding:14px;border:1px solid #dce3ee;border-radius:12px;font:inherit}.rangebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0}.rangebar button{padding:10px 14px;background:#eef4ff;color:#2563eb}.rangebar button.active{background:#2563eb;color:#fff}.rangebar input{padding:10px;border:1px solid #dce3ee;border-radius:10px;font:inherit}.range-label{color:#687386;font-size:13px;margin-left:auto}', 1)
+          marker='<p id="status" class="note" style="display:none"></p>'
+          options='''<div class="analytics-options"><label class="check"><input id="custom" type="checkbox"> Custom link</label><label class="check"><input id="withImage" type="checkbox"> 🖼️ Add image</label><label class="check"><input id="withYoutube" type="checkbox"> ▶️ Add YouTube video</label></div><div id="aliasBox" class="analytics-extra"><input id="aliasInput" maxlength="22" placeholder="Custom alias (optional)"></div><div id="imageBox" class="analytics-extra"><input id="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></div><div id="youtubeBox" class="analytics-extra"><input id="youtube" type="url" placeholder="YouTube video URL (optional)"></div>'''
+          if 'id="custom"' not in s:
+              s=s.replace(marker, marker+'\n'+options, 1)
+          range_marker='<div class="overview-cards">'
+          range_html='''<div class="rangebar"><button type="button" data-range="today">Today</button><button type="button" data-range="7" class="active">7 days</button><button type="button" data-range="30">30 days</button><button type="button" data-range="90">90 days</button><input id="fromDate" type="date"><input id="toDate" type="date"><button type="button" id="applyRange">Apply</button><span id="rangeLabel" class="range-label">Last 7 days</span></div>'''
+          if 'id="fromDate"' not in s:
+              s=s.replace(range_marker, range_html+'\n'+range_marker, 1)
+          old='''async function loadGlobal(){try{const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(ownerToken),{cache:'no-store'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Analytics unavailable.');$("globalActive").textContent=Number(d.activeVisitors||0).toLocaleString();$("globalClicks").textContent=Number(d.totalClicks||0).toLocaleString();$("globalVisitors").textContent=Number(d.uniqueVisitors||0).toLocaleString();$("globalStatus").textContent='Live · updated just now';}catch(e){$("globalStatus").textContent='Private';$("globalActive").textContent='—';$("globalClicks").textContent='—';$("globalVisitors").textContent='—';}}loadGlobal();setInterval(loadGlobal,10000);'''
+          new='''const custom=$("custom"),withImage=$("withImage"),withYoutube=$("withYoutube"),aliasBox=$("aliasBox"),aliasInput=$("aliasInput"),image=$("image"),imageBox=$("imageBox"),youtube=$("youtube"),youtubeBox=$("youtubeBox");function toggleAnalyticsOptions(){aliasBox.classList.toggle('show',custom.checked);imageBox.classList.toggle('show',withImage.checked);youtubeBox.classList.toggle('show',withYoutube.checked)}[custom,withImage,withYoutube].forEach(x=>x.addEventListener('change',toggleAnalyticsOptions));function fileToDataUrl(f){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)})}const fromDate=$("fromDate"),toDate=$("toDate"),applyRange=$("applyRange"),rangeLabel=$("rangeLabel");let selectedRange='7';function pad(n){return String(n).padStart(2,'0')}function dateOnly(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}function rangeIso(){const now=new Date();let from,to,label;if(selectedRange==='today'){from=new Date(now.getFullYear(),now.getMonth(),now.getDate());to=now;label='Today'}else if(selectedRange==='custom'){from=new Date(fromDate.value+'T00:00:00');to=new Date(toDate.value+'T23:59:59.999');label=fromDate.value+' → '+toDate.value}else{const days=Number(selectedRange);to=now;from=new Date(now.getTime()-days*86400000);label='Last '+days+' days'}return{from:from.toISOString(),to:to.toISOString(),label}}function setPreset(v){selectedRange=v;document.querySelectorAll('[data-range]').forEach(b=>b.classList.toggle('active',b.dataset.range===v));if(v!=='custom'){const now=new Date();toDate.value=dateOnly(now);fromDate.value=dateOnly(v==='today'?now:new Date(now.getTime()-Number(v)*86400000));rangeLabel.textContent=v==='today'?'Today':'Last '+v+' days'}}document.querySelectorAll('[data-range]').forEach(b=>b.onclick=()=>setPreset(b.dataset.range));applyRange.onclick=()=>{selectedRange='custom';document.querySelectorAll('[data-range]').forEach(b=>b.classList.remove('active'));rangeLabel.textContent=fromDate.value&&toDate.value?fromDate.value+' → '+toDate.value:'Choose dates';loadGlobal()};setPreset('7');async function loadGlobal(){try{const q=rangeIso();const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(ownerToken)+'&from='+encodeURIComponent(q.from)+'&to='+encodeURIComponent(q.to),{cache:'no-store'});const d=await r.json();if(!r.ok)throw new Error(d.error||'Analytics unavailable.');$("globalActive").textContent=Number(d.activeVisitors||0).toLocaleString();$("globalClicks").textContent=Number(d.totalClicks||0).toLocaleString();$("globalVisitors").textContent=Number(d.uniqueVisitors||0).toLocaleString();$("globalStatus").textContent='Live · updated just now';}catch(e){$("globalStatus").textContent='Private';$("globalActive").textContent='—';$("globalClicks").textContent='—';$("globalVisitors").textContent='—';}}loadGlobal();setInterval(loadGlobal,10000);'''
+          if old not in s: raise SystemExit('loadGlobal block not found')
+          s=s.replace(old,new,1)
+          oldbody="body:JSON.stringify({url:value,linkMode:'analytics',ownerToken})"
+          newbody="body:JSON.stringify({url:value,linkMode:'analytics',ownerToken,alias:custom.checked?aliasInput.value.trim():'',image:withImage.checked&&image.files[0]?await fileToDataUrl(image.files[0]):null,youtubeUrl:withYoutube.checked?youtube.value.trim():''})"
+          if oldbody not in s: raise SystemExit('create payload not found')
+          s=s.replace(oldbody,newbody,1)
+          s=s.replace("const value=url.value.trim();if(!value)", "const value=url.value.trim();if(withImage.checked&&image.files[0]&&image.files[0].size>3*1024*1024){showStatus('Image must be 3 MB or smaller.',true);return;}if(!value)",1)
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git diff --cached --quiet || git commit -m 'Add analytics options and date range filters'
+          git push
