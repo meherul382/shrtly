@@ -9,23 +9,26 @@ export default async function handler(req, res) {
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     if (all) {
-      const linksResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=code,url,clicks,created_at&link_mode=eq.analytics&owner_token=eq.${encodeURIComponent(token)}&order=created_at.desc&limit=1000`, serviceKey);
-      if (!linksResponse.ok) return res.status(500).json({ error: 'Could not load analytics links.' });
+      const linksResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=code,clicks&link_mode=eq.analytics&owner_token=eq.${encodeURIComponent(token)}&limit=1000`, serviceKey);
+      if (!linksResponse.ok) return res.status(500).json({ error: 'Could not load analytics.' });
       const links = await linksResponse.json();
       if (!links.length) return res.status(403).json({ error: 'Private analytics access denied.' });
+
       const visitorsResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/analytics_visitors?select=code,visitor_id,last_seen&order=last_seen.desc&limit=10000`, serviceKey);
       if (!visitorsResponse.ok) return res.status(500).json({ error: 'Analytics data is not ready yet. Please run the latest Supabase SQL setup.' });
       const visitors = await visitorsResponse.json();
-
       const analyticsCodes = new Set(links.map(link => link.code));
       const scopedVisitors = visitors.filter(v => analyticsCodes.has(v.code));
       const activeVisitors = scopedVisitors.filter(v => v.last_seen && v.last_seen >= fiveMinutesAgo);
       const uniqueByVisitor = new Set(scopedVisitors.map(v => v.visitor_id));
       const totalClicks = links.reduce((sum, link) => sum + Number(link.clicks || 0), 0);
-      const activeByCode = {};
-      for (const visitor of activeVisitors) activeByCode[visitor.code] = (activeByCode[visitor.code] || 0) + 1;
 
-      return res.status(200).json({ totalLinks: links.length, totalClicks, uniqueVisitors: uniqueByVisitor.size, activeVisitors: activeVisitors.length, links: links.map(link => ({ ...link, activeVisitors: activeByCode[link.code] || 0 })) });
+      return res.status(200).json({
+        totalLinks: links.length,
+        totalClicks,
+        uniqueVisitors: uniqueByVisitor.size,
+        activeVisitors: activeVisitors.length
+      });
     }
 
     if (!/^A[a-z0-9]{4}$/.test(code)) return res.status(400).json({ error: 'Invalid analytics link.' });
