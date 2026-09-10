@@ -15,10 +15,11 @@ export default async function handler(req, res) {
     if (!rows.length) return res.status(404).send('Short link not found');
 
     const link = rows[0];
-    await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(code)}`, {
-      method: 'PATCH',
+    // Use an atomic database increment so both old and new links count reliably under concurrent clicks.
+    await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_increment_click`, {
+      method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clicks: Number(link.clicks || 0) + 1 })
+      body: JSON.stringify({ p_code: code })
     });
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
