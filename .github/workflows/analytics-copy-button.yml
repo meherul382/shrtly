@@ -1,0 +1,33 @@
+name: Add Analytics Copy Button
+on:
+  push:
+    paths:
+      - '.github/workflows/analytics-copy-button.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update saved link actions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          old="""const open=document.createElement('button');open.type='button';open.className='ghost';open.textContent='Open';open.onclick=()=>window.open(item.shortUrl,'_blank','noopener');const del=document.createElement('button');"""
+          new="""const copyLink=document.createElement('button');copyLink.type='button';copyLink.className='ghost';copyLink.textContent='Copy Link';copyLink.onclick=async()=>{try{await navigator.clipboard.writeText(item.shortUrl);copyLink.textContent='Copied!';setTimeout(()=>copyLink.textContent='Copy Link',1200);}catch{showStatus('Copy failed. Please copy the link manually.',true);}};const open=document.createElement('button');open.type='button';open.className='ghost';open.textContent='Open';open.onclick=()=>window.open(item.shortUrl,'_blank','noopener');const del=document.createElement('button');"""
+          if old not in s:
+              raise SystemExit('target not found')
+          s=s.replace(old,new,1)
+          s=s.replace("actions.append(dash,open,del);", "actions.append(copyLink,open,del);")
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git diff --cached --quiet || git commit -m 'Add copy link action to saved analytics links'
+          git push
