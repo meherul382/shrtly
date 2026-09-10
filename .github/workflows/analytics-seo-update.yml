@@ -1,0 +1,41 @@
+name: Update Analytics SEO
+on:
+  push:
+    paths:
+      - '.github/workflows/analytics-seo-update.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update analytics page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          s=s.replace('<title>Analytics Short Link | Shrtigo</title>','<title>Analytics Short Link | Live Traffic Analytics | Shrtigo</title>')
+          s=s.replace('<meta name="description" content="Create a Shrtigo Analytics Short Link and privately track combined clicks, unique visitors, and active traffic in real time.">','<meta name="description" content="Create a Shrtigo Analytics Short Link and privately track combined clicks, unique visitors, and active traffic in real time.">\n<meta name="robots" content="index,follow,max-image-preview:large">\n<meta name="author" content="Shrtigo">')
+          marker='<link rel="canonical" href="https://shrtigo.xyz/analytics-shortener.html">'
+          seo='''<meta property="og:type" content="website">\n<meta property="og:title" content="Analytics Short Link | Live Traffic Analytics | Shrtigo">\n<meta property="og:description" content="Create a short link and privately track clicks, unique visitors, and active traffic from all your analytics links.">\n<meta property="og:url" content="https://shrtigo.xyz/analytics-shortener.html">\n<meta property="og:site_name" content="Shrtigo">\n<meta property="og:image" content="https://shrtigo.xyz/images/analytics-featured.svg">\n<meta property="og:image:width" content="1200">\n<meta property="og:image:height" content="630">\n<meta property="og:image:alt" content="Shrtigo Analytics Short Link live traffic analytics">\n<meta name="twitter:card" content="summary_large_image">\n<meta name="twitter:title" content="Analytics Short Link | Shrtigo">\n<meta name="twitter:description" content="Track combined clicks, unique visitors, and active traffic with Shrtigo Analytics Short Links.">\n<meta name="twitter:image" content="https://shrtigo.xyz/images/analytics-featured.svg">'''
+          if 'property="og:image" content="https://shrtigo.xyz/images/analytics-featured.svg"' not in s:
+              s=s.replace(marker,marker+'\n'+seo)
+          ld='''<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Shrtigo Analytics Short Link","url":"https://shrtigo.xyz/analytics-shortener.html","description":"Create analytics short links and privately track combined clicks, unique visitors, and active traffic.","applicationCategory":"BusinessApplication","operatingSystem":"Any","image":"https://shrtigo.xyz/images/analytics-featured.svg","publisher":{"@type":"Organization","name":"Shrtigo","url":"https://shrtigo.xyz/"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>'''
+          if '"@type":"WebApplication"' not in s:
+              s=s.replace('<link rel="icon" href="/favicon.svg" type="image/svg+xml">','<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n'+ld)
+          hero='<img class="hero-image" src="/images/analytics-featured.svg" width="1200" height="630" loading="eager" decoding="async" alt="Shrtigo Analytics Short Link live traffic analytics">'
+          if 'class="hero-image"' not in s:
+              s=s.replace('<section class="hero">','<section class="hero">'+hero,1)
+              s=s.replace('.hero{text-align:center;padding:58px 0 30px}', '.hero{text-align:center;padding:48px 0 24px}.hero-image{display:block;width:100%;max-width:760px;height:auto;margin:0 auto 30px;border-radius:22px;border:1px solid #e1e8f2;box-shadow:0 18px 50px rgba(23,32,51,.08)}')
+              s=s.replace('.hero{padding-top:38px}', '.hero{padding-top:34px}.hero-image{margin-bottom:24px}')
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git diff --cached --quiet || git commit -m 'Add featured image and SEO metadata to Analytics Short Link'
+          git push
