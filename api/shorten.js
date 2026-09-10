@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
 
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : (cleanAlias(alias) || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
+    const ownerToken = mode === 'analytics' ? crypto.randomBytes(24).toString('hex') : null;
 
     if (alias) {
       const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
@@ -43,23 +46,25 @@ export default async function handler(req, res) {
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
 
+    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken };
     const insert = await fetch(`${supabaseUrl}/rest/v1/links`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode })
+      body: JSON.stringify(payload)
     });
     if (!insert.ok) {
       const detail = await insert.text();
       if (insert.status === 409 && !alias) {
         code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
+        payload.code = code;
         const retry = await fetch(`${supabaseUrl}/rest/v1/links`, {
           method: 'POST',
           headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-          body: JSON.stringify({ code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode })
+          body: JSON.stringify(payload)
         });
         if (retry.ok) {
           const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-          return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode });
+          return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
         }
       }
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
@@ -67,7 +72,7 @@ export default async function handler(req, res) {
     }
 
     const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-    return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode });
+    return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
