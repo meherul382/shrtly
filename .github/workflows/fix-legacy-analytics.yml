@@ -1,0 +1,37 @@
+name: Fix legacy analytics access
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-legacy-analytics.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch legacy analytics
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('api/analytics.js')
+          s=p.read_text()
+          old="""    const linkResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=eq.${encodeURIComponent(token)}&limit=1`, serviceKey);\n    if (!linkResponse.ok) return res.status(500).json({ error: 'Database error.' });\n    const links = await linkResponse.json();\n    if (!links.length || links[0].link_mode !== 'analytics') return res.status(403).json({ error: 'Private analytics access denied.' });\n"""
+          new="""    let linkResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=eq.${encodeURIComponent(token)}&limit=1`, serviceKey);\n    if (!linkResponse.ok) return res.status(500).json({ error: 'Database error.' });\n    let links = await linkResponse.json();\n    // Legacy analytics links created before owner tokens existed have a null owner_token.\n    // Claim them on first private-dashboard access so their existing live data remains usable.\n    if (!links.length) {\n      const legacyResponse = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=url,clicks,link_mode,owner_token&code=eq.${encodeURIComponent(code)}&owner_token=is.null&limit=1`, serviceKey);\n      if (!legacyResponse.ok) return res.status(500).json({ error: 'Database error.' });\n      const legacy = await legacyResponse.json();\n      if (legacy.length && legacy[0].link_mode === 'analytics') {\n        const claim = await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(code)}&owner_token=is.null`, {method:'PATCH',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({owner_token:token})});\n        if (!claim.ok) return res.status(500).json({ error: 'Could not restore legacy analytics access.' });\n        links = await claim.json();\n      }\n    }\n    if (!links.length || links[0].link_mode !== 'analytics') return res.status(403).json({ error: 'Private analytics access denied.' });\n"""
+          if old not in s: raise SystemExit('analytics.js target not found')
+          p.write_text(s.replace(old,new,1))
+
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          old="""      [['Copy Link',async()=>{await navigator.clipboard.writeText(x.shortUrl)}],['Open',()=>window.open(x.shortUrl,'_blank','noopener')],['Delete',()=>{localStorage.setItem(KEY,JSON.stringify(saved().filter(y=>y.code!==x.code)));render()}]].forEach(([t,f])=>{const b=document.createElement('button');b.className='ghost';b.textContent=t;b.onclick=async()=>{try{await f();if(t==='Copy Link'){b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Link',1000)}}catch{msg('Could not copy the link.',true)}};a.append(b)});"""
+          new="""      [['Copy Link',async()=>{await navigator.clipboard.writeText(x.shortUrl)}],['Analytics',()=>window.open('/analytics.html?code='+encodeURIComponent(x.code)+'&token='+encodeURIComponent(owner),'_blank','noopener')],['Open',()=>window.open(x.shortUrl,'_blank','noopener')],['Delete',()=>{localStorage.setItem(KEY,JSON.stringify(saved().filter(y=>y.code!==x.code)));render()}]].forEach(([t,f])=>{const b=document.createElement('button');b.className='ghost';b.textContent=t;b.onclick=async()=>{try{await f();if(t==='Copy Link'){b.textContent='Copied!';setTimeout(()=>b.textContent='Copy Link',1000)}}catch{msg('Could not copy the link.',true)}};a.append(b)});"""
+          if old not in s: raise SystemExit('analytics-shortener target not found')
+          p.write_text(s.replace(old,new,1))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api/analytics.js analytics-shortener.html
+          git commit -m 'Restore analytics for legacy links' || exit 0
+          git push
