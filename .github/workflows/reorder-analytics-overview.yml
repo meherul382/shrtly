@@ -1,0 +1,38 @@
+name: Reorder analytics overview
+on:
+  push:
+    paths:
+      - '.github/workflows/reorder-analytics-overview.yml'
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move traffic overview above creator
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          start=s.find('<section class="box">')
+          overview=s.find('<section class="overview">')
+          if start < 0 or overview < 0 or overview < start:
+              raise SystemExit('Expected sections not found')
+          overview_end=s.find('</section>', overview)
+          if overview_end < 0:
+              raise SystemExit('Overview end not found')
+          overview_end += len('</section>')
+          box=s[start:overview]
+          overview_block=s[overview:overview_end]
+          s=s[:start]+overview_block+box+s[overview_end:]
+          p.write_text(s)
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git diff --cached --quiet || git commit -m 'Move analytics traffic overview above link creator'
+          git push
