@@ -23,12 +23,17 @@ export default async function handler(req, res) {
 
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 
     const safeImage = link.image_url ? escapeHtml(link.image_url) : '';
     const safeUrl = escapeHtml(link.url);
     const videoId = getYouTubeId(link.youtube_url);
     const shortUrl = `https://shrtigo.xyz/${encodeURIComponent(code)}`;
     const safeShortUrl = escapeHtml(shortUrl);
+    let destinationHost = 'destination website';
+    try { destinationHost = new URL(link.url).hostname; } catch {}
+    const safeDestinationHost = escapeHtml(destinationHost);
 
     const image = link.image_url
       ? `<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`
@@ -39,7 +44,7 @@ export default async function handler(req, res) {
       : '';
 
     const ogImage = link.image_url
-      ? `<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview">`
+      ? `<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview"><meta property="og:image:type" content="image/jpeg">`
       : '';
 
     const analyticsPing = link.link_mode === 'analytics'
@@ -55,20 +60,22 @@ export default async function handler(req, res) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Shrtigo — Short Link</title>
 <meta name="description" content="A clean short link created with Shrtigo.">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <link rel="canonical" href="${safeShortUrl}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Shrtigo — Short Link">
 <meta property="og:description" content="A clean, shareable link from Shrtigo.">
 <meta property="og:url" content="${safeShortUrl}">
 <meta property="og:site_name" content="Shrtigo">
+<meta property="og:locale" content="en_US">
 ${ogImage}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Shrtigo — Short Link">
 <meta name="twitter:description" content="A clean, shareable link from Shrtigo.">
 ${link.image_url ? `<meta name="twitter:image" content="${safeImage}">` : ''}
-<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center;padding:12px}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:85vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style>
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center;padding:12px;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:82vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.continue{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.06)}.copy{min-width:0}.label{font-size:13px;color:#6b7280;margin-bottom:3px}.host{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.btn{display:inline-block;padding:10px 15px;border-radius:9px;background:#111;color:#fff;text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap}</style>
 </head>
-<body><main class="wrap">${image}${video}</main>${analyticsPing}${redirectScript}</body></html>`);
+<body><main class="wrap">${image}${video}<section class="continue"><div class="copy"><div class="label">You are continuing to</div><div class="host">${safeDestinationHost}</div></div><a class="btn" href="${safeUrl}">Continue</a></section></main>${analyticsPing}${redirectScript}</body></html>`);
   } catch (e) {
     console.error(e);
     return res.status(500).send('Could not open this short link.');
