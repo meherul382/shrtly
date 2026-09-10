@@ -3,7 +3,7 @@ import crypto from 'crypto';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const { url, alias, image, youtubeUrl, linkMode } = req.body || {};
+    const { url, alias, image, youtubeUrl, linkMode, ownerToken: requestedOwnerToken } = req.body || {};
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
     if (youtubeUrl && !isYouTubeUrl(youtubeUrl)) return res.status(400).json({ error: 'Please enter a valid YouTube URL.' });
 
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : (cleanAlias(alias) || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
-    const ownerToken = mode === 'analytics' ? crypto.randomBytes(24).toString('hex') : null;
+    const ownerToken = mode === 'analytics' && /^[a-f0-9]{48}$/.test(String(requestedOwnerToken || '')) ? String(requestedOwnerToken) : mode === 'analytics' ? crypto.randomBytes(24).toString('hex') : null;
 
     if (alias) {
       const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
