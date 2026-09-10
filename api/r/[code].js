@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     const serviceKey = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
     if (!supabaseUrl || !serviceKey) return res.status(500).send('Backend is not configured.');
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks&code=eq.${encodeURIComponent(code)}&limit=1`, {
+    const response = await fetch(`${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks,link_mode&code=eq.${encodeURIComponent(code)}&limit=1`, {
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey }
     });
     if (!response.ok) return res.status(500).send('Database error');
@@ -42,8 +42,10 @@ export default async function handler(req, res) {
       ? `<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview">`
       : '';
 
-    // Keep the same 200 OK preview response for every link. The browser redirect
-    // happens with JavaScript so social crawlers can read the Shrtigo metadata first.
+    const analyticsPing = link.link_mode === 'analytics'
+      ? `<script>(function(){try{var k='shrtigo_visitor_id',v=localStorage.getItem(k);if(!v){v=(crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now().toString(36));localStorage.setItem(k,v)}var body=JSON.stringify({code:${JSON.stringify(code)},visitorId:v});if(navigator.sendBeacon){navigator.sendBeacon('/api/analytics-ping',new Blob([body],{type:'application/json'}))}else{fetch('/api/analytics-ping',{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:true}).catch(function(){})}}catch(e){}})();</script>`
+      : '';
+
     const redirectScript = `<script>setTimeout(function(){ window.location.replace(${JSON.stringify(link.url)}); },2000);</script>`;
 
     return res.status(200).send(`<!doctype html>
@@ -64,44 +66,13 @@ ${ogImage}
 <meta name="twitter:title" content="Shrtigo — Short Link">
 <meta name="twitter:description" content="A clean, shareable link from Shrtigo.">
 ${link.image_url ? `<meta name="twitter:image" content="${safeImage}">` : ''}
-<style>
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#fff}
-body{display:flex;align-items:center;justify-content:center;padding:12px}
-.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}
-img{display:block;width:100%;max-height:85vh;object-fit:contain;border-radius:12px;background:#fff}
-.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}
-.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-</style>
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:flex;align-items:center;justify-content:center;padding:12px}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:85vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style>
 </head>
-<body>
-<main class="wrap">${image}${video}</main>
-${redirectScript}
-</body>
-</html>`);
+<body><main class="wrap">${image}${video}</main>${analyticsPing}${redirectScript}</body></html>`);
   } catch (e) {
     console.error(e);
     return res.status(500).send('Could not open this short link.');
   }
 }
-
-function getYouTubeId(value) {
-  if (!value) return null;
-  try {
-    const u = new URL(value);
-    const host = u.hostname.toLowerCase();
-    if (host === 'youtu.be' || host === 'www.youtu.be') return u.pathname.slice(1).split('/')[0] || null;
-    if (['youtube.com','www.youtube.com','m.youtube.com'].includes(host)) {
-      if (u.searchParams.get('v')) return u.searchParams.get('v');
-      const m = u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/);
-      return m ? m[1] : null;
-    }
-  } catch {}
-  return null;
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>\"']/g, c => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'
-  }[c]));
-}
+function getYouTubeId(value) { if (!value) return null; try { const u = new URL(value); const host = u.hostname.toLowerCase(); if (host === 'youtu.be' || host === 'www.youtu.be') return u.pathname.slice(1).split('/')[0] || null; if (['youtube.com','www.youtube.com','m.youtube.com'].includes(host)) { if (u.searchParams.get('v')) return u.searchParams.get('v'); const m = u.pathname.match(/\/(?:embed|shorts)\/([^/?]+)/); return m ? m[1] : null; } } catch {} return null; }
+function escapeHtml(value) { return String(value).replace(/[&<>\"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;' }[c])); }
