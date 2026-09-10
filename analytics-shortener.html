@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Analytics Short Link | Shrtigo</title>
+<meta name="description" content="Create a Shrtigo short link with live visitor activity and click analytics.">
+<link rel="canonical" href="https://shrtigo.xyz/analytics-shortener.html">
+<meta property="og:type" content="website"><meta property="og:title" content="Analytics Short Link | Shrtigo"><meta property="og:description" content="Create a short link and see clicks and active visitors in your Shrtigo analytics dashboard."><meta property="og:url" content="https://shrtigo.xyz/analytics-shortener.html"><meta property="og:site_name" content="Shrtigo">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033;background:linear-gradient(180deg,#f6f8ff,#fff);min-height:100vh}a{text-decoration:none;color:inherit}.wrap{width:min(980px,calc(100% - 32px));margin:auto}.nav{height:72px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:24px;font-weight:900}.brand span{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#2563eb;color:#fff;margin-right:8px;font-size:16px}.back{color:#5f6b7a;font-weight:800;font-size:14px}.hero{text-align:center;padding:58px 0 30px}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800;color:#2563eb}.hero h1{font-size:clamp(38px,6vw,64px);line-height:1.04;margin:12px 0 16px;letter-spacing:-2px}.hero p{max-width:700px;margin:auto;color:#687386;font-size:18px;line-height:1.7}.box{background:#fff;border:1px solid #e3e8f0;border-radius:22px;padding:22px;box-shadow:0 18px 50px rgba(23,32,51,.08)}.row{display:grid;grid-template-columns:1fr 180px;gap:10px}.row input{width:100%;padding:17px;border:1px solid #dce3ee;border-radius:14px;font:inherit;outline:0}.row input:focus{border-color:#2563eb;box-shadow:0 0 0 4px rgba(37,99,235,.1)}button{border:0;cursor:pointer;padding:17px 22px;border-radius:14px;background:#2563eb;color:#fff;font-weight:800;font:inherit}.note{color:#687386;font-size:14px;line-height:1.7;margin:12px 0 0}.result{display:none;margin-top:18px;padding:18px;background:#f7f9fc;border-radius:16px}.result strong{display:block;font-size:13px;color:#687386;margin-bottom:8px}.linkrow{display:flex;gap:10px;align-items:center}.url{flex:1;color:#2563eb;font-weight:800;word-break:break-all}.ghost{background:#eef4ff;color:#2563eb;padding:12px 16px}.dashboard{display:none;margin-top:16px;padding:16px;border:1px solid #dbe5f5;border-radius:16px;background:#f8fbff}.dashboard a{display:inline-block;margin-top:10px;color:#2563eb;font-weight:900}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:28px}.card{background:#fff;border:1px solid #e6ebf2;border-radius:18px;padding:20px}.num{font-size:30px;font-weight:900;margin-top:8px}.card p{color:#687386;line-height:1.6;margin:6px 0 0}footer{padding:40px 0;color:#687386;text-align:center}@media(max-width:700px){.row{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.hero{padding-top:38px}.navlinks{display:none}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="/"><span>S</span>Shrtigo</a><a class="back" href="/">← Back to Shrtigo</a></div></header>
+<main class="wrap">
+<section class="hero"><div class="eyebrow">📊 Live Analytics</div><h1>Short your link.<br>Watch the traffic.</h1><p>Create a dedicated analytics short link and view clicks, unique visitors, and active visitors from one simple dashboard.</p></section>
+<section class="box"><div class="row"><input id="url" type="url" placeholder="Paste your website URL here…" autocomplete="off"><button id="create" type="button">Create Analytics Link</button></div><p id="status" class="note" style="display:none"></p><div id="result" class="result"><strong>Your analytics short URL</strong><div class="linkrow"><a id="shortUrl" class="url" target="_blank" rel="noopener"></a><button id="copy" class="ghost" type="button">Copy</button></div><div id="dashboard" class="dashboard"><strong>📊 Analytics Dashboard</strong><br><a id="dashboardUrl" target="blank" rel="noopener">Open live analytics →</a></div></div></section>
+<section class="cards"><article class="card"><div>👥</div><div class="num">Live</div><p>See visitors active in the last few minutes.</p></article><article class="card"><div>📈</div><div class="num">Clicks</div><p>Track the total number of visits to your short link.</p></article><article class="card"><div>🔒</div><div class="num">Simple</div><p>No account is required to create an analytics link.</p></article></section>
+</main>
+<footer>© <span id="year"></span> Shrtigo · <a href="/privacy.html">Privacy</a></footer>
+<script>
+const $=id=>document.getElementById(id),url=$("url"),create=$("create"),status=$("status"),result=$("result"),shortUrl=$("shortUrl"),copy=$("copy"),dashboard=$("dashboard"),dashboardUrl=$("dashboardUrl");
+$("year").textContent=new Date().getFullYear();
+function showStatus(t,err=false){status.textContent=t;status.style.display='block';status.style.color=err?'#b91c1c':'#687386';}
+create.addEventListener('click',async()=>{const value=url.value.trim();if(!value){showStatus('Please enter a website URL.',true);return;}create.disabled=true;showStatus('Creating your analytics short link…');result.style.display='none';try{const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:value,linkMode:'analytics'})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not create the link.');shortUrl.href=d.shortUrl;shortUrl.textContent=d.shortUrl;const dash=`/analytics.html?code=${encodeURIComponent(d.code)}`;dashboardUrl.href=dash;dashboardUrl.textContent='Open live analytics →';dashboard.style.display='block';result.style.display='block';showStatus('Analytics short link created successfully.');}catch(e){showStatus(e.message,true);}finally{create.disabled=false;}});
+copy.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(shortUrl.textContent);copy.textContent='Copied!';setTimeout(()=>copy.textContent='Copy',1400);}catch{showStatus('Copy failed. Please copy the link manually.',true);}});
+url.addEventListener('keydown',e=>{if(e.key==='Enter')create.click();});
+</script>
+</body>
+</html>
