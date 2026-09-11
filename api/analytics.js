@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     const { supabaseUrl, serviceKey } = config();
     const now = new Date();
     const to = validDate(req.query?.to) ? new Date(String(req.query.to)) : now;
-    const from = validDate(req.query?.from) ? new Date(String(req.query.from)) : new Date(to.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const from = validDate(req.query?.from) ? new Date(String(req.query.from)) : startOfBangladeshDay();
     if (from >= to) return res.status(400).json({ error: 'Invalid analytics date range.' });
     const fromIso = from.toISOString();
     const toIso = to.toISOString();
@@ -61,5 +61,6 @@ export default async function handler(req, res) {
   }
 }
 function validDate(value){if(!value)return false;const d=new Date(String(value));return Number.isFinite(d.getTime());}
+function startOfBangladeshDay(){const now=new Date();const bd=new Date(now.getTime()+6*60*60*1000);bd.setUTCHours(0,0,0,0);return new Date(bd.getTime()-6*60*60*1000)}
 function config(){const supabaseUrl=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,'');const serviceKey=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();if(!supabaseUrl||!serviceKey)throw new Error('Supabase not configured');return{supabaseUrl,serviceKey};}
 async function supabaseFetch(url,key){return fetch(url,{headers:{Authorization:`Bearer ${key}`,apikey:key}});}
