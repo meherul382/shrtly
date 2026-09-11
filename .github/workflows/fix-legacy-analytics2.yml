@@ -1,4 +1,4 @@
-name: Fix legacy analytics access 2
+name: Move Analytics login to short link page
 on:
   push:
     paths:
@@ -11,29 +11,64 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Patch analytics legacy and dashboard
+      - name: Move analytics authentication flow
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p=Path('api/analytics.js'); s=p.read_text()
-          old="""    if (all) {\n      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, {"""
-          new="""    if (all) {\n      const rpc = await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_analytics_summary`, {"""
-          # No-op marker; legacy single-link access is already patched.\n          # Ensure the single-link response falls back to lifetime clicks when event history is empty.\n          old2="""    const events = await eventsResponse.json();\n    const fiveMinutesAgo"""
-          new2="""    const events = await eventsResponse.json();\n    const lifetimeClicks = Number(links[0].clicks || 0);\n    const fiveMinutesAgo"""
-          if old2 not in s: raise SystemExit('analytics events target not found')
-          s=s.replace(old2,new2,1)
-          old3="""      clicks: events.length,\n      uniqueVisitors: new Set(events.map(e=>e.visitor_id)).size,"""
-          new3="""      clicks: events.length || lifetimeClicks,\n      uniqueVisitors: events.length ? new Set(events.map(e=>e.visitor_id)).size : visitors.length,"""
-          if old3 not in s: raise SystemExit('analytics response target not found')
-          s=s.replace(old3,new3,1); p.write_text(s)
-          p=Path('analytics.html'); s=p.read_text()
-          old4="""async function loadAll(){const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(token),{cache:'no-store'});"""
-          new4="""async function loadAll(){const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(token),{cache:'no-store'});"""
-          if old4 not in s: raise SystemExit('analytics html target not found')
-          # Keep aggregate page unchanged; only backend compatibility is adjusted.\n          p.write_text(s)
+          import re
+
+          # Dashboard: never show its old login form. Send unauthenticated visitors
+          # to the Analytics Short Link page, which is now the auth entry point.
+          p = Path('dashboard.html')
+          s = p.read_text()
+          s = s.replace('body.booting{visibility:hidden}', 'body.booting{visibility:hidden}#login{display:none!important}')
+          old = "function showLogin(){loading=false;$('app').classList.add('hidden');$('login').classList.remove('hidden');$('heroTitle').textContent=signup?'Create your account.':'Log in to your account.';$('heroDesc').textContent=signup?'Create your Shrtigo account and keep your links and analytics connected.':'Sign in to manage your own Shrtigo links and analytics.';document.body.classList.remove('booting')}"
+          new = "function showLogin(){location.replace('/analytics-shortener.html')}"
+          if old not in s:
+              raise SystemExit('dashboard showLogin target not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          # Analytics Short Link: make this the first auth gate and keep the
+          # existing page/design/tools after successful login.
+          p = Path('analytics-shortener.html')
+          s = p.read_text()
+
+          s = s.replace('<link rel="icon" href="/favicon.svg" type="image/svg+xml">', '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>', 1)
+          s = s.replace('body{margin:0;', 'body.auth-boot{visibility:hidden}body.auth-boot main,body.auth-boot footer{display:none}body{margin:0;', 1)
+          login_css = '''\n.authbox{display:none;max-width:520px;margin:45px auto 70px;padding:34px;background:#fff;border:1px solid #e2e8f1;border-radius:22px;box-shadow:0 18px 50px rgba(23,32,51,.08)}.authbox.show{display:block}.authbox h2{margin:0 0 9px;font-size:26px;text-align:center}.authbox>p{text-align:center;color:#687386;line-height:1.5;margin:0 0 22px}.authbtn{width:100%;padding:14px 18px;border-radius:13px;font:inherit;font-weight:800;cursor:pointer}.google{border:1px solid #d7deea;background:#fff;color:#172033}.divider{display:flex;align-items:center;gap:12px;color:#687386;font-size:12px;font-weight:800;letter-spacing:.08em;margin:20px 0}.divider:before,.divider:after{content:"";height:1px;background:#dfe5ee;flex:1}.authfield{margin:14px 0}.authfield label{display:block;font-size:13px;font-weight:800;margin-bottom:7px}.authfield input{width:100%;padding:14px;border:1px solid #d7deea;border-radius:12px;font-size:15px;outline:none}.authfield input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.forgot{text-align:right;margin-top:-5px;margin-bottom:12px}.forgot button,.switch button{border:0;background:none;color:#2563eb;font-weight:800;cursor:pointer;padding:0}.authprimary{width:100%;border:0;background:#2563eb;color:#fff;padding:14px;border-radius:12px;font-size:15px;font-weight:900;cursor:pointer}.switch{text-align:center;color:#687386;font-size:14px;margin-top:18px}.authmsg{color:#687386;font-size:13px;text-align:center;margin-top:12px;min-height:18px}@media(max-width:760px){.authbox{margin:25px auto 45px;padding:24px}}\n'''
+          s = s.replace('</style>', login_css + '</style>', 1)
+          auth_html = '''\n<section id="authbox" class="authbox"><h2 id="authTitle">Log in to your account</h2><p id="authDesc">Sign in to create Analytics Short Links and keep your traffic private.</p><button id="authGoogle" class="authbtn google">🌐 &nbsp; Sign in with Google</button><div class="divider">OR CONTINUE WITH EMAIL</div><div class="authfield"><label>Email address</label><input id="authEmail" type="email" placeholder="you@example.com" autocomplete="email"></div><div class="authfield"><label>Password</label><input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password"></div><div id="authForgot" class="forgot"><button type="button">Forgot password?</button></div><button id="authEmailBtn" class="authprimary">Log In</button><div id="authMsg" class="authmsg"></div><div class="switch"><span id="authSwitchText">Don't have an account?</span> <button id="authSwitchBtn" type="button">Create one for free</button></div></section>\n'''
+          s = s.replace('<main class="wrap">', auth_html + '\n<main class="wrap">', 1)
+
+          old_const = "const $=id=>document.getElementById(id),KEY='shrtigo_analytics_links',OWNER='shrtigo_analytics_owner_token';"
+          new_const = "const $=id=>document.getElementById(id);let KEY='shrtigo_analytics_links';const OWNER='shrtigo_analytics_owner_token';window.analyticsSession=null;"
+          if old_const not in s:
+              raise SystemExit('analytics constants target not found')
+          s = s.replace(old_const, new_const, 1)
+
+          old_fetch = "headers:{'Content-Type':'application/json'},body:JSON.stringify(body)"
+          new_fetch = "headers:{'Content-Type':'application/json',Authorization:'Bearer '+window.analyticsSession.access_token},body:JSON.stringify(body)"
+          if old_fetch not in s:
+              raise SystemExit('analytics create fetch target not found')
+          s = s.replace(old_fetch, new_fetch, 1)
+
+          old_load = "async function load(){try{let from,to;if(range==='custom'){from=new Date($('from').value+'T00:00:00').toISOString();to=new Date($('to').value+'T23:59:59.999').toISOString()}else{const n=new Date;to=n.toISOString();from=new Date(n.getTime()-(range==='today'?1:Number(range))*86400000).toISOString()}const r=await fetch('/api/analytics?all=1&token='+encodeURIComponent(owner)+'&from='+encodeURIComponent(from)+'&to='+encodeURIComponent(to),{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error();$('active').textContent=Number(d.activeVisitors||0).toLocaleString();$('clicks').textContent=Number(d.totalClicks||0).toLocaleString();$('visitors').textContent=Number(d.uniqueVisitors||0).toLocaleString();$('liveStatus').textContent='Live · updated just now'}catch{$('liveStatus').textContent='Private';$('active').textContent='—';$('clicks').textContent='—';$('visitors').textContent='—'}}load();setInterval(load,10000);"
+          new_load = "async function load(){if(!window.analyticsSession)return;try{let q='/api/dashboard?';if(range==='custom'){q+='from='+encodeURIComponent($('from').value)+'&to='+encodeURIComponent($('to').value)}else{q+='period='+encodeURIComponent(range)}const r=await fetch(q,{cache:'no-store',headers:{Authorization:'Bearer '+window.analyticsSession.access_token}});const d=await r.json();if(!r.ok)throw Error(d.error||'Private');$('active').textContent=Number(d.summary.active||0).toLocaleString();$('clicks').textContent=Number(d.summary.clicks||0).toLocaleString();$('visitors').textContent=Number(d.summary.uniqueVisitors||0).toLocaleString();$('liveStatus').textContent='Live · updated just now'}catch{$('liveStatus').textContent='Private';$('active').textContent='—';$('clicks').textContent='—';$('visitors').textContent='—'}}setInterval(()=>{if(window.analyticsSession&&!document.hidden)load()},10000);"
+          if old_load not in s:
+              raise SystemExit('analytics load target not found')
+          s = s.replace(old_load, new_load, 1)
+
+          auth_script = '''\n<script>\nconst AUTH_SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',AUTH_SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const authSb=supabase.createClient(AUTH_SUPABASE_URL,AUTH_SUPABASE_KEY);let authSignup=false;function authMsg(t,e=false){$('authMsg').textContent=t;$('authMsg').style.color=e?'#b91c1c':'#687386'}function authShowLogin(){document.body.classList.remove('auth-boot');$('authbox').classList.add('show');$('authTitle').textContent=authSignup?'Create your account':'Log in to your account';$('authDesc').textContent=authSignup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';$('authEmailBtn').textContent=authSignup?'Create Account':'Log In';$('authSwitchText').textContent=authSignup?'Already have an account?':\"Don't have an account?\";$('authSwitchBtn').textContent=authSignup?'Log in instead':'Create one for free';$('authForgot').style.display=authSignup?'none':'block';$('authMsg').textContent=''}function authShowApp(){window.analyticsSession=window.analyticsSession||null;document.body.classList.remove('auth-boot');$('authbox').classList.remove('show');document.body.classList.add('auth-ready');KEY='shrtigo_analytics_links_'+window.analyticsSession.user.id;render();load()}async function syncAnalyticsSession(session){if(!session)return false;try{const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})});return r.ok}catch{return false}}async function initAnalyticsAuth(){const {data:{session}}=await authSb.auth.getSession();if(!session){authShowLogin();return}if(!(await syncAnalyticsSession(session))){authShowLogin();return}window.analyticsSession=session;authShowApp()}$('authGoogle').onclick=async()=>{const {error}=await authSb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://shrtigo.xyz/analytics-shortener.html'}});if(error)authMsg(error.message,true)};$('authSwitchBtn').onclick=()=>{authSignup=!authSignup;authShowLogin()};$('authEmailBtn').onclick=async()=>{const email=$('authEmail').value.trim(),password=$('authPassword').value;if(!email||!password){authMsg('Please enter your email and password.',true);return}authMsg(authSignup?'Creating account…':'Signing in…');if(authSignup){const {data,error}=await authSb.auth.signUp({email,password,options:{emailRedirectTo:'https://shrtigo.xyz/analytics-shortener.html'}});if(error){authMsg(error.message,true);return}if(data.session){window.analyticsSession=data.session;await syncAnalyticsSession(data.session);authShowApp()}else{location.href='/email-confirmation.html?email='+encodeURIComponent(email)}}else{const {data,error}=await authSb.auth.signInWithPassword({email,password});if(error){authMsg(error.message,true);return}window.analyticsSession=data.session;await syncAnalyticsSession(data.session);authShowApp()}};$('authForgot').querySelector('button').onclick=async()=>{const email=$('authEmail').value.trim();if(!email){authMsg('Enter your email address first.',true);return}const {error}=await authSb.auth.resetPasswordForEmail(email,{redirectTo:'https://shrtigo.xyz/analytics-shortener.html'});authMsg(error?error.message:'Password reset email sent.')};authSb.auth.onAuthStateChange(async(_e,session)=>{if(session&&!window.analyticsSession){if(await syncAnalyticsSession(session)){window.analyticsSession=session;authShowApp()}}});initAnalyticsAuth();\n</script>\n'''
+          s = s.replace('</body>', auth_script + '</body>', 1)
+          p.write_text(s)
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add api/analytics.js analytics.html
-          git commit -m 'Support legacy analytics click totals' || exit 0
+          git add dashboard.html analytics-shortener.html .github/workflows/fix-legacy-analytics2.yml
+          git commit -m 'Move Analytics login to short link page'
+          git push
+          # This workflow is a one-time migration; remove it after the patch.
+          git rm .github/workflows/fix-legacy-analytics2.yml
+          git commit -m 'Remove temporary analytics migration workflow'
           git push
