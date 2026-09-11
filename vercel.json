@@ -1,10 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
-    { "source": "/analytics-shortener.html", "destination": "/analytics-shortener", "permanent": true }
+    { "source": "/analytics-shortener.html", "destination": "/analytics-shortener", "permanent": true },
+    { "source": "/dashboard.html", "destination": "/dashboard", "permanent": true }
   ],
   "rewrites": [
     { "source": "/analytics-shortener", "destination": "/analytics-shortener.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/:code([A-Za-z0-9_-]{3,24})", "destination": "/api/r/:code" }
   ],
   "headers": [
