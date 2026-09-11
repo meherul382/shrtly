@@ -72,8 +72,9 @@ async function syncAnalyticsSession(session){
 async function initAnalyticsAuth(){
   const {data:{session}}=await authSb.auth.getSession();
   if(!session){authShowLogin();return}
-  if(!(await syncAnalyticsSession(session))){authShowLogin();return}
-  window.analyticsSession=session;authShowApp();
+  window.analyticsSession=session;
+  authShowApp();
+  syncAnalyticsSession(session).catch(()=>{});
 }
 $('authGoogle').addEventListener('click',async function(){
   this.disabled=true;authMsg('Opening Google sign-in…');
