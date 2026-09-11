@@ -19,10 +19,15 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    // If the user has signed in with Google, dashboard ownership is attached server-side.
-    // The browser stores the Supabase session; /api/auth/session exchanges its access token
-    // for this short-lived HttpOnly cookie, so the existing shortener pages need no auth UI changes.
+    // Resolve the signed-in account from the private HttpOnly session cookie.
     const userId = await getUserIdFromRequest(req, supabaseUrl);
+
+    // Analytics links are private account-owned resources. Never create an
+    // Analytics link without a verified signed-in user, otherwise its clicks
+    // and live visitors cannot be safely assigned to the correct dashboard.
+    if (mode === 'analytics' && !userId) {
+      return res.status(401).json({ error: 'Please log in to your Shrtigo account before creating an Analytics Short Link.' });
+    }
 
     const clean = cleanAlias(alias);
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
