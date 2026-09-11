@@ -19,8 +19,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    // Resolve the signed-in account from the private HttpOnly session cookie.
-    const userId = await getUserIdFromRequest(req, supabaseUrl);
+    // Resolve the signed-in account from the Authorization bearer token first,
+    // then fall back to the private HttpOnly session cookie. Analytics creation
+    // sends the Supabase access token explicitly, so this remains reliable even
+    // if the browser has not yet persisted the cookie.
+    const userId = await getUserIdFromRequest(req, supabaseUrl, serviceKey);
 
     // Analytics links are private account-owned resources. Never create an
     // Analytics link without a verified signed-in user, otherwise its clicks
@@ -78,12 +81,15 @@ export default async function handler(req, res) {
   }
 }
 
-async function getUserIdFromRequest(req, supabaseUrl) {
-  const token = readCookie(req.headers.cookie, 'shrtigo_session');
+async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
+  const header = String(req.headers.authorization || '').trim();
+  const bearer = header.replace(/^Bearer\s+/i, '').trim();
+  const cookieToken = readCookie(req.headers.cookie, 'shrtigo_session');
+  const token = bearer || cookieToken;
   if (!token) return null;
   try {
     const r = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}`, apikey: String(process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || '') }
+      headers: { Authorization: `Bearer ${token}`, apikey: serviceKey }
     });
     if (!r.ok) return null;
     const user = await r.json();
