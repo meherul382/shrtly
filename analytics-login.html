@@ -1,51 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Log in to Analytics | Shrtigo</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log in to your account | Shrtigo</title>
 <meta name="description" content="Log in or create a Shrtigo account to create Analytics Short Links.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033;background:linear-gradient(180deg,#f7f9ff,#fff 55%,#fbfcff)}a{text-decoration:none;color:inherit}.wrap{width:min(1080px,calc(100% - 32px));margin:auto}.nav{height:76px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:24px;font-weight:900}.brand span{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#2563eb;color:#fff;margin-right:8px}.back{font-size:14px;font-weight:800;color:#687386}.box{width:min(500px,100%);margin:55px auto;padding:34px;background:#fff;border:1px solid #e2e8f1;border-radius:22px;box-shadow:0 18px 55px rgba(23,32,51,.09)}h1{text-align:center;font-size:30px;letter-spacing:-1px;margin:0 0 9px}.sub{text-align:center;color:#687386;line-height:1.55;margin:0 0 25px}.btn{width:100%;padding:14px;border-radius:13px;font:inherit;font-weight:800;cursor:pointer}.google{border:1px solid #d7deea;background:#fff;color:#172033}.divider{display:flex;align-items:center;gap:12px;color:#687386;font-size:12px;font-weight:800;letter-spacing:.08em;margin:21px 0}.divider:before,.divider:after{content:"";height:1px;background:#dfe5ee;flex:1}.field{margin:14px 0}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:7px}.field input{width:100%;padding:14px;border:1px solid #d7deea;border-radius:12px;font-size:15px;outline:none}.field input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.forgot{text-align:right;margin:5px 0 13px}.forgot button,.switch button{border:0;background:none;color:#2563eb;font-weight:800;cursor:pointer;padding:0}.primary{border:0;background:#2563eb;color:#fff}.switch{text-align:center;color:#687386;font-size:14px;margin-top:18px}.msg{text-align:center;color:#687386;font-size:13px;min-height:20px;margin-top:12px}.hint{text-align:center;background:#f7f9fc;border:1px solid #e4e9f1;border-radius:12px;padding:11px;color:#687386;font-size:12px;margin-top:20px}.captcha{display:flex;justify-content:center;margin:16px 0 4px;min-height:65px}@media(max-width:600px){.box{margin:25px auto;padding:25px}.nav{height:68px}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033;background:#fff}body{min-height:100vh;display:flex;justify-content:center}.page{width:100%;max-width:760px;padding:28px 20px 38px}.brand{display:inline-flex;align-items:center;gap:9px;text-decoration:none;color:#101828;font-size:23px;font-weight:900;margin-bottom:8px}.brand-mark{width:36px;height:36px;border-radius:10px;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:23px;font-weight:500}.card{width:min(440px,100%);margin:0 auto;padding:8px 0 0}.title{text-align:center;font-size:28px;line-height:1.2;letter-spacing:-.7px;margin:0 0 10px;font-weight:850;color:#0f172a}.sub{text-align:center;margin:0 0 27px;color:#718096;font-size:14px;line-height:1.55}.social{width:100%;height:48px;border:1px solid #d8dee8;border-radius:8px;background:#fff;color:#18212f;font-size:14px;font-weight:750;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 1px 2px rgba(16,24,40,.04)}.social:hover{background:#fafbfc}.google-icon{font-size:20px;font-weight:900;line-height:1}.divider{display:flex;align-items:center;gap:12px;margin:15px 0;color:#596579;font-size:12px;font-weight:700;letter-spacing:.04em}.divider:before,.divider:after{content:"";height:1px;background:#dfe4eb;flex:1}.field{margin:14px 0}.label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}.label{font-size:13px;font-weight:750;color:#263247}.forgot{border:0;background:transparent;color:#2563eb;font-weight:700;font-size:13px;padding:0;cursor:pointer}.input-wrap{position:relative}.input{width:100%;height:50px;padding:0 15px;border:1px solid #d8dee8;border-radius:9px;background:#fff;color:#263247;font-size:15px;outline:none;transition:.15s}.input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.12)}.input::placeholder{color:#8190a5}.captcha{margin:18px 0 20px;min-height:65px;display:flex;justify-content:center;align-items:center}.cf-turnstile{min-height:65px}.submit{width:100%;height:52px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 5px 15px rgba(37,99,235,.2)}.submit:hover{background:#1d4ed8}.submit:disabled{opacity:.65;cursor:not-allowed}.switch{text-align:center;color:#718096;font-size:14px;margin-top:31px}.switch button{border:0;background:none;color:#2563eb;font-weight:800;cursor:pointer;padding:0;font-size:14px}.msg{text-align:center;min-height:20px;margin-top:12px;font-size:13px}.hint{text-align:center;color:#8490a2;font-size:12px;margin-top:25px;padding-top:20px;border-top:1px solid #eef1f5}@media(max-width:600px){.page{padding:20px 16px}.brand{margin-bottom:30px}.card{padding:0}.title{font-size:27px}.sub{font-size:13px;margin-bottom:23px}}
 </style>
 </head>
 <body>
-<header><div class="wrap nav"><a class="brand" href="/"><span>＋</span>Shrtigo</a><a class="back" href="/">← Back to Shrtigo</a></div></header>
-<main class="wrap"><section class="box">
-<h1 id="title">Log in to your account</h1>
-<p id="sub" class="sub">Sign in to create Analytics Short Links and keep your traffic private.</p>
-<button id="google" type="button" class="btn google">🌐 &nbsp; Sign in with Google</button>
+<div class="page">
+<a class="brand" href="/"><span class="brand-mark">＋</span>Shrtigo</a>
+<main class="card">
+<h1 id="title" class="title">Log in to your account</h1>
+<p id="sub" class="sub">Enter your credentials to access your dashboard.</p>
+<button id="google" type="button" class="social"><span class="google-icon">G</span><span>Sign in with Google</span></button>
 <div class="divider">OR CONTINUE WITH EMAIL</div>
-<div class="field"><label for="email">Email address</label><input id="email" type="email" placeholder="you@example.com" autocomplete="email"></div>
-<div class="field"><label for="password">Password</label><input id="password" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
-<div id="forgot" class="forgot"><button type="button">Forgot password?</button></div>
+<div class="field"><div class="label-row"><label class="label" for="email">Email address</label></div><input id="email" class="input" type="email" placeholder="you@example.com" autocomplete="email"></div>
+<div class="field"><div class="label-row"><label class="label" for="password">Password</label><button id="forgot" class="forgot" type="button">Forgot password?</button></div><input id="password" class="input" type="password" placeholder="Enter your password" autocomplete="current-password"></div>
 <div class="captcha"><div class="cf-turnstile" data-sitekey="0x4AAAAAAEwQZE-QBZcv7Olbp8-bTf10Vbs" data-theme="light" data-callback="onTurnstileSuccess" data-error-callback="onTurnstileError" data-expired-callback="onTurnstileExpired"></div></div>
-<button id="submit" type="button" class="btn primary">Log In</button>
+<button id="submit" type="button" class="submit">Log In</button>
 <div id="msg" class="msg"></div>
 <div class="switch"><span id="switchText">Don't have an account?</span> <button id="switch" type="button">Create one for free</button></div>
 <div class="hint">🔒 Your Analytics links, clicks and visitor data are private to your account.</div>
-</section></main>
+</main>
+</div>
 <script>
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
 const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);let signup=false,turnstileToken='';
+const $=id=>document.getElementById(id);
+let signup=false,turnstileToken='';
 const next=new URLSearchParams(location.search).get('next')||'/analytics-shortener.html';
-function msg(t,e=false){$('msg').textContent=t;$('msg').style.color=e?'#b91c1c':'#687386'}
-function resetCaptcha(){turnstileToken='';if(window.turnstile)try{turnstile.reset()}catch(e){}}
-function readCaptchaToken(){if(turnstileToken)return turnstileToken;const el=document.querySelector('input[name="cf-turnstile-response"]');if(el&&el.value)turnstileToken=el.value;return turnstileToken}
-function waitCaptcha(){const token=readCaptchaToken();if(token)return Promise.resolve(token);msg('Please complete the verification first.',true);return Promise.reject(new Error('CAPTCHA required'))}
-function setMode(){$('title').textContent=signup?'Create your account':'Log in to your account';$('sub').textContent=signup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';$('submit').textContent=signup?'Create Account':'Log In';$('switchText').textContent=signup?'Already have an account?':"Don't have an account?";$('switch').textContent=signup?'Log in instead':'Create one for free';$('forgot').style.display=signup?'none':'block';msg('')}
-async function sync(session){try{const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})});return r.ok}catch{return false}}
-function go(session){if(!session)return;sync(session).catch(()=>{});location.replace(next)}
-window.onTurnstileSuccess=function(token){turnstileToken=token;msg('')};window.onTurnstileExpired=function(){turnstileToken='';msg('Verification expired. Please verify again.',true)};window.onTurnstileError=function(code){turnstileToken='';msg('CAPTCHA could not load. Please refresh the page.',true);console.error('Turnstile error:',code)};
+function msg(t,e=false){$('msg').textContent=t||'';$('msg').style.color=e?'#b42318':'#718096'}
+function resetCaptcha(){turnstileToken='';if(window.turnstile){try{window.turnstile.reset()}catch(e){}}}
+function getCaptchaToken(){if(turnstileToken)return turnstileToken;const el=document.querySelector('input[name="cf-turnstile-response"]');return el&&el.value?el.value:''}
+function requireCaptcha(){const token=getCaptchaToken();if(!token){msg('Please complete the verification first.',true);return null}turnstileToken=token;return token}
+function setMode(){
+ $('title').textContent=signup?'Create your account':'Log in to your account';
+ $('sub').textContent=signup?'Create an account to save your Shrtigo links and analytics.':'Enter your credentials to access your dashboard.';
+ $('submit').textContent=signup?'Create Account':'Log In';
+ $('switchText').textContent=signup?'Already have an account?':"Don't have an account?";
+ $('switch').textContent=signup?'Log in instead':'Create one for free';
+ $('forgot').style.display=signup?'none':'inline-block';
+ msg('');
+ resetCaptcha();
+}
+async function sync(session){try{await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})})}catch(e){}}
+function go(session){if(!session)return;sync(session).finally(()=>location.replace(next))}
+window.onTurnstileSuccess=function(token){turnstileToken=token;msg('')};
+window.onTurnstileExpired=function(){turnstileToken='';msg('Verification expired. Please verify again.',true)};
+window.onTurnstileError=function(code){turnstileToken='';msg('CAPTCHA could not load. Please refresh the page.',true);console.error('Turnstile error:',code)};
 $('switch').onclick=function(){signup=!signup;setMode();$('email').focus()};
 $('google').onclick=async function(){const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}});if(error)msg(error.message,true)};
-$('submit').onclick=async function(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){msg('Please enter your email and password.',true);return}try{const captchaToken=await waitCaptcha();let data,error;if(signup){({data,error}=await sb.auth.signUp({email,password,options:{captchaToken,emailRedirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}}))}else{({data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken}})}if(error){msg(error.message,true);resetCaptcha();return}resetCaptcha();if(signup){if(data.session)go(data.session);else location.href='/email-confirmation.html?email='+encodeURIComponent(email)+'&next='+encodeURIComponent(next)}else go(data.session)}catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}};
-$('forgot').querySelector('button').onclick=async function(){const email=$('email').value.trim();if(!email){msg('Enter your email address first.',true);return}try{const captchaToken=await waitCaptcha();const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next),captchaToken});resetCaptcha();msg(error?error.message:'Password reset email sent.',!!error)}catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}};
-sb.auth.getSession().then(({data})=>{if(data.session)go(data.session)});sb.auth.onAuthStateChange((_e,s)=>{if(s)go(s)});setMode();
+$('submit').onclick=async function(){
+ const email=$('email').value.trim(),password=$('password').value;
+ if(!email||!password){msg('Please enter your email and password.',true);return}
+ const captchaToken=requireCaptcha();if(!captchaToken)return;
+ $('submit').disabled=true;msg(signup?'Creating account…':'Signing in…');
+ try{
+  let result;
+  if(signup){result=await sb.auth.signUp({email,password,options:{captchaToken,emailRedirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}})}
+  else{result=await sb.auth.signInWithPassword({email,password,options:{captchaToken}})}
+  const{data,error}=result;
+  if(error){msg(error.message,true);resetCaptcha();return}
+  resetCaptcha();
+  if(signup){if(data.session)go(data.session);else location.href='/email-confirmation.html?email='+encodeURIComponent(email)+'&next='+encodeURIComponent(next)}
+  else go(data.session);
+ }catch(e){msg(e.message||'Verification failed. Please try again.',true);resetCaptcha()}
+ finally{$('submit').disabled=false}
+};
+$('forgot').onclick=async function(){
+ const email=$('email').value.trim();if(!email){msg('Enter your email address first.',true);return}
+ const captchaToken=requireCaptcha();if(!captchaToken)return;
+ try{const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next),captchaToken});resetCaptcha();msg(error?error.message:'Password reset email sent.',!!error)}catch(e){msg(e.message||'Verification failed. Please try again.',true);resetCaptcha()}
+};
+sb.auth.getSession().then(({data})=>{if(data.session)go(data.session)});
+sb.auth.onAuthStateChange((_event,session)=>{if(session)go(session)});
+setMode();
 </script>
 </body>
 </html>
