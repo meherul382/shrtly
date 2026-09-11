@@ -71,7 +71,7 @@ async function syncAnalyticsSession(session){
 }
 async function initAnalyticsAuth(){
   const {data:{session}}=await authSb.auth.getSession();
-  if(!session){authShowLogin();return}
+  if(!session){location.replace('/analytics-login.html?next=%2Fanalytics-shortener.html');return}
   window.analyticsSession=session;
   authShowApp();
   syncAnalyticsSession(session).catch(()=>{});
