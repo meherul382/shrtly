@@ -1,0 +1,34 @@
+name: Route Analytics Short Link through dedicated login
+on:
+  push:
+    paths:
+      - '.github/workflows/move-analytics-auth-to-login-page.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Route unauthenticated Analytics visitors to login
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          old="function authShowLogin(){$('authbox').classList.add('show');$('authTitle').textContent=authSignup?'Create your account':'Log in to your account';"
+          new="function authShowLogin(){location.replace('/analytics-login.html?next='+encodeURIComponent('/analytics-shortener.html'));return;}"
+          if old not in s:
+              raise SystemExit('analytics authShowLogin target not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git commit -m 'Route Analytics Short Link to dedicated login'
+          git push
+          git rm .github/workflows/move-analytics-auth-to-login-page.yml
+          git commit -m 'Remove temporary Analytics auth workflow'
+          git push
