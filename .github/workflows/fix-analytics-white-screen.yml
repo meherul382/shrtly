@@ -1,0 +1,49 @@
+name: Fix Analytics login white screen
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-analytics-white-screen.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make Analytics login visible before auth
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          old='body.auth-boot{visibility:hidden}body.auth-boot main,body.auth-boot footer{display:none}'
+          new='body.auth-boot main,body.auth-boot footer{display:none}body.auth-ready main,body.auth-ready footer{display:block}body.auth-ready .authbox{display:none!important}'
+          if old not in s:
+              raise SystemExit('auth boot css target not found')
+          s=s.replace(old,new,1)
+          old='.authbox{display:none;max-width:520px'
+          new='.authbox{display:block;max-width:520px'
+          if old not in s:
+              raise SystemExit('authbox css target not found')
+          s=s.replace(old,new,1)
+          old="function authShowLogin(){location.replace('/analytics-login.html?next='+encodeURIComponent('/analytics-shortener.html'));return;}"
+          new="function authShowLogin(){document.body.classList.remove('auth-ready');document.body.classList.remove('auth-boot');$('authbox').classList.add('show');$('authTitle').textContent='Log in to your account';$('authDesc').textContent='Sign in to create Analytics Short Links and keep your traffic private.';}"
+          if old not in s:
+              raise SystemExit('authShowLogin target not found')
+          s=s.replace(old,new,1)
+          old="$('authSwitchBtn').onclick=()=>{authSignup=!authSignup;authShowLogin()};"
+          new="$('authSwitchBtn').onclick=()=>{authSignup=!authSignup;$('authTitle').textContent=authSignup?'Create your account':'Log in to your account';$('authDesc').textContent=authSignup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';$('authEmailBtn').textContent=authSignup?'Create Account':'Log In';$('authSwitchText').textContent=authSignup?'Already have an account?:\"Don't have an account?\"';$('authSwitchText').textContent=authSignup?'Already have an account?':\"Don't have an account?\";$('authSwitchBtn').textContent=authSignup?'Log in instead':'Create one for free';$('authForgot').style.display=authSignup?'none':'block';$('authMsg').textContent=''};"
+          if old not in s:
+              raise SystemExit('switch target not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git commit -m 'Fix Analytics login white screen'
+          git push
+          git rm .github/workflows/fix-analytics-white-screen.yml
+          git commit -m 'Remove temporary white screen workflow'
+          git push
