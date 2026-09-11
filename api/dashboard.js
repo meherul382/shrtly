@@ -16,14 +16,14 @@ export default async function handler(req,res){
     let events=[];
     if(analytics.length){
       const inq=analytics.join(',');
-      const er=await fetch(`${base}/rest/v1/analytics_events?select=code,visitor_id,created_at&code=in.(${encodeURIComponent(inq)})&created_at=gte.${encodeURIComponent(new Date(Date.now()-90*86400000).toISOString())}&order=created_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
+      const er=await fetch(`${base}/rest/v1/analytics_events?select=code,visitor_id,visited_at&code=in.(${encodeURIComponent(inq)})&visited_at=gte.${encodeURIComponent(new Date(Date.now()-90*86400000).toISOString())}&order=visited_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
       if(er.ok)events=await er.json();
     }
     const period=String(req.query?.period||'90');
     const since=period==='today'?startOfDay():new Date(Date.now()-Number(period)*86400000);
-    const selected=events.filter(e=>new Date(e.created_at)>=since);
+    const selected=events.filter(e=>new Date(e.visited_at)>=since);
     const activeCut=Date.now()-5*60*1000;
-    const active=new Set(events.filter(e=>new Date(e.created_at).getTime()>=activeCut).map(e=>e.visitor_id)).size;
+    const active=new Set(events.filter(e=>new Date(e.visited_at).getTime()>=activeCut).map(e=>e.visitor_id)).size;
     const clicks=period==='90' ? analytics.reduce((s,c)=>s+Number(links.find(x=>x.code===c)?.clicks||0),0) : selected.length;
     const visitors=new Set(selected.map(e=>e.visitor_id)).size;
     return res.status(200).json({user:{id:user.id,email:user.email||''},period,summary:{active,clicks,uniqueVisitors:visitors},links:links.map(x=>({code:x.code,url:x.url,clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
