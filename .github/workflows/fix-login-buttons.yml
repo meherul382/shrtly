@@ -1,0 +1,63 @@
+name: Fix Analytics login and signup buttons
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-login-buttons.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add reliable login button handlers
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          marker='</body></html>'
+          if marker not in s:
+              raise SystemExit('body marker not found')
+          patch=r'''<script>
+(function(){
+  function bind(){
+    const google=document.getElementById('authGoogle'), sw=document.getElementById('authSwitchBtn');
+    if(!google||!sw)return;
+    google.onclick=async function(){
+      try{
+        if(!window.supabase){window.location.href='https://shrtigo.xyz/analytics-shortener.html';return;}
+        const sb=window._shrtigoAuthClient||window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ');
+        window._shrtigoAuthClient=sb;
+        const r=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://shrtigo.xyz/analytics-shortener.html'}});
+        if(r.error){const m=document.getElementById('authMsg');if(m)m.textContent=r.error.message;}
+      }catch(e){const m=document.getElementById('authMsg');if(m)m.textContent='Could not open Google sign-in. Please try again.';}
+    };
+    sw.onclick=function(){
+      const box=document.getElementById('authbox');
+      const title=document.getElementById('authTitle'),desc=document.getElementById('authDesc'),btn=document.getElementById('authEmailBtn'),forgot=document.getElementById('authForgot'),txt=document.getElementById('authSwitchText');
+      window._shrtigoSignup=!window._shrtigoSignup;
+      const up=!!window._shrtigoSignup;
+      if(box)box.classList.add('show');
+      if(title)title.textContent=up?'Create your account':'Log in to your account';
+      if(desc)desc.textContent=up?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';
+      if(btn)btn.textContent=up?'Create Account':'Log In';
+      if(forgot)forgot.style.display=up?'none':'block';
+      if(txt)txt.textContent=up?'Already have an account?':"Don't have an account?";
+      sw.textContent=up?'Log in instead':'Create one for free';
+    };
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
+</script>'''
+          p.write_text(s.replace(marker,patch+'\n'+marker,1))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git commit -m 'Fix Analytics login and signup buttons'
+          git push
+          git rm .github/workflows/fix-login-buttons.yml
+          git commit -m 'Remove temporary login button workflow'
+          git push
