@@ -1,0 +1,17 @@
+name: Cleanup old analytics auth workflow
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/cleanup-old-analytics-auth.yml
+          git commit -m 'Remove temporary cleanup workflow'
+          git push
