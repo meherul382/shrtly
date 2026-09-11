@@ -31,68 +31,21 @@
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
 const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);
-let signup=false,turnstileToken='';
+const $=id=>document.getElementById(id);let signup=false,turnstileToken='';
 const next=new URLSearchParams(location.search).get('next')||'/analytics-shortener.html';
 function msg(t,e=false){$('msg').textContent=t;$('msg').style.color=e?'#b91c1c':'#687386'}
-function resetCaptcha(){turnstileToken='';if(window.turnstile){try{window.turnstile.reset()}catch(e){}}}
-function readCaptchaToken(){
-  if(turnstileToken)return turnstileToken;
-  const el=document.querySelector('input[name="cf-turnstile-response"]');
-  const token=el&&el.value?el.value:'';
-  if(token)turnstileToken=token;
-  return turnstileToken;
-}
-function waitCaptcha(){
-  const token=readCaptchaToken();
-  if(token)return Promise.resolve(token);
-  msg('Please complete the verification first.',true);
-  return Promise.reject(new Error('CAPTCHA required'));
-}
-function setMode(){
-  $('title').textContent=signup?'Create your account':'Log in to your account';
-  $('sub').textContent=signup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';
-  $('submit').textContent=signup?'Create Account':'Log In';
-  $('switchText').textContent=signup?'Already have an account?':"Don't have an account?";
-  $('switch').textContent=signup?'Log in instead':'Create one for free';
-  $('forgot').style.display=signup?'none':'block';
-  msg('');
-}
+function resetCaptcha(){turnstileToken='';if(window.turnstile)try{turnstile.reset()}catch(e){}}
+function readCaptchaToken(){if(turnstileToken)return turnstileToken;const el=document.querySelector('input[name="cf-turnstile-response"]');if(el&&el.value)turnstileToken=el.value;return turnstileToken}
+function waitCaptcha(){const token=readCaptchaToken();if(token)return Promise.resolve(token);msg('Please complete the verification first.',true);return Promise.reject(new Error('CAPTCHA required'))}
+function setMode(){$('title').textContent=signup?'Create your account':'Log in to your account';$('sub').textContent=signup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';$('submit').textContent=signup?'Create Account':'Log In';$('switchText').textContent=signup?'Already have an account?':"Don't have an account?";$('switch').textContent=signup?'Log in instead':'Create one for free';$('forgot').style.display=signup?'none':'block';msg('')}
 async function sync(session){try{const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})});return r.ok}catch{return false}}
-function go(session){if(!session)return;msg('Signing you in…');sync(session).catch(()=>{});location.replace(next)}
-$('switch').addEventListener('click',function(e){e.preventDefault();signup=!signup;setMode();$('email').focus()});
-$('google').addEventListener('click',async function(){const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}});if(error)msg(error.message,true)});
-$('submit').addEventListener('click',async function(){
-  const email=$('email').value.trim(),password=$('password').value;
-  if(!email||!password){msg('Please enter your email and password.',true);return}
-  msg(signup?'Creating account…':'Signing in…');
-  try{
-    const captchaToken=await waitCaptcha();
-    let data,error;
-    if(signup){
-      ({data,error}=await sb.auth.signUp({email,password,options:{captchaToken,emailRedirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}}));
-    }else{
-      ({data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken}}));
-    }
-    if(error){msg(error.message,true);resetCaptcha();return}
-    resetCaptcha();
-    if(signup){
-      if(data.session)go(data.session);
-      else location.href='/email-confirmation.html?email='+encodeURIComponent(email)+'&next='+encodeURIComponent(next);
-    }else go(data.session);
-  }catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}
-});
-$('forgot').querySelector('button').addEventListener('click',async function(){
-  const email=$('email').value.trim();
-  if(!email){msg('Enter your email address first.',true);return}
-  try{const captchaToken=await waitCaptcha();const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next),captchaToken});resetCaptcha();msg(error?error.message:'Password reset email sent.',!!error)}catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}
-});
-window.onTurnstileSuccess=function(token){turnstileToken=token;msg('')};
-window.onTurnstileExpired=function(){turnstileToken='';msg('Verification expired. Please verify again.',true)};
-window.onTurnstileError=function(code){turnstileToken='';msg('Verification could not load. Please refresh and try again.',true);console.error('Turnstile error:',code)};
-sb.auth.getSession().then(({data})=>{if(data.session)go(data.session)});
-sb.auth.onAuthStateChange((_e,s)=>{if(s)go(s)});
-setMode();
+function go(session){if(!session)return;sync(session).catch(()=>{});location.replace(next)}
+window.onTurnstileSuccess=function(token){turnstileToken=token;msg('')};window.onTurnstileExpired=function(){turnstileToken='';msg('Verification expired. Please verify again.',true)};window.onTurnstileError=function(code){turnstileToken='';msg('CAPTCHA could not load. Please refresh the page.',true);console.error('Turnstile error:',code)};
+$('switch').onclick=function(){signup=!signup;setMode();$('email').focus()};
+$('google').onclick=async function(){const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}});if(error)msg(error.message,true)};
+$('submit').onclick=async function(){const email=$('email').value.trim(),password=$('password').value;if(!email||!password){msg('Please enter your email and password.',true);return}try{const captchaToken=await waitCaptcha();let data,error;if(signup){({data,error}=await sb.auth.signUp({email,password,options:{captchaToken,emailRedirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next)}}))}else{({data,error}=await sb.auth.signInWithPassword({email,password,options:{captchaToken}})}if(error){msg(error.message,true);resetCaptcha();return}resetCaptcha();if(signup){if(data.session)go(data.session);else location.href='/email-confirmation.html?email='+encodeURIComponent(email)+'&next='+encodeURIComponent(next)}else go(data.session)}catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}};
+$('forgot').querySelector('button').onclick=async function(){const email=$('email').value.trim();if(!email){msg('Enter your email address first.',true);return}try{const captchaToken=await waitCaptcha();const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/analytics-login.html?next='+encodeURIComponent(next),captchaToken});resetCaptcha();msg(error?error.message:'Password reset email sent.',!!error)}catch(e){if(e.message!=='CAPTCHA required')msg(e.message||'Verification failed. Please try again.',true)}};
+sb.auth.getSession().then(({data})=>{if(data.session)go(data.session)});sb.auth.onAuthStateChange((_e,s)=>{if(s)go(s)});setMode();
 </script>
 </body>
 </html>
