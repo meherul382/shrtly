@@ -1,0 +1,36 @@
+name: Make Analytics Short Link open login first
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-analytics-direct-login.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Move Analytics authentication to dedicated login page
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          s=re.sub(r'<body(?:\s+class="[^"]*")?>', '<body class="auth-boot">', s, count=1)
+          s=s.replace("function authShowLogin(){document.body.classList.remove('auth-boot');$('authbox').classList.add('show');", "function authShowLogin(){location.replace('/analytics-login.html?next='+encodeURIComponent('/analytics-shortener.html'));}", 1)
+          p.write_text(s)
+          p=Path('dashboard.html')
+          s=p.read_text()
+          s=s.replace("function showLogin(){loading=false;$('app').classList.add('hidden');$('login').classList.remove('hidden');", "function showLogin(){location.replace('/analytics-login.html?next='+encodeURIComponent('/dashboard.html'));}", 1)
+          p.write_text(s)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html dashboard.html
+          git commit -m 'Open Analytics login before shortener'
+          git push
+          git rm .github/workflows/fix-analytics-direct-login.yml
+          git commit -m 'Remove temporary Analytics login workflow'
+          git push
