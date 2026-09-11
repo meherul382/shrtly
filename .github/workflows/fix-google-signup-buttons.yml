@@ -1,0 +1,112 @@
+name: Fix Analytics login button handlers
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-google-signup-buttons.yml'
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace broken auth script
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('analytics-shortener.html')
+          s=p.read_text()
+          new_script=r'''<script>
+          const AUTH_SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+          const AUTH_SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+          const authSb=supabase.createClient(AUTH_SUPABASE_URL,AUTH_SUPABASE_KEY);
+          let authSignup=false;
+          function authMsg(t,e=false){$('authMsg').textContent=t;$('authMsg').style.color=e?'#b91c1c':'#687386'}
+          function authRender(){
+            $('authTitle').textContent=authSignup?'Create your account':'Log in to your account';
+            $('authDesc').textContent=authSignup?'Create an account to save your Shrtigo links and analytics.':'Sign in to create Analytics Short Links and keep your traffic private.';
+            $('authEmailBtn').textContent=authSignup?'Create Account':'Log In';
+            $('authSwitchText').textContent=authSignup?'Already have an account?':"Don't have an account?";
+            $('authSwitchBtn').textContent=authSignup?'Log in instead':'Create one for free';
+            $('authForgot').style.display=authSignup?'none':'block';
+            authMsg('');
+          }
+          function authShowLogin(){
+            document.body.classList.remove('auth-ready','auth-boot');
+            $('authbox').classList.add('show');
+            authSignup=false;
+            authRender();
+          }
+          function authShowApp(){
+            document.body.classList.remove('auth-boot');
+            document.body.classList.add('auth-ready');
+            $('authbox').classList.remove('show');
+            KEY='shrtigo_analytics_links_'+window.analyticsSession.user.id;
+            render();load();
+          }
+          async function syncAnalyticsSession(session){
+            if(!session)return false;
+            try{
+              const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})});
+              return r.ok;
+            }catch{return false}
+          }
+          async function initAnalyticsAuth(){
+            const {data:{session}}=await authSb.auth.getSession();
+            if(!session){authShowLogin();return}
+            if(!(await syncAnalyticsSession(session))){authShowLogin();return}
+            window.analyticsSession=session;authShowApp();
+          }
+          $('authGoogle').addEventListener('click',async function(){
+            this.disabled=true;authMsg('Opening Google sign-in…');
+            const {error}=await authSb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://shrtigo.xyz/analytics-shortener.html'}});
+            if(error){this.disabled=false;authMsg(error.message,true)}
+          });
+          $('authSwitchBtn').addEventListener('click',function(){
+            authSignup=!authSignup;authRender();
+          });
+          $('authEmailBtn').addEventListener('click',async function(){
+            const email=$('authEmail').value.trim(),password=$('authPassword').value;
+            if(!email||!password){authMsg('Please enter your email and password.',true);return}
+            this.disabled=true;authMsg(authSignup?'Creating account…':'Signing in…');
+            try{
+              if(authSignup){
+                const {data,error}=await authSb.auth.signUp({email,password,options:{emailRedirectTo:'https://shrtigo.xyz/analytics-shortener.html'}});
+                if(error)throw error;
+                if(data.session){window.analyticsSession=data.session;await syncAnalyticsSession(data.session);authShowApp()}
+                else{location.href='/email-confirmation.html?email='+encodeURIComponent(email)}
+              }else{
+                const {data,error}=await authSb.auth.signInWithPassword({email,password});
+                if(error)throw error;
+                window.analyticsSession=data.session;await syncAnalyticsSession(data.session);authShowApp();
+              }
+            }catch(e){authMsg(e.message||'Authentication failed.',true)}finally{this.disabled=false}
+          });
+          $('authForgot').querySelector('button').addEventListener('click',async function(){
+            const email=$('authEmail').value.trim();
+            if(!email){authMsg('Enter your email address first.',true);return}
+            const {error}=await authSb.auth.resetPasswordForEmail(email,{redirectTo:'https://shrtigo.xyz/analytics-shortener.html'});
+            authMsg(error?error.message:'Password reset email sent.',!!error);
+          });
+          authSb.auth.onAuthStateChange(async function(_event,session){
+            if(session&&!window.analyticsSession){
+              if(await syncAnalyticsSession(session)){window.analyticsSession=session;authShowApp()}
+            }
+          });
+          initAnalyticsAuth();
+          </script>'''
+          pattern=r'<script>\s*const AUTH_SUPABASE_URL=.*?</script>'
+          ns,n=re.subn(pattern,lambda m:new_script,s,count=1,flags=re.S)
+          if n!=1: raise SystemExit('auth script block not found')
+          p.write_text(ns)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add analytics-shortener.html
+          git commit -m 'Fix Analytics Google and signup buttons'
+          git push
+          git rm .github/workflows/fix-google-signup-buttons.yml
+          git commit -m 'Remove temporary auth button workflow'
+          git push
