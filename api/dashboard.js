@@ -28,7 +28,7 @@ export default async function handler(req,res){
       end=new Date(`${to}T23:59:59.999`);
       if(end<since)return res.status(400).json({error:'End date must be on or after start date.'});
     }else if(period==='today'){
-      since=startOfDay(); end=new Date();
+      since=startOfBangladeshDay(); end=new Date();
     }else{
       const days=[7,30,90].includes(Number(period))?Number(period):7;
       since=new Date(Date.now()-days*86400000); end=new Date();
@@ -43,6 +43,6 @@ export default async function handler(req,res){
   }catch(e){console.error(e);return res.status(500).json({error:'Could not load dashboard.'})}
 }
 function isDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
-function startOfDay(){const d=new Date();d.setHours(0,0,0,0);return d}
+function startOfBangladeshDay(){const now=new Date();const bd=new Date(now.getTime()+6*60*60*1000);bd.setUTCHours(0,0,0,0);return new Date(bd.getTime()-6*60*60*1000)}
 function readBearer(v){const s=String(v||'');return s.startsWith('Bearer ')?s.slice(7).trim():null}
 function readCookie(header,name){for(const part of String(header||'').split(';')){const i=part.indexOf('=');if(i>=0&&part.slice(0,i).trim()===name)return decodeURIComponent(part.slice(i+1).trim())}return null}
