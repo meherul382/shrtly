@@ -5,7 +5,7 @@
     { "source": "/dashboard.html", "destination": "/dashboard", "permanent": true }
   ],
   "rewrites": [
-    { "source": "/analytics-shortener", "destination": "/analytics-shortener.html" },
+    { "source": "/analytics-shortener", "destination": "/analytics-account.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/:code([A-Za-z0-9_-]{3,24})", "destination": "/api/r/:code" }
   ],
