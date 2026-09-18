@@ -6,22 +6,24 @@ export default async function handler(req,res){
     const supabaseUrl=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,'');
     const serviceKey=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();
     if(!supabaseUrl||!serviceKey)return res.status(500).json({error:'Backend is not configured.'});
-    const linkResponse=await fetch(`${supabaseUrl}/rest/v1/links?select=code,owner_token,link_mode&code=eq.${encodeURIComponent(String(code))}&limit=1`,{headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey}});
+    const normalizedCode=String(code);
+    const linkResponse=await fetch(`${supabaseUrl}/rest/v1/links?select=code,owner_token,link_mode&code=eq.${encodeURIComponent(normalizedCode)}&limit=1`,{headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey}});
     if(!linkResponse.ok)return res.status(500).json({error:'Could not validate analytics link.'});
     const links=await linkResponse.json();
     if(!links.length||links[0].link_mode!=='analytics')return res.status(403).json({error:'Analytics link is not configured.'});
     let ownerToken=String(links[0].owner_token||'');
     if(!/^[a-f0-9]{48}$/.test(ownerToken)){
       ownerToken=cryptoRandomHex(24);
-      const patch=await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(String(code))}`,{method:'PATCH',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({owner_token:ownerToken})});
+      const patch=await fetch(`${supabaseUrl}/rest/v1/links?code=eq.${encodeURIComponent(normalizedCode)}`,{method:'PATCH',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({owner_token:ownerToken})});
       if(!patch.ok)return res.status(500).json({error:'Could not configure analytics link.'});
     }
     const now=new Date().toISOString();
-    const response=await fetch(`${supabaseUrl}/rest/v1/analytics_visitors?on_conflict=code,visitor_id`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:String(code),visitor_id:String(visitorId),last_seen:now})});
+    const response=await fetch(`${supabaseUrl}/rest/v1/analytics_visitors?on_conflict=code,visitor_id`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({code:normalizedCode,visitor_id:String(visitorId),last_seen:now})});
     if(!response.ok)return res.status(500).json({error:'Could not record analytics.'});
-    const eventResponse=await fetch(`${supabaseUrl}/rest/v1/analytics_events`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({code:String(code),owner_token:ownerToken,visitor_id:String(visitorId),visited_at:now})});
+    const eventResponse=await fetch(`${supabaseUrl}/rest/v1/analytics_events`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify({code:normalizedCode,owner_token:ownerToken,visitor_id:String(visitorId),visited_at:now})});
     if(!eventResponse.ok)return res.status(500).json({error:'Could not store analytics history.'});
-    await fetch(`${supabaseUrl}/rest/v1/analytics_events?visited_at=lt.${encodeURIComponent(new Date(Date.now()-90*24*60*60*1000).toISOString())}`,{method:'DELETE',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,Prefer:'return=minimal'}});
+    const cutoff=encodeURIComponent(new Date(Date.now()-90*24*60*60*1000).toISOString());
+    await fetch(`${supabaseUrl}/rest/v1/analytics_events?code=eq.${encodeURIComponent(normalizedCode)}&visited_at=lt.${cutoff}`,{method:'DELETE',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,Prefer:'return=minimal'}});
     return res.status(204).end();
   }catch(e){console.error(e);return res.status(500).json({error:'Could not record analytics.'});}
 }
