@@ -2,5 +2,9 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /r/
+Disallow: /dashboard
+Disallow: /analytics
+Disallow: /analytics-
+Disallow: /email-confirmation.html
 
 Sitemap: https://shrtigo.xyz/sitemap.xml
