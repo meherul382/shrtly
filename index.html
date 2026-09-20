@@ -1,13 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shrtigo Login</title>
-<meta http-equiv="refresh" content="0;url=/analytics-login.html?next=%2Ftools.html">
-<script>location.replace('/analytics-login.html?next=%2Ftools.html');</script>
+<title>Shrtigo</title>
+<script>
+  try { sessionStorage.setItem('shrtigo_next', '/tools.html'); } catch (e) {}
+  location.replace('/analytics-login.html');
+</script>
 </head>
 <body>
-<p>Opening Shrtigo login… <a href="/analytics-login.html?next=%2Ftools.html">Continue</a></p>
+  Opening Shrtigo login…
 </body>
 </html>
