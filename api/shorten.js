@@ -19,22 +19,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    // Every link-creation route requires a verified signed-in account.
     const userId = await getUserIdFromRequest(req, supabaseUrl, serviceKey);
-    if (!userId) {
-      return res.status(401).json({ error: 'Please log in first. Link creation is available only to signed-in users.' });
-    }
+    if (!userId) return res.status(401).json({ error: 'Please log in first. Link creation is available only to signed-in users.' });
 
-    // An active subscription unlocks unlimited link creation. Without one,
-    // each account may create exactly one free link, valid for two hours.
     const access = await getCreationAccess(supabaseUrl, serviceKey, userId);
     if (!access.ok) return res.status(500).json({ error: access.error });
     if (!access.allowed) {
-      return res.status(402).json({
-        error: 'Your free link has expired or has already been used. Please subscribe to create more links.',
-        code: 'SUBSCRIPTION_REQUIRED',
-        freeLinkExpired: true
-      });
+      return res.status(402).json({ error: 'Your free link has expired or has already been used. Please subscribe to create more links.', code: 'SUBSCRIPTION_REQUIRED', freeLinkExpired: true });
     }
 
     const clean = cleanAlias(alias);
@@ -56,11 +47,7 @@ export default async function handler(req, res) {
       if (parsed.buffer.length > 3 * 1024 * 1024) return res.status(400).json({ error: 'Image must be 3 MB or smaller.' });
       const ext = extension(parsed.mime);
       const path = `interstitial/${code}-${Date.now()}.${ext}`;
-      const upload = await fetch(`${supabaseUrl}/storage/v1/object/short-images/${path}`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' },
-        body: parsed.buffer
-      });
+      const upload = await fetch(`${supabaseUrl}/storage/v1/object/short-images/${path}`, { method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' }, body: parsed.buffer });
       if (!upload.ok) return res.status(500).json({ error: `Image upload failed (${upload.status}). Make sure the short-images bucket exists.` });
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
@@ -88,11 +75,17 @@ export default async function handler(req, res) {
 
 async function finishCreatedLink(res, req, supabaseUrl, serviceKey, userId, access, code, imageUrl, youtubeUrl, mode, ownerToken) {
   if (!access.subscribed) {
+    const lookup = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
+    if (!lookup.ok) return res.status(500).json({ error: 'Could not find the created link record.' });
+    const rows = await lookup.json();
+    const linkId = rows[0]?.id;
+    if (linkId === undefined || linkId === null) return res.status(500).json({ error: 'Could not find the created link record.' });
+
     const locksAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
     const entitlement = await fetch(`${supabaseUrl}/rest/v1/free_link_entitlements`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_id: userId, link_id: code, locks_at: locksAt })
+      body: JSON.stringify({ user_id: userId, link_id: linkId, locks_at: locksAt })
     });
     if (!entitlement.ok) {
       console.error('Could not record free-link entitlement:', entitlement.status, await entitlement.text());
@@ -115,8 +108,7 @@ async function getCreationAccess(supabaseUrl, serviceKey, userId) {
   if (!entitlementResponse.ok) return { ok: false, error: 'Could not verify your free-link access.' };
   const entitlements = await entitlementResponse.json();
   if (!entitlements.length) return { ok: true, allowed: true, subscribed: false };
-  const locksAt = entitlements[0].locks_at ? new Date(entitlements[0].locks_at).getTime() : 0;
-  return { ok: true, allowed: false, subscribed: false, locksAt };
+  return { ok: true, allowed: false, subscribed: false, locksAt: entitlements[0].locks_at };
 }
 
 async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
@@ -133,28 +125,9 @@ async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
   } catch { return null; }
 }
 
-function readCookie(header, name) {
-  const parts = String(header || '').split(';');
-  for (const part of parts) {
-    const i = part.indexOf('=');
-    if (i < 0) continue;
-    if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
-  }
-  return null;
-}
-
-async function insertLink(supabaseUrl, serviceKey, payload) {
-  return fetch(`${supabaseUrl}/rest/v1/links`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' },
-    body: JSON.stringify(payload)
-  });
-}
-
-function respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken) {
-  const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-  return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) });
-}
+function readCookie(header, name) { const parts = String(header || '').split(';'); for (const part of parts) { const i = part.indexOf('='); if (i < 0) continue; if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim()); } return null; }
+async function insertLink(supabaseUrl, serviceKey, payload) { return fetch(`${supabaseUrl}/rest/v1/links`, { method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(payload) }); }
+function respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken) { const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`; return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ...(ownerToken ? { ownerToken } : {}) }); }
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
 function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
