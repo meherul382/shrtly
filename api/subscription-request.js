@@ -21,16 +21,26 @@ module.exports = async (req, res) => {
   if (userError || !userData?.user) return json(res, 401, { error: 'Your login session is invalid or expired.' });
 
   const body = req.body || {};
-  const plan = String(body.plan || '').trim();
-  const paymentMethod = String(body.payment_method || '').trim();
+  const requestedPlan = String(body.plan || '').trim().toLowerCase();
+  const requestedMethod = String(body.payment_method || '').trim().toLowerCase();
   const transactionId = String(body.transaction_id || '').trim();
-  const plans = {
-    '3-days': { amount: 150 },
-    weekly: { amount: 350 },
-    monthly: { amount: 900 }
-  };
 
-  if (!plans[plan]) return json(res, 400, { error: 'Please select a valid subscription plan.' });
+  const planMap = {
+    '3-days': 'three_day',
+    'three_day': 'three_day',
+    weekly: 'weekly',
+    monthly: 'monthly'
+  };
+  const paymentMap = {
+    'bkash': 'bkash',
+    'nagad': 'nagad',
+    'binance': 'binance',
+    'manual': 'manual'
+  };
+  const plan = planMap[requestedPlan];
+  const paymentMethod = paymentMap[requestedMethod];
+
+  if (!plan) return json(res, 400, { error: 'Please select a valid subscription plan.' });
   if (!paymentMethod || !transactionId) return json(res, 400, { error: 'Payment method and transaction ID are required.' });
   if (transactionId.length > 120) return json(res, 400, { error: 'Transaction ID is too long.' });
 
