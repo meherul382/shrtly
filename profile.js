@@ -30,5 +30,7 @@
     wrap.querySelector('#shLogout').onclick=async()=>{await sb.auth.signOut();try{await fetch('/api/auth/session',{method:'DELETE'})}catch{}location.replace('/central-login.html?next=%2Findex.html')};
   }
   function escapeHtml(v){return String(v).replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));}
+  const nav=document.querySelector('.navlinks');
+  if(nav)addSubscription(nav);
   sb.auth.getSession().then(({data})=>{if(data.session)addProfile(data.session.user)});
 })();
