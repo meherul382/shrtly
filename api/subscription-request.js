@@ -1,7 +1,8 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qbijrkdlaguwlvriaiky.supabase.co';
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY;
+const publicKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 
 function json(res, status, body) {
   res.status(status).setHeader('Content-Type', 'application/json');
@@ -10,13 +11,18 @@ function json(res, status, body) {
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
-  if (!supabaseUrl || !serviceKey) return json(res, 500, { error: 'Server configuration is incomplete.' });
+  if (!supabaseUrl) return json(res, 500, { error: 'Supabase URL is not configured.' });
 
   const auth = String(req.headers.authorization || '');
   const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
   if (!token) return json(res, 401, { error: 'Please log in first.' });
 
-  const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+  const key = serviceKey || publicKey;
+  const sb = createClient(supabaseUrl, key, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
+
   const { data: userData, error: userError } = await sb.auth.getUser(token);
   if (userError || !userData?.user) return json(res, 401, { error: 'Your login session is invalid or expired.' });
 
