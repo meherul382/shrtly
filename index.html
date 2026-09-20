@@ -49,5 +49,5 @@ shorten.onclick=async()=>{const main=url.value.trim();if(!/^https?:\/\//i.test(m
 copy.onclick=async()=>{try{await navigator.clipboard.writeText(resultUrl.textContent);copy.textContent='Copied!';setTimeout(()=>copy.textContent='Copy',1200)}catch{alert('Copy failed. Please copy the link manually.')}};
 renderHistory();
 </script>
-</body>
+<script src="/profile.js"></script></body>
 </html>
