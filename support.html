@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shrtigo Support Chat</title>
+<meta name="description" content="Get quick help with Shrtigo links, accounts, subscriptions and technical issues.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:linear-gradient(180deg,#f5f8ff,#fff);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033}.shell{width:min(760px,calc(100% - 28px));margin:34px auto}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.brand{font-size:24px;font-weight:900;text-decoration:none;color:#172033}.brand span{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#2563eb;color:#fff;margin-right:8px}.back{color:#2563eb;font-weight:800;text-decoration:none}.card{background:#fff;border:1px solid #e2e8f2;border-radius:24px;box-shadow:0 18px 55px rgba(23,32,51,.08);overflow:hidden}.head{padding:24px;background:#2563eb;color:#fff}.head h1{margin:0 0 7px;font-size:28px}.head p{margin:0;opacity:.9;line-height:1.6}.status{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;margin-top:14px;background:rgba(255,255,255,.16);padding:7px 10px;border-radius:999px}.dot{width:8px;height:8px;border-radius:50%;background:#86efac}.messages{height:360px;overflow:auto;padding:20px;background:#f8faff;display:grid;align-content:start;gap:12px}.msg{max-width:88%;padding:12px 14px;border-radius:16px;line-height:1.55;font-size:14px;white-space:pre-wrap}.bot{justify-self:start;background:#fff;border:1px solid #e1e8f2}.user{justify-self:end;background:#2563eb;color:#fff}.quick{padding:14px 18px;border-top:1px solid #e5eaf2}.quick p{margin:0 0 10px;color:#687386;font-size:12px;font-weight:800}.quick-grid{display:flex;flex-wrap:wrap;gap:8px}.quick button,.send{border:1px solid #cfd9e8;background:#fff;color:#2455b8;border-radius:999px;padding:9px 12px;font-weight:800;cursor:pointer}.composer{display:flex;gap:10px;padding:16px 18px;border-top:1px solid #e5eaf2;background:#fff}.composer input{flex:1;min-width:0;border:1px solid #d5deeb;border-radius:13px;padding:13px;font:inherit;outline:none}.composer input:focus{border-color:#2563eb}.send{background:#2563eb;color:#fff;border-color:#2563eb;border-radius:13px;padding:0 18px}.foot{padding:16px 18px;color:#687386;font-size:12px;line-height:1.6}.foot a{color:#2563eb;font-weight:800}@media(max-width:560px){.shell{margin:18px auto}.head h1{font-size:24px}.messages{height:390px}.composer{padding:12px}.send{padding:0 14px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="top"><a class="brand" href="/"><span>S</span>Shrtigo</a><a class="back" href="/">← Home</a></div>
+<section class="card" aria-label="Shrtigo support chat">
+<header class="head"><h1>How can we help?</h1><p>Ask about short links, accounts, subscriptions or technical problems.</p><div class="status"><span class="dot"></span> Quick support assistant</div></header>
+<div id="messages" class="messages" aria-live="polite"></div>
+<div class="quick"><p>QUICK QUESTIONS</p><div class="quick-grid"><button data-q="How do I create a short link?">Create a short link</button><button data-q="How can I create an account?">Create an account</button><button data-q="How does subscription work?">Subscription help</button><button data-q="My link is not working">Link problem</button><button data-q="I need human support">Human support</button></div></div>
+<form id="composer" class="composer"><input id="input" autocomplete="off" placeholder="Type your question…" maxlength="500" required><button class="send" type="submit">Send</button></form>
+<div class="foot">This assistant provides quick guidance. For a request that needs manual review, visit the <a href="/contact.html">Contact page</a>. Never share passwords, payment details or verification codes.</div>
+</section>
+</div>
+<script>
+const messages=document.getElementById('messages'),input=document.getElementById('input');
+function add(text,who){const el=document.createElement('div');el.className='msg '+who;el.textContent=text;messages.appendChild(el);messages.scrollTop=messages.scrollHeight}
+function answer(q){const s=q.toLowerCase();if(s.includes('short link')||s.includes('create'))return 'Paste your destination URL on the Shrtigo home page, choose any optional settings, then press Shorten Link. Your result can be copied and shared.';if(s.includes('account')||s.includes('sign up')||s.includes('signup'))return 'Open the login page and choose “Create one for free”. Enter your email and password, then complete email confirmation if Supabase requests it. Shrtigo does not impose an application-level limit on the number of user accounts; provider security and rate limits can still apply.';if(s.includes('subscription')||s.includes('payment')||s.includes('plan'))return 'Open the Subscription page to review the available plans and submit your payment method and transaction ID. Manual approval is handled by the site administrator.';if(s.includes('human')||s.includes('admin')||s.includes('support'))return 'For manual assistance, open the Contact page and describe the issue without sending passwords, payment details or verification codes.';if(s.includes('not working')||s.includes('problem')||s.includes('error'))return 'Please check that the destination URL starts with https://, refresh the page, and try again. If the issue continues, use the Contact page and include the affected short URL.';return 'I can help with short links, account creation, subscriptions and technical issues. Choose a quick question below or describe your problem in more detail.'}
+add('Hi! 👋 I’m Shrtigo Support. What do you need help with?','bot');
+document.querySelectorAll('[data-q]').forEach(b=>b.addEventListener('click',()=>{const q=b.dataset.q;add(q,'user');add(answer(q),'bot')}));
+document.getElementById('composer').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;add(q,'user');add(answer(q),'bot');input.value='';input.focus()});
+</script>
+</body>
+</html>
