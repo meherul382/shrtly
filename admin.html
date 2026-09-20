@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shrtigo Admin</title><meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:#f6f8ff;color:#172033}.wrap{width:min(1120px,calc(100% - 30px));margin:auto}.nav{display:flex;justify-content:space-between;align-items:center;padding:24px 0}.brand{font-size:24px;font-weight:900}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer;background:#2563eb;color:#fff}.reject{background:#fee2e2;color:#b91c1c}.status{margin:15px 0;color:#667085}.table{background:#fff;border:1px solid #e1e7f0;border-radius:18px;overflow:auto}table{border-collapse:collapse;width:100%;min-width:850px}th,td{text-align:left;padding:14px;border-bottom:1px solid #edf0f5;font-size:14px}th{background:#f8faff;color:#526078}.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#eef2ff;font-weight:800;font-size:12px}.actions{display:flex;gap:8px;flex-wrap:wrap}small{color:#667085}
+</style>
+</head>
+<body><header class="wrap nav"><div class="brand">＋ Shrtigo Admin</div><button class="btn" id="logout">Log out</button></header>
+<main class="wrap"><h1>Subscription Requests</h1><p><small>Approve a payment only after verifying the transaction in bKash/Nagad.</small></p><div id="status" class="status">Checking admin access…</div><div class="table"><table><thead><tr><th>Date</th><th>User ID</th><th>Plan</th><th>Payment</th><th>Transaction ID</th><th>Status</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div></main>
+<script>
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const $=id=>document.getElementById(id);let session=null;
+function msg(t,error=false){$('status').textContent=t;$('status').style.color=error?'#b91c1c':'#667085'}
+async function load(){const s=await sb.auth.getSession();session=s.data.session;if(!session){location.replace('/analytics-login.html');return}const r=await fetch('/api/admin-subscriptions',{headers:{Authorization:'Bearer '+session.access_token},cache:'no-store'});const d=await r.json();if(!r.ok){msg(d.error||'Access denied.',true);return}msg('Admin access verified.');$('rows').innerHTML='';(d.requests||[]).forEach(item=>{const tr=document.createElement('tr');tr.innerHTML='<td></td><td><small></small></td><td></td><td></td><td></td><td><span class="pill"></span></td><td><div class="actions"><button class="btn approve">Approve</button><button class="btn reject">Reject</button></div></td>';tr.children[0].textContent=new Date(item.created_at).toLocaleString();tr.children[1].querySelector('small').textContent=item.user_id;tr.children[2].textContent=item.plan;tr.children[3].textContent=item.payment_method;tr.children[4].textContent=item.transaction_id;tr.children[5].querySelector('span').textContent=item.status;tr.querySelector('.approve').disabled=item.status==='active';tr.querySelector('.reject').disabled=item.status==='rejected';tr.querySelector('.approve').onclick=()=>change(item.id,'active');tr.querySelector('.reject').onclick=()=>change(item.id,'rejected');$('rows').appendChild(tr)})}
+async function change(id,status){if(!confirm(status==='active'?'Verify payment and approve this request?':'Reject this request?'))return;const r=await fetch('/api/admin-subscriptions',{method:'PATCH',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({id,status})});const d=await r.json();if(!r.ok){msg(d.error||'Update failed.',true);return}await load()}
+$('logout').onclick=async()=>{await sb.auth.signOut();location.replace('/analytics-login.html')};load();
+</script></body></html>
