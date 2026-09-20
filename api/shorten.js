@@ -64,11 +64,14 @@ export default async function handler(req, res) {
 async function getEntitlement(supabaseUrl, serviceKey, userId) {
   if (!userId) return { limit: 1 };
   try {
-    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=link_limit,expires_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&expires_at=gt.${encodeURIComponent(new Date().toISOString())}&order=link_limit.desc&limit=1`, serviceKey);
+    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=20`, serviceKey);
     if (!r.ok) return { limit: 1 };
     const rows = await r.json();
-    const limit = Number(rows?.[0]?.link_limit);
-    return { limit: Number.isFinite(limit) && limit > 0 ? limit : 1 };
+    if (!Array.isArray(rows) || rows.length === 0) return { limit: 1 };
+    const hasUnlimited = rows.some(row => ['weekly', 'monthly'].includes(String(row?.plan || '').toLowerCase()));
+    if (hasUnlimited) return { limit: 1000000000 };
+    const hasThreeDay = rows.some(row => String(row?.plan || '').toLowerCase() === 'three_day');
+    return { limit: hasThreeDay ? 50 : 1 };
   } catch { return { limit: 1 }; }
 }
 
