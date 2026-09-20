@@ -19,17 +19,22 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Simple Short Link only accepts the main website URL.' });
     }
 
-    // Resolve the signed-in account from the Authorization bearer token first,
-    // then fall back to the private HttpOnly session cookie. Analytics creation
-    // sends the Supabase access token explicitly, so this remains reliable even
-    // if the browser has not yet persisted the cookie.
+    // Every link-creation route requires a verified signed-in account.
     const userId = await getUserIdFromRequest(req, supabaseUrl, serviceKey);
+    if (!userId) {
+      return res.status(401).json({ error: 'Please log in first. Link creation is available only to signed-in users.' });
+    }
 
-    // Analytics links are private account-owned resources. Never create an
-    // Analytics link without a verified signed-in user, otherwise its clicks
-    // and live visitors cannot be safely assigned to the correct dashboard.
-    if (mode === 'analytics' && !userId) {
-      return res.status(401).json({ error: 'Please log in to your Shrtigo account before creating an Analytics Short Link.' });
+    // An active subscription unlocks unlimited link creation. Without one,
+    // each account may create exactly one free link, valid for two hours.
+    const access = await getCreationAccess(supabaseUrl, serviceKey, userId);
+    if (!access.ok) return res.status(500).json({ error: access.error });
+    if (!access.allowed) {
+      return res.status(402).json({
+        error: 'Your free link has expired or has already been used. Please subscribe to create more links.',
+        code: 'SUBSCRIPTION_REQUIRED',
+        freeLinkExpired: true
+      });
     }
 
     const clean = cleanAlias(alias);
@@ -60,7 +65,7 @@ export default async function handler(req, res) {
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
 
-    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId || null };
+    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId };
     const insert = await insertLink(supabaseUrl, serviceKey, payload);
     if (!insert.ok) {
       const detail = await insert.text();
@@ -68,17 +73,50 @@ export default async function handler(req, res) {
         code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
         payload.code = code;
         const retry = await insertLink(supabaseUrl, serviceKey, payload);
-        if (retry.ok) return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
+        if (retry.ok) return finishCreatedLink(res, req, supabaseUrl, serviceKey, userId, access, code, imageUrl, youtubeUrl, mode, ownerToken);
       }
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
       return res.status(500).json({ error: `Could not save the short link (${insert.status}). ${detail.slice(0, 180)}` });
     }
 
-    return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
+    return finishCreatedLink(res, req, supabaseUrl, serviceKey, userId, access, code, imageUrl, youtubeUrl, mode, ownerToken);
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
   }
+}
+
+async function finishCreatedLink(res, req, supabaseUrl, serviceKey, userId, access, code, imageUrl, youtubeUrl, mode, ownerToken) {
+  if (!access.subscribed) {
+    const locksAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+    const entitlement = await fetch(`${supabaseUrl}/rest/v1/free_link_entitlements`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ user_id: userId, link_id: code, locks_at: locksAt })
+    });
+    if (!entitlement.ok) {
+      console.error('Could not record free-link entitlement:', entitlement.status, await entitlement.text());
+      return res.status(500).json({ error: 'Link was created, but its free-link access record could not be saved. Please contact support.' });
+    }
+  }
+  return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
+}
+
+async function getCreationAccess(supabaseUrl, serviceKey, userId) {
+  const headers = { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey };
+  const activeResponse = await fetch(`${supabaseUrl}/rest/v1/subscriptions?select=id,plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&order=created_at.desc&limit=20`, { headers });
+  if (!activeResponse.ok) return { ok: false, error: 'Could not verify subscription status.' };
+  const subscriptions = await activeResponse.json();
+  const now = Date.now();
+  const subscribed = subscriptions.some(item => !item.ends_at || new Date(item.ends_at).getTime() > now);
+  if (subscribed) return { ok: true, allowed: true, subscribed: true };
+
+  const entitlementResponse = await fetch(`${supabaseUrl}/rest/v1/free_link_entitlements?select=link_id,locks_at&user_id=eq.${encodeURIComponent(userId)}&limit=1`, { headers });
+  if (!entitlementResponse.ok) return { ok: false, error: 'Could not verify your free-link access.' };
+  const entitlements = await entitlementResponse.json();
+  if (!entitlements.length) return { ok: true, allowed: true, subscribed: false };
+  const locksAt = entitlements[0].locks_at ? new Date(entitlements[0].locks_at).getTime() : 0;
+  return { ok: true, allowed: false, subscribed: false, locksAt };
 }
 
 async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
@@ -88,9 +126,7 @@ async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
   const token = bearer || cookieToken;
   if (!token) return null;
   try {
-    const r = await fetch(`${supabaseUrl}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}`, apikey: serviceKey }
-    });
+    const r = await fetch(`${supabaseUrl}/auth/v1/user`, { headers: { Authorization: `Bearer ${token}`, apikey: serviceKey } });
     if (!r.ok) return null;
     const user = await r.json();
     return user?.id || null;
