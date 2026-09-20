@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
-    { "source": "/", "destination": "/login", "permanent": false },
+    { "source": "/", "destination": "/central-login.html?next=%2Findex.html", "permanent": false },
     { "source": "/analytics-shortener.html", "destination": "/analytics-shortener", "permanent": true },
     { "source": "/dashboard.html", "destination": "/dashboard", "permanent": true }
   ],
