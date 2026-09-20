@@ -25,9 +25,9 @@ module.exports = async (req, res) => {
   const paymentMethod = String(body.payment_method || '').trim();
   const transactionId = String(body.transaction_id || '').trim();
   const plans = {
-    '3-days': { link_limit: 50, amount: 150 },
-    weekly: { link_limit: 1000000000, amount: 350 },
-    monthly: { link_limit: 1000000000, amount: 900 }
+    '3-days': { amount: 150 },
+    weekly: { amount: 350 },
+    monthly: { amount: 900 }
   };
 
   if (!plans[plan]) return json(res, 400, { error: 'Please select a valid subscription plan.' });
@@ -37,12 +37,14 @@ module.exports = async (req, res) => {
   const { error } = await sb.from('subscriptions').insert({
     user_id: userData.user.id,
     plan,
-    link_limit: plans[plan].link_limit,
     status: 'pending',
     payment_method: paymentMethod,
     transaction_id: transactionId
   });
 
-  if (error) return json(res, 500, { error: 'Could not submit your subscription request.' });
+  if (error) {
+    console.error('Subscription request insert failed:', error);
+    return json(res, 500, { error: 'Could not submit your subscription request.' });
+  }
   return json(res, 200, { ok: true, message: 'Subscription request submitted for admin approval.' });
 };
