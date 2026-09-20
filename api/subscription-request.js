@@ -27,21 +27,27 @@ module.exports = async (req, res) => {
 
   const planMap = {
     '3-days': 'three_day',
+    '3_days': 'three_day',
+    'three-day': 'three_day',
     'three_day': 'three_day',
+    'three-days': 'three_day',
     weekly: 'weekly',
     monthly: 'monthly'
   };
   const paymentMap = {
-    'bkash': 'bkash',
-    'nagad': 'nagad',
-    'binance': 'binance',
-    'manual': 'manual'
+    bkash: 'bkash',
+    'b-kash': 'bkash',
+    nagad: 'nagad',
+    binance: 'binance',
+    manual: 'manual'
   };
+
   const plan = planMap[requestedPlan];
   const paymentMethod = paymentMap[requestedMethod];
 
   if (!plan) return json(res, 400, { error: 'Please select a valid subscription plan.' });
-  if (!paymentMethod || !transactionId) return json(res, 400, { error: 'Payment method and transaction ID are required.' });
+  if (!paymentMethod) return json(res, 400, { error: 'Please select a valid payment method.' });
+  if (!transactionId) return json(res, 400, { error: 'Please enter the transaction ID.' });
   if (transactionId.length > 120) return json(res, 400, { error: 'Transaction ID is too long.' });
 
   const { error } = await sb.from('subscriptions').insert({
@@ -54,7 +60,8 @@ module.exports = async (req, res) => {
 
   if (error) {
     console.error('Subscription request insert failed:', error);
-    return json(res, 500, { error: 'Could not submit your subscription request.' });
+    return json(res, 500, { error: 'Could not submit your subscription request.', detail: error.message });
   }
+
   return json(res, 200, { ok: true, message: 'Subscription request submitted for admin approval.' });
 };
