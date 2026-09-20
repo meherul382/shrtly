@@ -1,19 +1,25 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Shrtigo Subscription</title>
-<style>:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#14213d;background:#f5f7fb}*{box-sizing:border-box}body{margin:0;padding:32px 16px}.wrap{max-width:1050px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}.brand{font-size:26px;font-weight:800;color:#2563eb}.back{color:#2563eb;text-decoration:none;font-weight:700}.hero{text-align:center;margin:28px auto 34px;max-width:680px}.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 12px}.hero p,.note{color:#64748b;line-height:1.7}.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.plan{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:26px;box-shadow:0 12px 35px #0f172a0b}.plan h2{margin:0 0 10px}.price{font-size:34px;font-weight:800;color:#2563eb}.plan ul{padding-left:20px;color:#475569;line-height:1.9}.pay,.request{margin:28px auto 0;background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:25px;max-width:760px;line-height:1.8}.pay strong{color:#2563eb}.request h2{margin-top:0}.request label{display:block;font-weight:700;margin-top:14px}.request input,.request select,.request button{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:10px;font:inherit}.request button{margin-top:18px;background:#2563eb;color:white;border:0;font-weight:800;cursor:pointer}.status{margin-top:14px;font-weight:700}@media(max-width:800px){.plans{grid-template-columns:1fr}.top{align-items:flex-start}}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shrtigo Subscription</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#14213d;background:#f5f7fb}
+    *{box-sizing:border-box}body{margin:0;padding:32px 16px}.wrap{max-width:1050px;margin:auto}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}.brand{font-size:26px;font-weight:800;color:#2563eb}.back{color:#2563eb;text-decoration:none;font-weight:700}.hero{text-align:center;margin:28px auto 34px;max-width:680px}.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 12px}.hero p{color:#64748b;line-height:1.7}.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.plan{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:26px;box-shadow:0 12px 35px #0f172a0b}.plan h2{margin:0 0 10px}.price{font-size:34px;font-weight:800;color:#2563eb}.plan ul{padding-left:20px;color:#475569;line-height:1.9}.pay{margin:28px auto 0;background:#0f172a;color:#fff;border-radius:20px;padding:25px;max-width:760px;line-height:1.8}.pay strong{color:#93c5fd}.note{text-align:center;color:#64748b;font-size:14px;margin-top:20px}@media(max-width:800px){.plans{grid-template-columns:1fr}.top{align-items:flex-start}}
+  </style>
 </head>
-<body><main class="wrap">
-<header class="top"><div class="brand">Shrtigo</div><a class="back" href="/">← Back to Home</a></header>
-<section class="hero"><h1>Choose your subscription</h1><p>Your first link is free. All link types share the same account limit, including Simple, Image, YouTube, Custom and Analytics links.</p></section>
-<section class="plans"><article class="plan"><h2>3 Days</h2><div class="price">৳150</div><ul><li>Up to 50 links</li><li>All link tools</li><li>Analytics access</li></ul></article><article class="plan"><h2>Weekly</h2><div class="price">৳350</div><ul><li>Unlimited links</li><li>All link tools</li><li>Analytics access</li></ul></article><article class="plan"><h2>Monthly</h2><div class="price">৳900</div><ul><li>Unlimited links</li><li>All link tools</li><li>Analytics access</li></ul></article></section>
-<section class="pay"><h2>Payment instructions</h2><p>Send payment through <strong>bKash or Nagad</strong> to <strong>01311358241</strong>, or send through <strong>Binance ID 379683286</strong>. Keep your transaction ID for submission.</p></section>
-<section class="request"><h2>Submit payment for approval</h2><label for="plan">Plan</label><select id="plan"><option value="3-days">3 Days — ৳150</option><option value="weekly">Weekly — ৳350</option><option value="monthly">Monthly — ৳900</option></select><label for="method">Payment method</label><select id="method"><option>bKash</option><option>Nagad</option><option>Binance</option></select><label for="tx">Transaction ID</label><input id="tx" placeholder="Enter transaction ID" required><button id="submit">Submit Request</button><div class="status" id="status"></div></section>
-<p class="note" style="text-align:center">Your subscription becomes active only after administrator approval.</p></main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL='https://YOUR_SUPABASE_URL.supabase.co';const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY';const statusEl=document.getElementById('status');
-const submit=document.getElementById('submit');
-submit.onclick=async()=>{statusEl.textContent='Checking login…';try{if(SUPABASE_URL.includes('YOUR_')){statusEl.textContent='Supabase configuration is required by the site administrator.';return}const client=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);const {data:{session}}=await client.auth.getSession();if(!session){location.href='/login.html?next=%2Fsubscription.html';return}const tx=document.getElementById('tx').value.trim();if(!tx){statusEl.textContent='Please enter your transaction ID.';return}const res=await fetch('/api/subscription-request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({plan:document.getElementById('plan').value,paymentMethod:document.getElementById('method').value,transactionId:tx})});const data=await res.json();statusEl.textContent=data.message||data.error||'Request submitted.'}catch(e){statusEl.textContent='Unable to submit request right now.'}};
-</script></body></html>
+<body>
+  <main class="wrap">
+    <header class="top"><div class="brand">Shrtigo</div><a class="back" href="/">← Back to Home</a></header>
+    <section class="hero"><h1>Choose your subscription</h1><p>Your first link is free. All link types share the same account limit, including Simple, Image, YouTube, Custom and Analytics links.</p></section>
+    <section class="plans">
+      <article class="plan"><h2>3 Days</h2><div class="price">৳150</div><ul><li>Up to 50 links</li><li>All link tools</li><li>Analytics access</li></ul></article>
+      <article class="plan"><h2>Weekly</h2><div class="price">৳350</div><ul><li>Unlimited links</li><li>All link tools</li><li>Analytics access</li></ul></article>
+      <article class="plan"><h2>Monthly</h2><div class="price">৳900</div><ul><li>Unlimited links</li><li>All link tools</li><li>Analytics access</li></ul></article>
+    </section>
+    <section class="pay"><h2>Payment instructions</h2><p>Send payment through <strong>bKash or Nagad</strong> to <strong>01311358241</strong>, or send through <strong>Binance ID 379683286</strong>. Keep your transaction ID and contact the administrator for manual approval. Your subscription becomes active only after approval.</p></section>
+    <p class="note">Subscription approval and payment verification must be connected by the site administrator before production use.</p>
+  </main>
+</body>
+</html>
