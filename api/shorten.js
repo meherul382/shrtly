@@ -16,11 +16,10 @@ export default async function handler(req, res) {
     const userId = await getUserIdFromRequest(req, supabaseUrl, serviceKey);
     if (mode === 'analytics' && !userId) return res.status(401).json({ error: 'Please log in to your Shrtigo account before creating an Analytics Short Link.' });
 
-    // One free link is shared by Simple, Image, YouTube, Custom and Analytics tools.
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
     const entitlement = await getEntitlement(supabaseUrl, serviceKey, userId);
     const used = await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
-    if (used >= entitlement.limit) return res.status(402).json({ error: 'Your free link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
+    if (used >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
 
     const clean = cleanAlias(alias);
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
@@ -64,14 +63,13 @@ export default async function handler(req, res) {
 async function getEntitlement(supabaseUrl, serviceKey, userId) {
   if (!userId) return { limit: 1 };
   try {
-    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=20`, serviceKey);
+    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=1`, serviceKey);
     if (!r.ok) return { limit: 1 };
     const rows = await r.json();
-    if (!Array.isArray(rows) || rows.length === 0) return { limit: 1 };
-    const hasUnlimited = rows.some(row => ['weekly', 'monthly'].includes(String(row?.plan || '').toLowerCase()));
-    if (hasUnlimited) return { limit: 1000000000 };
-    const hasThreeDay = rows.some(row => String(row?.plan || '').toLowerCase() === 'three_day');
-    return { limit: hasThreeDay ? 50 : 1 };
+    const plan = String(rows?.[0]?.plan || '').toLowerCase();
+    if (plan === 'three_day') return { limit: 50 };
+    if (plan === 'weekly' || plan === 'monthly') return { limit: 1000000000 };
+    return { limit: 1 };
   } catch { return { limit: 1 }; }
 }
 
