@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
     const entitlement = await getEntitlement(supabaseUrl, serviceKey, userId);
     const used = await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
-    if (used >= entitlement.limit) return res.status(402).json({ error: 'Your free link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription.html', used, limit: entitlement.limit });
+    if (used >= entitlement.limit) return res.status(402).json({ error: 'Your free link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
 
     const clean = cleanAlias(alias);
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
