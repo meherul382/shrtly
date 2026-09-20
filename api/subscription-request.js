@@ -66,7 +66,7 @@ module.exports = async (req, res) => {
 
   if (error) {
     console.error('Subscription request insert failed:', error);
-    return json(res, 500, { error: 'Could not submit your subscription request.', detail: error.message });
+    return json(res, 500, { error: `Could not submit your subscription request: ${error.message}` });
   }
 
   return json(res, 200, { ok: true, message: 'Subscription request submitted for admin approval.' });
