@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shrtigo Tools</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#172033;background:linear-gradient(180deg,#f5f8ff,#fff);min-height:100vh}.wrap{width:min(1120px,calc(100% - 32px));margin:auto}.nav{height:78px;display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:#101828;font-size:24px;font-weight:950}.mark{width:38px;height:38px;border-radius:12px;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:24px}.nav-actions{display:flex;gap:10px;align-items:center}.nav-actions a,.nav-actions button{border:1px solid #dce4f0;background:#fff;color:#344054;border-radius:11px;padding:10px 13px;text-decoration:none;font:inherit;font-size:13px;font-weight:800;cursor:pointer}.hero{padding:44px 0 25px}.eyebrow{color:#2563eb;font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}.hero h1{font-size:clamp(36px,6vw,62px);letter-spacing:-2.5px;line-height:1.02;margin:12px 0}.hero p{color:#667085;max-width:650px;font-size:16px;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:18px 0 50px}.tool{display:flex;flex-direction:column;min-height:205px;padding:23px;border:1px solid #e0e7f2;border-radius:22px;background:#fff;box-shadow:0 15px 38px rgba(23,32,51,.06);text-decoration:none;color:inherit;transition:transform .2s,box-shadow .2s,border-color .2s}.tool:hover{transform:translateY(-3px);border-color:#b9cdfc;box-shadow:0 20px 45px rgba(37,99,235,.12)}.icon{width:48px;height:48px;border-radius:15px;background:#edf4ff;color:#2563eb;display:grid;place-items:center;font-size:24px;margin-bottom:18px}.tool h2{font-size:18px;margin:0 0 9px}.tool p{font-size:13px;color:#667085;line-height:1.55;margin:0}.open{margin-top:auto;padding-top:20px;color:#2563eb;font-size:13px;font-weight:900}footer{text-align:center;padding:25px;color:#98a2b3;font-size:13px}@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.nav{height:68px}.brand{font-size:21px}.nav-actions a{display:none}.hero{padding-top:30px}.grid{grid-template-columns:1fr}.tool{min-height:180px}}
+</style>
+</head>
+<body>
+<header><div class="wrap nav"><a class="brand" href="/tools.html"><span class="mark">＋</span>Shrtigo</a><div class="nav-actions"><a href="/dashboard.html">Dashboard</a><button id="logout" type="button">Log out</button></div></div></header>
+<main class="wrap"><section class="hero"><div class="eyebrow">Your workspace</div><h1>Choose your tool.</h1><p>All Shrtigo tools are available from one place. Sign in once, then open the tool you need. Your existing short-link pages remain separate and unchanged.</p></section>
+<section class="grid">
+<a class="tool" href="/simple-shortener.html"><div class="icon">🔗</div><h2>Simple Short Link</h2><p>Shorten a normal URL quickly with the classic Shrtigo short-link tool.</p><div class="open">Open tool →</div></a>
+<a class="tool" href="/url-shortener.html"><div class="icon">🖼️</div><h2>Image & YouTube Links</h2><p>Open the existing URL shortener page for image links, YouTube links and related options.</p><div class="open">Open tool →</div></a>
+<a class="tool" href="/analytics-shortener.html"><div class="icon">📊</div><h2>Analytics Short Link</h2><p>Create an analytics-enabled short link and track performance.</p><div class="open">Open tool →</div></a>
+<a class="tool" href="/dashboard.html"><div class="icon">📈</div><h2>My Dashboard</h2><p>Review your links, click totals, visitor information and account activity.</p><div class="open">Open dashboard →</div></a>
+<a class="tool" href="/analytics-account.html"><div class="icon">👤</div><h2>Analytics Account</h2><p>Open the existing analytics account area and account-related options.</p><div class="open">Open account →</div></a>
+<a class="tool" href="/guides.html"><div class="icon">📚</div><h2>Guides & Help</h2><p>Learn how short links and analytics work through the existing guides.</p><div class="open">Read guides →</div></a>
+</section></main><footer>© <span id="year"></span> Shrtigo</footer>
+<script>
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+document.getElementById('year').textContent=new Date().getFullYear();
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/analytics-login.html?next=%2Ftools.html');return}})();
+document.getElementById('logout').onclick=async()=>{await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.replace('/analytics-login.html?next=%2Ftools.html')};
+</script>
+</body>
+</html>
