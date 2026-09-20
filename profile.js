@@ -1,48 +1,62 @@
 (function(){
+  'use strict';
   const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
   const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
   const ADMIN='meherulhassan62@gmail.com';
+
+  function escapeHtml(value){
+    return String(value).replace(/[&<>\"']/g,function(char){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[char];
+    });
+  }
 
   function boot(){
     if(!window.supabase||!window.supabase.createClient)return;
     const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     const style=document.createElement('style');
-    style.textContent='.sh-profile{position:relative;display:flex;align-items:center;gap:8px;margin-left:12px}.sh-profile-btn{border:1px solid #dce3ee;background:#fff;color:#172033;border-radius:12px;padding:10px 13px;font-weight:800;cursor:pointer}.sh-profile-menu{position:absolute;right:0;top:48px;width:270px;background:#fff;border:1px solid #e2e8f1;border-radius:16px;padding:12px;box-shadow:0 18px 45px #17203322;z-index:99}.sh-profile-menu button,.sh-profile-menu a{display:block;width:100%;text-align:left;padding:11px;border:0;background:transparent;color:#172033;text-decoration:none;font-weight:800;border-radius:9px;cursor:pointer}.sh-profile-menu button:hover,.sh-profile-menu a:hover{background:#f1f5ff}.sh-profile-email{font-size:12px;color:#687386;padding:8px 11px;word-break:break-all}.sh-profile-name{font-size:14px;font-weight:900;padding:4px 11px}.sh-profile-menu hr{border:0;border-top:1px solid #edf1f6;margin:6px 0}.sh-subscription-link{display:inline-block!important;color:#2563eb!important;font-weight:900!important}';
+    style.id='shrtigo-profile-style';
+    style.textContent=`
+      .st-account-actions{display:none!important}
+      .sh-profile{position:relative;display:flex;align-items:center;margin-left:auto;z-index:120}
+      .sh-profile-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;max-width:180px;padding:10px 15px;border:1px solid #d8e2f0;border-radius:13px;background:#fff;color:#172033;font:inherit;font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 7px 20px rgba(23,32,51,.06);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .sh-profile-btn:hover{border-color:#2563eb;background:#f8faff}
+      .sh-profile-menu{position:absolute;right:0;top:calc(100% + 10px);width:280px;background:#fff;border:1px solid #e1e8f2;border-radius:18px;padding:12px;box-shadow:0 22px 55px rgba(23,32,51,.16);z-index:9999}
+      .sh-profile-menu[hidden]{display:none!important}
+      .sh-profile-menu a,.sh-profile-menu button{display:flex;align-items:center;gap:9px;width:100%;min-height:42px;text-align:left;padding:11px 12px;border:0;background:transparent;color:#172033;text-decoration:none;font:inherit;font-size:14px;font-weight:800;border-radius:10px;cursor:pointer}
+      .sh-profile-menu a:hover,.sh-profile-menu button:hover{background:#f1f5ff;color:#2563eb}
+      .sh-profile-head{padding:7px 10px 10px}
+      .sh-profile-name{font-size:15px;font-weight:900;color:#172033;overflow-wrap:anywhere}
+      .sh-profile-email{margin-top:7px;font-size:12px;line-height:1.5;color:#687386;overflow-wrap:anywhere}
+      .sh-profile-menu hr{border:0;border-top:1px solid #edf1f6;margin:4px 0 7px}
+      @media(max-width:800px){.sh-profile-btn{max-width:145px;padding:9px 11px}.sh-profile-menu{right:0;width:min(280px,calc(100vw - 28px))}}
+      @media(max-width:430px){.sh-profile-btn{max-width:48px;font-size:0;padding:10px}.sh-profile-btn:before{content:'👤';font-size:16px}.sh-profile-menu{right:-6px}}
+    `;
     document.head.appendChild(style);
 
-    function addSubscription(nav){
-      if(!nav||nav.querySelector('[data-sh-subscription]'))return;
-      const link=document.createElement('a');
-      link.href='/subscription.html';
-      link.dataset.shSubscription='true';
-      link.className='sh-subscription-link';
-      link.textContent='💳 Subscription';
-      nav.appendChild(link);
-    }
-
-    function escapeHtml(v){return String(v).replace(/[&<>\\\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\\\"':'&quot;',"'":'&#39;'}[c]));}
-
     function addProfile(user){
-      const nav=document.querySelector('.navlinks');
-      if(!nav)return;
-      addSubscription(nav);
-      if(document.getElementById('shProfile'))return;
+      const nav=document.querySelector('header .nav');
+      if(!nav||document.getElementById('shProfile'))return;
       const email=String(user.email||'');
       const name=user.user_metadata?.full_name||user.user_metadata?.name||email.split('@')[0]||'User';
       const wrap=document.createElement('div');
       wrap.id='shProfile';
       wrap.className='sh-profile';
-      wrap.innerHTML='<button class="sh-profile-btn" id="shProfileBtn">👤 '+escapeHtml(name)+'</button><div class="sh-profile-menu" id="shProfileMenu" hidden><div class="sh-profile-name">'+escapeHtml(name)+'</div><div class="sh-profile-email">'+escapeHtml(email)+'</div><hr><a href="/dashboard.html">📊 Dashboard</a><a href="/subscription.html">💳 Subscription</a>'+(email.toLowerCase()===ADMIN?'<a href="/admin.html">🛠 Admin Panel</a>':'')+'<button id="shLogout">↪ Log out</button></div>';
+      wrap.innerHTML='<button type="button" class="sh-profile-btn" id="shProfileBtn">👤 '+escapeHtml(name)+'</button><div class="sh-profile-menu" id="shProfileMenu" hidden><div class="sh-profile-head"><div class="sh-profile-name">'+escapeHtml(name)+'</div><div class="sh-profile-email">'+escapeHtml(email)+'</div></div><hr><a href="/dashboard.html">📊 Dashboard</a><a href="/subscription.html">💳 Subscription</a>'+(email.toLowerCase()===ADMIN?'<a href="/admin.html">🛠 Admin Panel</a>':'')+'<button type="button" id="shLogout">↪ Log out</button></div>';
       nav.appendChild(wrap);
-      const btn=wrap.querySelector('#shProfileBtn'),menu=wrap.querySelector('#shProfileMenu');
-      btn.onclick=()=>{menu.hidden=!menu.hidden};
-      document.addEventListener('click',e=>{if(!wrap.contains(e.target))menu.hidden=true});
-      wrap.querySelector('#shLogout').onclick=async()=>{await sb.auth.signOut();try{await fetch('/api/auth/session',{method:'DELETE'})}catch{}location.replace('/central-login.html?next=%2Findex.html')};
+      const btn=wrap.querySelector('#shProfileBtn');
+      const menu=wrap.querySelector('#shProfileMenu');
+      btn.addEventListener('click',function(event){event.stopPropagation();menu.hidden=!menu.hidden;});
+      document.addEventListener('click',function(event){if(!wrap.contains(event.target))menu.hidden=true;});
+      wrap.querySelector('#shLogout').addEventListener('click',async function(){
+        await sb.auth.signOut();
+        try{await fetch('/api/auth/session',{method:'DELETE'});}catch(error){}
+        location.replace('/central-login.html?next=%2Findex.html');
+      });
     }
 
-    const nav=document.querySelector('.navlinks');
-    if(nav)addSubscription(nav);
-    sb.auth.getSession().then(({data})=>{if(data.session)addProfile(data.session.user)});
+    sb.auth.getSession().then(function(result){
+      if(result&&result.data&&result.data.session)addProfile(result.data.session.user);
+    });
   }
 
   function loadSupabase(){
@@ -50,7 +64,7 @@
     const script=document.createElement('script');
     script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
     script.onload=boot;
-    script.onerror=()=>console.warn('Supabase library could not load');
+    script.onerror=function(){console.warn('Supabase library could not load');};
     document.head.appendChild(script);
   }
   loadSupabase();
