@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Subscribe | Shrtigo</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(135deg,#eef4ff,#fff);color:#172033}.wrap{width:min(1000px,calc(100% - 30px));margin:auto}.top{display:flex;justify-content:space-between;align-items:center;padding:24px 0}.brand{font-size:25px;font-weight:900;text-decoration:none;color:#172033}.brand span{display:inline-grid;place-items:center;background:#2563eb;color:#fff;border-radius:11px;width:36px;height:36px;margin-right:8px}.back{color:#2563eb;font-weight:800;text-decoration:none}.hero{text-align:center;padding:28px 0 18px}.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 10px}.hero p{color:#687386}.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.plan,.payment{background:#fff;border:1px solid #dce5f4;border-radius:20px;padding:22px;box-shadow:0 15px 40px #1720330b}.plan h2{margin:0 0 8px}.price{font-size:32px;font-weight:900;margin:12px 0}.plan p{color:#687386;min-height:42px}.plan button,.submit{border:0;background:#2563eb;color:#fff;border-radius:12px;padding:13px 18px;font-weight:900;cursor:pointer;width:100%}.payment{max-width:650px;margin:22px auto 50px}.payment h2{margin-top:0}.notice{background:#f0f6ff;border:1px solid #cfe0ff;border-radius:13px;padding:15px;line-height:1.7}.field{margin:14px 0}.field label{display:block;font-weight:800;font-size:13px;margin-bottom:7px}.field input,.field select{width:100%;padding:13px;border:1px solid #d5dfef;border-radius:11px;font:inherit}.selected{color:#2563eb;font-weight:900}.status{margin-top:12px;font-size:14px;color:#536174;line-height:1.5}.error{color:#b91c1c}.success{color:#15803d}@media(max-width:700px){.plans{grid-template-columns:1fr}.top{padding:18px 0}.plan p{min-height:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top"><a class="brand" href="/"><span>＋</span>Shrtigo</a><a class="back" href="/">Home</a></header>
+<section class="hero"><h1>Unlock Shrtigo</h1><p>Choose a plan. Pay by bKash or Nagad, then submit your transaction ID for admin approval.</p></section>
+<section class="plans">
+<article class="plan"><h2>3 Days</h2><div class="price">৳150</div><p>Up to 50 links, unlimited visits.</p><button data-plan="three_day" data-price="150">Choose plan</button></article>
+<article class="plan"><h2>Weekly</h2><div class="price">৳350</div><p>Unlimited links and unlimited visits.</p><button data-plan="weekly" data-price="350">Choose plan</button></article>
+<article class="plan"><h2>Monthly</h2><div class="price">৳900</div><p>Unlimited links and unlimited visits.</p><button data-plan="monthly" data-price="900">Choose plan</button></article>
+</section>
+<section class="payment"><h2>Payment & approval</h2><div class="notice"><b>bKash / Nagad Number:</b> 01311358241<br>Send the exact plan amount to this number. Keep your transaction ID. Your subscription remains pending until admin approval.</div>
+<div class="field"><label>Selected plan</label><input id="planLabel" value="Choose a plan above" readonly></div>
+<div class="field"><label>Payment method</label><select id="method"><option value="bkash">bKash</option><option value="nagad">Nagad</option></select></div>
+<div class="field"><label>Transaction ID</label><input id="tx" placeholder="Enter transaction ID" autocomplete="off"></div>
+<button id="submit" class="submit">Submit payment request</button><div id="status" class="status"></div></section>
+</div>
+<script>
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+const SUPABASE_KEY=String.fromCharCode(115,98,95,112,117,98,108,105,99,97,98,108,101,95,67,83,55,119,97,117,86,82,108,72,112,98,115,100,106,74,70,100,87,108,49,103,95,99,78,100,106,111,103,72,74);
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);let session=null,plan=null;
+const $=id=>document.getElementById(id);const status=(t,c='')=>{$('status').textContent=t;$('status').className='status '+c};
+(async()=>{const s=await sb.auth.getSession();session=s.data.session||null;if(!session){status('Please login from https://shrtigo.xyz/ first.','error');$('submit').disabled=true;}})();
+document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>{plan=b.dataset.plan;$('planLabel').value=(plan==='three_day'?'3 Days — ৳150':plan==='weekly'?'Weekly — ৳350':'Monthly — ৳900');status('Plan selected. Send the amount to 01311358241, then submit your transaction ID.');window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'});});
+$('submit').onclick=async()=>{if(!session)return status('Login required.','error');if(!plan)return status('Choose a plan first.','error');const transactionId=$('tx').value.trim();if(!transactionId)return status('Enter your transaction ID.','error');$('submit').disabled=true;status('Submitting request…');try{const r=await fetch('/api/subscription-request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({plan,paymentMethod:$('method').value,transactionId})});const d=await r.json();if(!r.ok)return status(d.error||'Could not submit request.','error');status('Request submitted successfully. Status: Pending admin approval.','success');$('tx').value='';}catch(e){status(e.message||'Something went wrong.','error')}finally{$('submit').disabled=false}};
+</script>
+</body></html>
