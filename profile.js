@@ -5,9 +5,29 @@ const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const ADMIN='meherulhassan62@gmail.com';
 function escapeHtml(value){return String(value).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;', '\"':'&quot;',"'":'&#39;'}[c];});}
 function loadSupport(){if(document.querySelector('script[data-shrtigo-support-loader]'))return;const script=document.createElement('script');script.src='/support-loader.js';script.defer=true;script.dataset.shrtigoSupportLoader='1';document.head.appendChild(script);}
+function installAuthenticatedShortenFetch(sb){
+ if(window.__shrtigoAuthenticatedShortenFetch)return;
+ const originalFetch=window.fetch.bind(window);
+ window.fetch=async function(input,init){
+  const requestUrl=typeof input==='string'?input:(input&&input.url)||'';
+  if(!String(requestUrl).includes('/api/shorten'))return originalFetch(input,init);
+  try{
+   const sessionResult=await sb.auth.getSession();
+   const token=sessionResult&&sessionResult.data&&sessionResult.data.session&&sessionResult.data.session.access_token;
+   if(token){
+    const headers=new Headers((init&&init.headers)||(input instanceof Request?input.headers:undefined));
+    headers.set('Authorization','Bearer '+token);
+    return originalFetch(input,Object.assign({},init||{},{headers}));
+   }
+  }catch(error){console.warn('Shrtigo auth header setup failed',error);}
+  return originalFetch(input,init);
+ };
+ window.__shrtigoAuthenticatedShortenFetch=true;
+}
 function boot(){
  if(!window.supabase||!window.supabase.createClient)return;
  const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+ installAuthenticatedShortenFetch(sb);
  const style=document.createElement('style');style.id='shrtigo-profile-style';style.textContent=`
  .sh-profile{position:relative!important;display:flex!important;align-items:center!important;margin-left:12px!important;flex:0 0 auto!important;z-index:120!important}
  .sh-profile-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:10px 15px;border:1px solid #d8e2f0;border-radius:13px;background:#fff;color:#172033;font:inherit;font-size:13px;font-weight:850;cursor:pointer;box-shadow:0 7px 20px rgba(23,32,51,.06);white-space:nowrap}
