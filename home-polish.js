@@ -1,5 +1,13 @@
 (function(){
 'use strict';
+function loadSupport(){
+ if(document.querySelector('script[data-shrtigo-support-loader]'))return;
+ const script=document.createElement('script');
+ script.src='/support-loader.js';
+ script.defer=true;
+ script.dataset.shrtigoSupportLoader='1';
+ document.head.appendChild(script);
+}
 function init(){
  if(document.documentElement.dataset.shrtigoPolished==='1')return;
  document.documentElement.dataset.shrtigoPolished='1';
@@ -39,7 +47,8 @@ function init(){
   });
  }
  fixAnalyticsNavigation();
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){cleanHeader();fixAnalyticsNavigation();});else setTimeout(function(){cleanHeader();fixAnalyticsNavigation();},80);
+ loadSupport();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){cleanHeader();fixAnalyticsNavigation();loadSupport();});else setTimeout(function(){cleanHeader();fixAnalyticsNavigation();loadSupport();},80);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
