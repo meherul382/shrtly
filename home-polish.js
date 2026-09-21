@@ -9,6 +9,7 @@ function loadSupport(){
  document.head.appendChild(script);
 }
 function init(){
+ loadSupport();
  if(document.documentElement.dataset.shrtigoPolished==='1')return;
  document.documentElement.dataset.shrtigoPolished='1';
  const style=document.createElement('style');style.id='shrtigo-polished-style';style.textContent=`
