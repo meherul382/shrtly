@@ -28,7 +28,18 @@ function init(){
   document.querySelectorAll('.st-account-actions').forEach(function(node){node.remove();});
  }
  cleanHeader();
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanHeader);else setTimeout(cleanHeader,80);
+ function fixAnalyticsNavigation(){
+  document.querySelectorAll('a[href*="/analytics-login.html"]').forEach(function(link){
+   if(link.dataset.analyticsDirectFixed==='1')return;
+   link.dataset.analyticsDirectFixed='1';
+   link.addEventListener('click',function(event){
+    event.preventDefault();
+    window.location.href='/analytics-shortener.html';
+   });
+  });
+ }
+ fixAnalyticsNavigation();
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){cleanHeader();fixAnalyticsNavigation();});else setTimeout(function(){cleanHeader();fixAnalyticsNavigation();},80);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
