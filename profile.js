@@ -3,7 +3,8 @@
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
 const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const ADMIN='meherulhassan62@gmail.com';
-function escapeHtml(value){return String(value).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c];});}
+function escapeHtml(value){return String(value).replace(/[&<>\"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;', '\"':'&quot;',"'":'&#39;'}[c];});}
+function loadSupport(){if(document.querySelector('script[data-shrtigo-support-loader]'))return;const script=document.createElement('script');script.src='/support-loader.js';script.defer=true;script.dataset.shrtigoSupportLoader='1';document.head.appendChild(script);}
 function boot(){
  if(!window.supabase||!window.supabase.createClient)return;
  const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -17,5 +18,5 @@ function boot(){
  function addProfile(user){const nav=document.querySelector('header .nav');if(!nav||document.getElementById('shProfile'))return;const email=String(user.email||'');const name=user.user_metadata?.full_name||user.user_metadata?.name||email.split('@')[0]||'User';const wrap=document.createElement('div');wrap.id='shProfile';wrap.className='sh-profile';wrap.innerHTML='<button type="button" class="sh-profile-btn" id="shProfileBtn">👤 Profile</button><div class="sh-profile-menu" id="shProfileMenu" hidden><div class="sh-profile-head"><div class="sh-profile-name">'+escapeHtml(name)+'</div><div class="sh-profile-email">'+escapeHtml(email)+'</div></div><hr><a href="/dashboard.html">📊 Dashboard</a><a href="/subscription.html">💳 Subscription</a>'+(email.toLowerCase()===ADMIN?'<a href="/admin.html">🛠 Admin Panel</a><a href="/support-admin.html">💬 Support Inbox</a>':'')+'<button type="button" id="shLogout">↪ Log out</button></div>';nav.appendChild(wrap);const btn=wrap.querySelector('#shProfileBtn'),menu=wrap.querySelector('#shProfileMenu');btn.addEventListener('click',function(e){e.stopPropagation();menu.hidden=!menu.hidden;});document.addEventListener('click',function(e){if(!wrap.contains(e.target))menu.hidden=true;});wrap.querySelector('#shLogout').addEventListener('click',async function(){await sb.auth.signOut();try{await fetch('/api/auth/session',{method:'DELETE'});}catch(error){}location.replace('/central-login.html?next=%2Findex.html');});}
  sb.auth.getSession().then(function(result){if(result&&result.data&&result.data.session)addProfile(result.data.session.user);});
 }
-function loadSupabase(){if(window.supabase&&window.supabase.createClient){boot();return;}const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';script.onload=boot;document.head.appendChild(script);}loadSupabase();
+function loadSupabase(){if(window.supabase&&window.supabase.createClient){boot();loadSupport();return;}const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';script.onload=function(){boot();loadSupport();};document.head.appendChild(script);}loadSupabase();
 })();
