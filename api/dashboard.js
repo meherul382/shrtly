@@ -9,7 +9,7 @@ export default async function handler(req,res){
     const ur=await fetch(`${base}/auth/v1/user`,{headers:{Authorization:`Bearer ${token}`,apikey:key}});
     if(!ur.ok)return res.status(401).json({error:'Login required.'});
     const user=await ur.json();
-    const lr=await fetch(`${base}/rest/v1/links?select=code,url,clicks,link_mode,created_at,user_id&user_id=eq.${encodeURIComponent(user.id)}&deleted_at=is.null&order=created_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
+    const lr=await fetch(`${base}/rest/v1/links?select=code,url,domain,clicks,link_mode,created_at,user_id&user_id=eq.${encodeURIComponent(user.id)}&deleted_at=is.null&order=created_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
     if(!lr.ok)return res.status(500).json({error:'Could not load your links.'});
     const links=await lr.json();
     const analytics=links.filter(x=>x.link_mode==='analytics').map(x=>x.code);
@@ -39,7 +39,7 @@ export default async function handler(req,res){
     const isFull90=!from&&!to&&period==='90';
     const clicks=isFull90?analytics.reduce((s,c)=>s+Number(links.find(x=>x.code===c)?.clicks||0),0):selected.length;
     const visitors=new Set(selected.map(e=>e.visitor_id)).size;
-    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},links:links.map(x=>({code:x.code,url:x.url,clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
+    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},links:links.map(x=>({code:x.code,url:x.url,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
   }catch(e){console.error(e);return res.status(500).json({error:'Could not load dashboard.'})}
 }
 function isDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
