@@ -3,8 +3,10 @@ import crypto from 'crypto';
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
-    const { url, alias, image, youtubeUrl, linkMode } = req.body || {};
+    const { url, alias, image, youtubeUrl, linkMode, domain } = req.body || {};
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
+    const selectedDomain = normalizeDomain(domain || 'shrtigo.xyz');
+    if (!selectedDomain) return res.status(400).json({ error: 'Please select a valid Shrtigo domain.' });
     if (youtubeUrl && !isYouTubeUrl(youtubeUrl)) return res.status(400).json({ error: 'Please enter a valid YouTube URL.' });
 
     const mode = ['simple', 'analytics'].includes(linkMode) ? linkMode : 'advanced';
@@ -41,19 +43,19 @@ export default async function handler(req, res) {
       imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
     }
 
-    const payload = { code, url, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId || null };
+    const payload = { code, url, domain: selectedDomain, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId || null };
     const insert = await insertLink(supabaseUrl, serviceKey, payload);
     if (!insert.ok) {
       const detail = await insert.text();
       if (insert.status === 409 && !alias) {
         payload.code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
         const retry = await insertLink(supabaseUrl, serviceKey, payload);
-        if (retry.ok) return respond(res, req, payload.code, imageUrl, youtubeUrl, mode, ownerToken);
+        if (retry.ok) return respond(res, req, payload.code, imageUrl, youtubeUrl, mode, selectedDomain, ownerToken);
       }
       if (insert.status === 409) return res.status(409).json({ error: 'That short code is already in use.' });
       return res.status(500).json({ error: `Could not save the short link (${insert.status}). ${detail.slice(0, 180)}` });
     }
-    return respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken);
+    return respond(res, req, code, imageUrl, youtubeUrl, mode, selectedDomain, ownerToken);
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
@@ -98,10 +100,11 @@ async function getUserIdFromRequest(req, supabaseUrl, serviceKey) {
 }
 function readCookie(header, name) { for (const part of String(header || '').split(';')) { const i = part.indexOf('='); if (i >= 0 && part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim()); } return null; }
 async function insertLink(supabaseUrl, serviceKey, payload) { return fetch(`${supabaseUrl}/rest/v1/links`, { method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(payload) }); }
-function respond(res, req, code, imageUrl, youtubeUrl, mode, ownerToken) { const origin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`; return res.status(200).json({ shortUrl: `${origin}/${encodeURIComponent(code)}`, code, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ownerToken }); }
+function respond(res, req, code, imageUrl, youtubeUrl, mode, domain, ownerToken) { return res.status(200).json({ shortUrl: `https://${domain}/${encodeURIComponent(code)}`, code, domain, imageUrl, youtubeUrl: youtubeUrl || null, linkMode: mode, ownerToken }); }
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
 function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
+function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\\/\\//,'').replace(/\\/+$/,''); return ['shrtigo.xyz','adpage-builder.xyz'].includes(domain) ? domain : null; }
 function randomCode() { return Math.random().toString(36).slice(2, 6); }
 function extension(mime) { return ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[mime] || 'jpg'; }
 function parseDataUrl(value) { const m = String(value).match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/); if (!m) return null; return { mime: m[1], buffer: Buffer.from(m[2], 'base64') }; }
