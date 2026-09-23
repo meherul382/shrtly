@@ -29,4 +29,4 @@ async function loadServer(){
 $('selectAll').onchange=()=>document.querySelectorAll('.rowcheck').forEach(c=>c.checked=$('selectAll').checked);
 $('deleteSelected').onclick=async()=>{const local=localLoad();const s=(await sb.auth.getSession()).data.session;const merged=[...serverLinks.map(x=>({...x,source:'server'})),...local.filter(l=>!serverLinks.some(z=>shortFor(z)===l.short)).map(x=>({...x,source:'local'}))];const selected=[...document.querySelectorAll('.rowcheck:checked')].map(x=>merged[Number(x.dataset.index)]);if(!selected.length)return;if(!confirm('Delete selected links?'))return;for(const item of selected){if(item.source==='server'&&s)await fetch('/api/dashboard-delete',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({code:item.code})});else localSave(local.filter(x=>x.short!==item.short))}await loadServer()};
 loadServer();
-</script></body></html>
+</script><script src="/panel-status.js" defer></script></body></html>
