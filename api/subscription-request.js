@@ -29,16 +29,22 @@ module.exports = async (req, res) => {
 
     if (!plan) return json(res, 400, { error: 'Please select a valid subscription plan.' });
     if (!payment_method) return json(res, 400, { error: 'Please select a valid payment method.' });
-    if (!transaction_id) return json(res, 400, { error: 'Please enter the transaction ID.' });
+    if (plan !== 'welcome' && !transaction_id) return json(res, 400, { error: 'Please enter the transaction ID.' });
     if (transaction_id.length > 120) return json(res, 400, { error: 'Transaction ID is too long.' });
+
+    if (plan === 'welcome') {
+      const existing = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${encodeURIComponent(user.id)}&plan=eq.welcome&status=in.(active,pending)&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } });
+      const rows = existing.ok ? await existing.json() : [];
+      if (rows.length) return json(res, 409, { error: 'Welcome Gift has already been claimed.' });
+    }
 
     const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
       method: 'POST',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ user_id: user.id, plan, status: 'pending', payment_method, transaction_id })
+      body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0 } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id })
     });
 
-    if (insertResponse.ok) return json(res, 200, { ok: true, message: 'Subscription request submitted for admin approval.' });
+    if (insertResponse.ok) return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.' });
 
     const raw = await insertResponse.text();
     let details = raw;
