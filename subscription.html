@@ -53,7 +53,7 @@ async function loadActiveSubscription(){
   if(!data||!data.length){message.textContent='No active subscription found. Submit a payment request after making your payment.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
   const sub=data[0];
   hasActiveSubscription=true;
-  const planNames={'three_day':'3 Days','3-days':'3 Days','weekly':'Weekly','monthly':'Monthly'};
+  const planNames={'three_day':'3 Days','3-days':'3 Days','weekly':'Weekly Unlimited','monthly':'Monthly Unlimited','starter':'Starter Pack','growth':'Growth Pack','pro':'Pro Pack','business':'Business Pack','enterprise':'Enterprise Pack','half_month':'Half-Month Unlimited','quarterly':'Quarterly Unlimited','welcome':'Welcome Gift'};
   document.getElementById('activePlan').textContent=planNames[sub.plan]||sub.plan;
   document.getElementById('activeStatus').textContent='Active';
   document.getElementById('activeEnds').textContent=sub.ends_at?new Date(sub.ends_at).toLocaleDateString():'Unlimited';
