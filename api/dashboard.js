@@ -39,7 +39,14 @@ export default async function handler(req,res){
     const isFull90=!from&&!to&&period==='90';
     const clicks=isFull90?analytics.reduce((s,c)=>s+Number(links.find(x=>x.code===c)?.clicks||0),0):selected.length;
     const visitors=new Set(selected.map(e=>e.visitor_id)).size;
-    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},links:links.map(x=>({code:x.code,url:x.url,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
+    const todayStart=startOfBangladeshDay();
+    const yesterdayStart=new Date(todayStart.getTime()-86400000);
+    const yesterdayEnd=new Date(todayStart.getTime()-1);
+    const byCode=(rows)=>{const m=new Map();for(const e of rows)m.set(e.code,(m.get(e.code)||0)+1);return [...m.entries()].map(([code,count])=>({code,clicks:count})).sort((a,b)=>b.clicks-a.clicks).slice(0,10).map((x,i)=>({rank:i+1,code:x.code,clicks:x.clicks}));};
+    const todayTop=byCode(events.filter(e=>{const t=new Date(e.visited_at);return t>=todayStart&&t<=end;}));
+    const yesterdayTop=byCode(events.filter(e=>{const t=new Date(e.visited_at);return t>=yesterdayStart&&t<=yesterdayEnd;}));
+    const allTimeTop=links.filter(x=>x.link_mode==='analytics').sort((a,b)=>Number(b.clicks||0)-Number(a.clicks||0)).slice(0,10).map((x,i)=>({rank:i+1,code:x.code,clicks:Number(x.clicks||0)}));
+    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},topToday:todayTop,topYesterday:yesterdayTop,topAllTime:allTimeTop,links:links.map(x=>({code:x.code,url:x.url,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
   }catch(e){console.error(e);return res.status(500).json({error:'Could not load dashboard.'})}
 }
 function isDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
