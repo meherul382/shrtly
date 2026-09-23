@@ -81,6 +81,11 @@ const planToRequest={
  starter:'starter',growth:'growth',pro:'pro',business:'business',enterprise:'enterprise',
  weekly:'weekly','half-month':'half-month',monthly:'monthly',quarterly:'quarterly',welcome:'welcome'
 };
+const requestedPlan=new URLSearchParams(location.search).get('plan');
+if(requestedPlan){
+ const requested=document.querySelector('[data-select-plan="'+requestedPlan+'"]');
+ if(requested){ requested.closest('.plan')?.classList.add('selected'); const select=document.getElementById('plan'); if(select) select.value=requestedPlan; }
+}
 document.querySelectorAll('[data-select-plan]').forEach(button=>button.addEventListener('click',()=>{
  const key=button.getAttribute('data-select-plan');
  document.querySelectorAll('.plan').forEach(x=>x.classList.remove('selected'));
