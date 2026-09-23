@@ -50,3 +50,71 @@ on conflict (id) do update set public = true;
 
 -- The Vercel API uses the Supabase service-role key.
 -- Keep SUPABASE_SERVICE_ROLE_KEY secret and never put it in index.html.
+
+
+-- Hot-path resolver for production redirect traffic.
+-- It resolves the link and consumes the user's click entitlement atomically
+-- in one PostgREST call, reducing database round trips on every redirect.
+create or replace function public.shrtigo_resolve_and_consume(p_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $function$
+declare
+  v_link public.links%rowtype;
+  v_sub_id uuid;
+  v_consumed boolean := true;
+begin
+  select * into v_link
+  from public.links
+  where code = p_code
+  limit 1;
+
+  if not found then
+    return jsonb_build_object('found', false);
+  end if;
+
+  if v_link.user_id is not null then
+    select s.id into v_sub_id
+    from public.subscriptions s
+    where s.user_id = v_link.user_id
+      and s.status = 'active'
+      and (s.ends_at is null or s.ends_at > now())
+    order by s.ends_at desc nulls last
+    limit 1;
+
+    if v_sub_id is not null then
+      update public.subscriptions
+      set clicks_used = coalesce(clicks_used, 0) + 1,
+          updated_at = now()
+      where id = v_sub_id
+        and (click_limit is null or coalesce(clicks_used, 0) < click_limit)
+      returning true into v_consumed;
+
+      if not coalesce(v_consumed, false) then
+        return jsonb_build_object('found', true, 'consumed', false, 'code', v_link.code, 'user_id', v_link.user_id);
+      end if;
+    end if;
+  end if;
+
+  update public.links
+  set clicks = coalesce(clicks, 0) + 1
+  where code = p_code;
+
+  return jsonb_build_object(
+    'found', true,
+    'consumed', true,
+    'code', v_link.code,
+    'url', v_link.url,
+    'image_url', v_link.image_url,
+    'youtube_url', v_link.youtube_url,
+    'clicks', coalesce(v_link.clicks, 0) + 1,
+    'link_mode', v_link.link_mode,
+    'user_id', v_link.user_id
+  );
+end;
+$function$;
+
+revoke execute on function public.shrtigo_resolve_and_consume(text) from public, anon, authenticated;
+grant execute on function public.shrtigo_resolve_and_consume(text) to service_role;
