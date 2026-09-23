@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
     if (!userResponse.ok || !user?.id) return json(res, 401, { error: 'Your login session is invalid or expired.' });
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
-    const planMap = { '3-days': 'three_day', '3_days': 'three_day', 'three-day': 'three_day', 'three_day': 'three_day', 'three-days': 'three_day', weekly: 'weekly', monthly: 'monthly' };
+    const planMap = { '3-days': 'three_day', '3_days': 'three_day', 'three-day': 'three_day', 'three_day': 'three_day', 'three-days': 'three_day', weekly: 'weekly', monthly: 'monthly', starter: 'starter', growth: 'growth', pro: 'pro', business: 'business', enterprise: 'enterprise', 'half-month': 'half_month', half_month: 'half_month', quarterly: 'quarterly', welcome: 'welcome' };
     const methodMap = { bkash: 'bkash', 'b-kash': 'bkash', nagad: 'nagad', binance: 'binance', manual: 'manual' };
     const plan = planMap[String(body.plan || '').trim().toLowerCase()];
     const payment_method = methodMap[String(body.payment_method || '').trim().toLowerCase()];
