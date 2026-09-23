@@ -5,6 +5,7 @@ const $=id=>document.getElementById(id);
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let serverLinks=[];
+try{serverLinks=JSON.parse(sessionStorage.getItem('shrtigo-links-cache')||'[]')}catch{}
 function localLoad(){try{return JSON.parse(localStorage.getItem('shrtigo-history')||'[]')}catch{return[]}}
 function localSave(v){localStorage.setItem('shrtigo-history',JSON.stringify(v))}
 function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -22,8 +23,9 @@ function renderHistory(){
  document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{const i=Number(b.dataset.delete),local=localLoad();const mergedNow=[...serverLinks.map(x=>({...x,source:'server'})),...local.filter(l=>!serverLinks.some(s=>shortFor(s)===l.short)).map(x=>({...x,source:'local'}))];const item=mergedNow[i];if(!confirm('Delete this short link?'))return;if(item?.source==='server'){const s=(await sb.auth.getSession()).data.session;if(s){const rr=await fetch('/api/dashboard-delete',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({code:item.code})});const d=await rr.json().catch(()=>({}));if(!rr.ok){alert(d.error||'Could not delete link.');return}}}else localSave(local.filter(x=>x.short!==item.short));await loadServer()});
 }
 async function loadServer(){
+ renderHistory();
  const s=(await sb.auth.getSession()).data.session;
- if(s){const r=await fetch('/api/dashboard?period=90',{headers:{Authorization:'Bearer '+s.access_token}});if(r.ok){const d=await r.json();serverLinks=d.links||[]}}
+ if(s){try{const r=await fetch('/api/dashboard?period=90',{headers:{Authorization:'Bearer '+s.access_token}});if(r.ok){const d=await r.json();serverLinks=d.links||[];sessionStorage.setItem('shrtigo-links-cache',JSON.stringify(serverLinks));}}catch(e){console.warn('Links refresh failed',e)}}
  renderHistory();
 }
 $('selectAll').onchange=()=>document.querySelectorAll('.rowcheck').forEach(c=>c.checked=$('selectAll').checked);
