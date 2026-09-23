@@ -92,7 +92,7 @@ module.exports = async (req, res) => {
     }
 
     const existingResult = await supabaseFetch(
-      `/rest/v1/subscriptions?select=id,plan,status&id=eq.${encodeURIComponent(id)}&limit=1`,
+      `/rest/v1/subscriptions?select=id,plan,status,click_limit,clicks_used&id=eq.${encodeURIComponent(id)}&limit=1`,
       { method: 'GET' },
       SERVICE_KEY || PUBLIC_KEY
     );
@@ -102,14 +102,17 @@ module.exports = async (req, res) => {
       return json(res, 404, { error: existingResult.data?.message || 'Subscription request not found.' });
     }
 
-    const durationDays = existing.plan === 'three_day' ? 3 : existing.plan === 'weekly' ? 7 : existing.plan === 'half_month' ? 15 : existing.plan === 'quarterly' ? 90 : existing.plan === 'welcome' ? 30 : existing.plan === 'starter' || existing.plan === 'growth' || existing.plan === 'pro' || existing.plan === 'business' || existing.plan === 'enterprise' ? 30 : 30;
+    const durationDays = existing.plan === 'three_day' ? 3 : existing.plan === 'weekly' ? 7 : existing.plan === 'half_month' ? 15 : existing.plan === 'quarterly' ? 90 : existing.plan === 'welcome' ? 30 : 30;
+    const clickLimit = ({starter:10000,growth:50000,pro:100000,business:250000,enterprise:500000,welcome:500})[existing.plan] ?? null;
     const now = new Date();
     const patch = action === 'approve'
       ? {
           status: 'active',
           started_at: now.toISOString(),
           ends_at: new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: now.toISOString()
+          updated_at: now.toISOString(),
+          click_limit: clickLimit,
+          clicks_used: Number(existing.clicks_used || 0)
         }
       : { status: 'rejected', updated_at: now.toISOString() };
 
