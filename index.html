@@ -25,7 +25,9 @@
 @media(max-width:800px){.site-sidebar{width:72px;padding:18px 9px}.site-sidebar .side-brand{justify-content:center;padding:5px 0 24px;font-size:0}.site-sidebar .side-brand span{margin:0}.site-nav a{justify-content:center;font-size:0}.site-nav .nav-icon{font-size:16px}.site-sidebar-bottom{display:none}.site-content{margin-left:72px}.wrap{width:min(100% - 24px,1120px)}}
 
 .control-section{padding:45px 0}.control-head{display:flex;justify-content:space-between;gap:18px;align-items:end;margin-bottom:18px}.control-head h2{margin:0;font-size:32px;letter-spacing:-1px}.control-head p{margin:6px 0 0;color:#687386}.control-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.control-card{background:#fff;border:1px solid #e6ebf2;border-radius:16px;padding:19px;box-shadow:0 12px 35px rgba(23,32,51,.05)}.control-card h3{margin:8px 0 6px}.control-card p{color:#687386;line-height:1.55;font-size:13px;margin:0 0 13px}.control-card .control-btn{display:inline-block;padding:9px 12px;border-radius:9px;background:#2563eb;color:#fff;font-size:12px;font-weight:850}.plan-mini-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.plan-mini{background:#fff;border:1px solid #e6ebf2;border-radius:14px;padding:15px}.plan-mini strong{display:block;font-size:13px}.plan-mini b{display:block;font-size:20px;margin-top:7px}.plan-mini small{display:block;color:#687386;margin-top:4px}.domain-box,.status-box{background:#fff;border:1px solid #e6ebf2;border-radius:16px;padding:20px}.domain-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.domain-pill{padding:9px 12px;border:1px solid #dce3ee;border-radius:999px;background:#f7f9fc;color:#334155;font-weight:800;font-size:12px}.section-anchor{scroll-margin-top:20px}@media(max-width:900px){.control-grid{grid-template-columns:1fr 1fr}.plan-mini-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.control-grid,.plan-mini-grid{grid-template-columns:1fr}.control-head{align-items:flex-start;flex-direction:column}}
- .plan-link{display:block;color:inherit;text-decoration:none;cursor:pointer;transition:.18s}.plan-link:hover{border-color:#2563eb;transform:translateY(-2px);box-shadow:0 12px 30px rgba(37,99,235,.12)} </style>
+ .plan-link{display:block;color:inherit;text-decoration:none;cursor:pointer;transition:.18s}.plan-link:hover{border-color:#2563eb;transform:translateY(-2px);box-shadow:0 12px 30px rgba(37,99,235,.12)} 
+.home-analytics{padding:42px 0}.home-analytics .control-head{margin-bottom:18px}.analytics-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}.analytics-card{background:#fff;border:1px solid #e6ebf2;border-radius:16px;padding:19px;box-shadow:0 12px 35px rgba(23,32,51,.05)}.analytics-card .aicon{width:31px;height:31px;border-radius:9px;background:#eef4ff;color:#2563eb;display:grid;place-items:center;font-weight:900}.analytics-card h3{margin:12px 0 6px;font-size:16px}.analytics-card .count{font-size:25px;font-weight:950}.analytics-card p{color:#687386;font-size:11px;margin:5px 0 0}.analytics-table{background:#fff;border:1px solid #e6ebf2;border-radius:16px;overflow:hidden;margin-top:14px}.analytics-table-head{padding:17px 18px;border-bottom:1px solid #e6ebf2}.analytics-table-head h3{margin:0;font-size:16px}.analytics-table-head p{margin:5px 0 0;color:#687386;font-size:11px}.analytics-cols,.analytics-row{display:grid;grid-template-columns:80px 1fr 110px;align-items:center}.analytics-cols{padding:11px 15px;background:#f7f9fc;color:#687386;font-size:10px;font-weight:900;text-transform:uppercase}.analytics-row{padding:13px 15px;border-top:1px solid #edf1f6;font-size:12px}.analytics-row .rank{font-weight:900}.analytics-row a{color:#2563eb;font-weight:800;word-break:break-all}.analytics-row .clicks{text-align:right;font-weight:900}.analytics-copy{display:inline-block;margin-left:8px;padding:6px 9px;border:1px solid #dce3ee;border-radius:7px;background:#fff;color:#172033;font-size:10px;font-weight:800;cursor:pointer}.analytics-empty{grid-column:1/-1;text-align:center;padding:25px;color:#687386;font-size:11px}@media(max-width:800px){.analytics-summary{grid-template-columns:1fr}.analytics-cols,.analytics-row{grid-template-columns:55px 1fr 70px}.analytics-copy{display:block;margin:6px 0 0}}
+</style>
 <script src="/home-polish.js" defer></script></head>
 <body>
 <aside class="site-sidebar">
@@ -68,6 +70,15 @@
 <article id="plan-status" class="control-card section-anchor"><div class="icon">◷</div><h3>Plan / Time Left</h3><p>Your active plan, remaining time and account limits are shown after login.</p><a class="control-btn" href="#plan-status">View Status</a></article>
 </div>
 </section>
+<section id="analytics" class="home-analytics wrap section-anchor">
+<div class="control-head"><div><h2>Analytics</h2><p>Online click activity and top-performing short links.</p></div></div>
+<div class="analytics-summary">
+<article class="analytics-card"><div class="aicon">↗</div><h3>Today Top Links</h3><div id="homeTodayCount" class="count">0</div><p>Top links by today's clicks</p></article>
+<article class="analytics-card"><div class="aicon">↗</div><h3>Yesterday Top Links</h3><div id="homeYesterdayCount" class="count">0</div><p>Top links by yesterday's clicks</p></article>
+<article class="analytics-card"><div class="aicon">↗</div><h3>All Time Top Links</h3><div id="homeAllCount" class="count">0</div><p>Top links by total clicks</p></article>
+</div>
+<div id="homeAnalyticsTables"></div>
+</section>
 <section id="plans" class="control-section wrap section-anchor">
 <div class="control-head"><div><h2>Available Plans</h2><p>Choose a click package or unlimited plan for your Shrtigo account.</p></div><a class="btn" href="/subscription.html">View All Plans →</a></div>
 <div class="plan-mini-grid">
@@ -106,6 +117,24 @@ selectAll.onchange=()=>document.querySelectorAll('.rowcheck').forEach(c=>c.check
 shorten.onclick=async()=>{const main=url.value.trim();if(!/^https?:\/\//i.test(main)){status.style.display='block';status.textContent='Please enter a valid http:// or https:// URL.';return}status.style.display='block';status.textContent=simpleMode.checked?'Creating your quick short link…':'Preparing your short link…';shorten.disabled=true;shorten.textContent='Creating…';result.style.display='none';try{let img=null;if(withImage.checked&&image.files[0]){const f=image.files[0];if(f.size>3*1024*1024)throw new Error('Image must be 3 MB or smaller.');if(!optimizedImageData)optimizedImageData=await fileToDataUrl(f);img=optimizedImageData}const simple=simpleMode.checked;status.textContent='Almost done…';const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:main,alias:custom.checked&&!simple?aliasInput.value.trim():'',image:!simple?img:null,youtubeUrl:!simple&&withYoutube.checked?youtube.value.trim():'',linkMode:simple?'simple':'advanced',domain:domain.value})});const data=await r.json();if(!r.ok)throw new Error(data.error||'Could not create the short link.');resultUrl.href=data.shortUrl;resultUrl.textContent=data.shortUrl;result.style.display='block';status.textContent=simple?'Quick short link created successfully.':'Short link created successfully.';save({short:data.shortUrl,long:main,image:data.imageUrl,youtube:data.youtubeUrl,simple})}catch(e){status.textContent=e.message||'Could not create the short link.'}finally{shorten.disabled=false;shorten.textContent='Shorten Link'}};
 copy.onclick=async()=>{try{await navigator.clipboard.writeText(resultUrl.textContent);copy.textContent='Copied!';setTimeout(()=>copy.textContent='Copy',1200)}catch{alert('Copy failed. Please copy the link manually.')}};
 renderHistory();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+(async function(){
+ const box=document.getElementById('homeAnalyticsTables'); if(!box)return;
+ const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ');
+ const s=(await sb.auth.getSession()).data.session; if(!s){box.innerHTML='<div class="analytics-table"><div class="analytics-empty">Log in to view your private analytics.</div></div>';return}
+ try{
+  const res=await fetch('/api/dashboard?period=90',{headers:{Authorization:'Bearer '+s.access_token}}),d=await res.json(); if(!res.ok)throw new Error(d.error||'Could not load analytics');
+  const sets=[['Today Top 10 Links','today',d.topToday||[]],['Yesterday Top 10 Links','yesterday',d.topYesterday||[]],['All Time Top 10 Links','alltime',d.topAllTime||[]]];
+  document.getElementById('homeTodayCount').textContent=(d.topToday||[]).length;
+  document.getElementById('homeYesterdayCount').textContent=(d.topYesterday||[]).length;
+  document.getElementById('homeAllCount').textContent=(d.topAllTime||[]).length;
+  box.innerHTML=sets.map(([title,id,data])=>'<div class="analytics-table"><div class="analytics-table-head"><h3>'+title+'</h3><p>Ranking, short URL and total clicks.</p></div><div class="analytics-cols"><span>Ranking</span><span>Short URL</span><span>Total Clicks</span></div><div id="home-'+id+'"></div></div>').join('');
+  sets.forEach(([title,id,data])=>{const el=document.getElementById('home-'+id);if(!data.length){el.innerHTML='<div class="analytics-row"><div class="analytics-empty">No analytics links found for this period.</div></div>';return}el.innerHTML=data.map(x=>{const u='https://'+(x.domain||'shrtigo.xyz')+'/'+encodeURIComponent(x.code);return '<div class="analytics-row"><span class="rank">#'+x.rank+'</span><span><a href="'+u+'" target="_blank" rel="noopener">'+u+'</a><button class="analytics-copy" type="button" data-copy="'+u+'">Copy</button></span><span class="clicks">'+Number(x.clicks||0).toLocaleString()+'</span></div>'}).join('')});
+  box.querySelectorAll('[data-copy]').forEach(b=>b.onclick=async()=>{await navigator.clipboard.writeText(b.dataset.copy);b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1000)});
+ }catch(e){box.innerHTML='<div class="analytics-table"><div class="analytics-empty">'+String(e.message||'Could not load analytics')+'</div></div>'}
+})();
 </script>
 <script src="/profile.js"></script></body>
 </html>
