@@ -1,1 +1,105 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Custom Domains | Shrtigo</title><meta name="robots" content="noindex,nofollow"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>*{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:#172033;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}.side{position:fixed;inset:0 auto 0 0;width:198px;background:#ffffff;border-right:1px solid #22252d;padding:18px 10px}.brand{display:block;padding:4px 10px 24px;font-size:18px;font-weight:950;color:#fff;text-decoration:none}.brand span{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#2563eb;margin-right:7px}.brand small{display:block;color:#747b89;font-size:9px;font-weight:600;margin:2px 0 0 37px}.nav{display:grid;gap:4px}.nav a{padding:11px 10px;border-radius:9px;color:#9aa1ae;font-size:12px;font-weight:850;text-decoration:none}.nav a:hover,.nav a.active{background:#1b1d24;color:#fff}.bottom{position:absolute;left:10px;right:10px;bottom:12px;border-top:1px solid #252831;padding-top:10px}.time{border:1px solid #302943;background:linear-gradient(180deg,#171222,#0e0f14);border-radius:13px;padding:11px}.time small{color:#89808f;font-size:8px;font-weight:900}.time b{display:block;font-size:21px;margin-top:5px}.time span{font-size:9px;color:#8c8494}.main{margin-left:198px;min-height:100vh;padding:24px 5vw 50px}.topbar{height:24px;display:flex;justify-content:space-between;align-items:center}.menu,.wallet,.logout{border:1px solid #30343d;background:#111319;color:#172033;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:900}.wallet{border-radius:999px}.right{display:flex;gap:8px}.head,.box{max-width:900px;margin-left:auto;margin-right:auto}.head{margin-top:22px;margin-bottom:18px}.head h1{font-size:25px;margin:0}.head p{font-size:11px;color:#818895;margin:5px 0}.box{background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;padding:20px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.card{background:#111319;border:1px solid #e2e8f0;border-radius:13px;padding:16px}.card h3{font-size:12px;margin:0 0 7px}.card p{font-size:10px;color:#858c99;line-height:1.6;margin:0}.row{padding:14px 0;border-bottom:1px solid #24272f}.row:last-child{border-bottom:0}.label{font-size:9px;color:#858c99;font-weight:900;text-transform:uppercase}.value{font-size:13px;margin-top:5px;font-weight:800}.input{width:100%;background:#101217;color:#fff;border:1px solid #30343d;border-radius:9px;padding:11px;margin-top:7px}.btn{border:1px solid #30343d;background:#f5f5f5;color:#111;border-radius:9px;padding:10px 13px;font-size:10px;font-weight:900;cursor:pointer}.btn.dark{background:#15181e;color:#fff}.status{font-size:10px;color:#8c94a1;margin-top:9px}@media(max-width:800px){.side{width:70px}.brand b,.brand small,.nav span{display:none}.brand{text-align:center}.main{margin-left:70px;padding:20px 12px}.cards{grid-template-columns:1fr}}</style><link rel="stylesheet" href="/panel-theme.css"></head><body><aside class="side"><a class="brand" href="/"><span>S</span><b>Shrtigo</b><small>Premium Shortener</small></a><nav class="nav"><a href="/">▦ <span>Overview</span></a><a href="/create-link.html">＋ <span>Create Link</span></a><a href="/panel-analytics.html">⌁ <span>Analytics</span></a><a href="/links.html">↗ <span>Links</span></a><a href="/subscription.html">▣ <span>Plans</span></a><a class="active" href="/domains.html">◎ <span>Domains</span></a><a href="/invoices.html">▤ <span>Invoices</span></a><a href="/add-fund.html">＋ <span>Add Fund</span></a><a class="" href="/notifications.html">♧ <span>Notifications</span></a><a class="" href="/tickets.html">▱ <span>Tickets</span></a><a class="" href="/profile.html">♙ <span>Profile</span></a><a id="logout" href="#logout">↪ <span>Logout</span></a></nav><div class="bottom"><div class="time"><small>TIME LEFT</small><b>—</b><span>Plan status</span></div></div></aside><main class="main"><div class="topbar"><button class="menu">☰ Menu</button><div class="right"><span class="wallet">Wallet: ৳0.00 BDT</span><button class="logout" id="logoutTop">Logout</button></div></div><header class="head"><h1>Custom Domains</h1><p>Connect and manage your branded short URL domains.</p></header><section class="box"><div class="cards"><div class="card"><h3>shrtigo.xyz</h3><p>Primary Shrtigo domain.</p></div><div class="card"><h3>shrtigo.shop</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigo.online</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigo.site</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigopro.site</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigo.world</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigo.store</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigourl.site</h3><p>Supported branded domain.</p></div><div class="card"><h3>shrtigo.website</h3><p>Supported branded domain.</p></div></div></section></main><script>const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function auth(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='/central-login.html?next='+encodeURIComponent(location.pathname);return null}return session}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}document.getElementById('logout').onclick=e=>{e.preventDefault();logout()};document.getElementById('logoutTop').onclick=logout;</script><script src="/panel-status.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Domains | Shrtigo</title>
+<meta name="robots" content="noindex,nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f9fc;color:#172033;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh}
+.side{position:fixed;left:0;top:0;bottom:0;width:205px;background:#fff;border-right:1px solid #e3e8f0;padding:22px 10px;z-index:5}.brand{display:flex;align-items:center;gap:9px;padding:2px 10px 28px;color:#172033;text-decoration:none;font-size:21px;font-weight:950}.brand span{width:33px;height:33px;border-radius:9px;background:linear-gradient(135deg,#2563eb,#6d5dfc);color:#fff;display:grid;place-items:center}.brand small{position:absolute;margin:38px 0 0 43px;color:#7a8495;font-size:8px;font-weight:700}.nav{display:grid;gap:4px}.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:10px;color:#657187;font-size:12px;font-weight:850;text-decoration:none}.nav a:hover,.nav a.active{background:#eef4ff;color:#2563eb}.nav i{font-style:normal;width:18px;text-align:center}.bottom{position:absolute;left:10px;right:10px;bottom:14px;border-top:1px solid #e6ebf2;padding-top:11px}.time{border:1px solid #e1d9f1;background:linear-gradient(180deg,#faf7ff,#fff);border-radius:13px;padding:11px}.time small{color:#7d718b;font-size:8px;font-weight:900}.time b{display:block;font-size:20px;margin-top:5px}.time span{font-size:9px;color:#7d8491}
+.main{margin-left:205px;min-height:100vh}.topbar{height:72px;border-bottom:1px solid #e4e9f1;background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:0 34px}.wallet,.logout{border:1px solid #dce3ed;background:#fff;color:#172033;border-radius:9px;padding:10px 13px;font-size:11px;font-weight:900}.wallet{border-radius:999px}.logout{cursor:pointer}
+.content{width:min(1060px,calc(100% - 56px));margin:auto;padding:40px 0 55px}.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}.head h1{margin:0;font-size:34px;letter-spacing:-1px}.head p{margin:8px 0 0;color:#687386;font-size:12px}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}.summary-card,.box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 12px 35px rgba(23,32,51,.05)}.summary-card{padding:18px}.summary-card small{display:block;color:#7a8495;font-size:9px;font-weight:900;text-transform:uppercase}.summary-card strong{display:block;font-size:25px;margin-top:5px}.summary-card span{display:block;color:#687386;font-size:11px;margin-top:4px}
+.box{padding:22px}.box h2{margin:0 0 6px;font-size:19px}.box>p{margin:0;color:#687386;font-size:12px;line-height:1.6}.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.domain{position:relative;display:flex;align-items:center;gap:11px;padding:15px;border:1px solid #dfe6ef;border-radius:13px;background:#fff;cursor:pointer;transition:.15s}.domain:hover{border-color:#8b7cff;box-shadow:0 7px 22px rgba(109,93,252,.08)}.domain.selected{border-color:#8b7cff;background:#faf8ff}.domain.disabled{opacity:.45;cursor:not-allowed}.domain input{width:17px;height:17px;accent-color:#6d5dfc}.domain b{font-size:13px}.domain small{display:block;color:#7a8495;font-size:9px;margin-top:3px}.actions{display:flex;align-items:center;gap:10px;margin-top:18px}.save{border:0;background:#151922;color:#fff;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer}.save:disabled{opacity:.55;cursor:not-allowed}.status{font-size:11px;color:#687386}.status.ok{color:#16834f}.status.err{color:#b42318}.hint{margin-top:14px;padding:13px 14px;background:#f7f5ff;border:1px solid #e6defd;border-radius:12px;color:#5b5375;font-size:11px;line-height:1.6}
+@media(max-width:850px){.domain-grid{grid-template-columns:1fr 1fr}}@media(max-width:800px){.side{width:70px;padding:17px 8px}.brand{justify-content:center;padding:2px 0 28px;font-size:0}.brand small{display:none}.nav a{justify-content:center;padding:11px 5px}.nav span,.bottom{display:none}.main{margin-left:70px}.topbar{padding:0 14px}.wallet{display:none}.content{width:calc(100% - 28px);padding-top:28px}}@media(max-width:560px){.summary,.domain-grid{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}}
+</style>
+<link rel="stylesheet" href="/panel-theme.css">
+</head>
+<body>
+<aside class="side">
+<a class="brand" href="/"><span>S</span><b>Shrtigo</b><small>Premium Shortener</small></a>
+<nav class="nav">
+<a href="/"><i>▦</i><span>Overview</span></a><a href="/create-link.html"><i>＋</i><span>Create Link</span></a><a href="/panel-analytics.html"><i>⌁</i><span>Analytics</span></a><a href="/links.html"><i>↗</i><span>Links</span></a><a href="/subscription.html"><i>▣</i><span>Plans</span></a><a class="active" href="/domains.html"><i>◎</i><span>Domains</span></a><a href="/invoices.html"><i>▤</i><span>Invoices</span></a><a href="/add-fund.html"><i>＋</i><span>Add Fund</span></a><a href="/notifications.html"><i>♧</i><span>Notifications</span></a><a href="/tickets.html"><i>▱</i><span>Tickets</span></a><a href="/profile.html"><i>♙</i><span>Profile</span></a><a id="logout" href="/"><i>↪</i><span>Logout</span></a>
+</nav>
+<div class="bottom"><div class="time"><small>PLAN / TIME LEFT</small><b>—</b><span>Plan status</span></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><span class="wallet">Wallet: ৳0.00 BDT</span><button class="logout" id="logoutTop">Logout</button></header>
+<div class="content">
+<header class="head"><div><h1>Domain Selection</h1><p>Choose which Shrtigo domains your current plan can use for new short links.</p></div></header>
+<section class="summary">
+<div class="summary-card"><small>Current Plan</small><strong id="plan">—</strong><span id="planText">Loading plan…</span></div>
+<div class="summary-card"><small>Domain Allowance</small><strong id="count">—</strong><span id="countText">Loading selected domains…</span></div>
+</section>
+<section class="box">
+<h2>Select your domains</h2>
+<p>You can choose any domains you want, up to your plan's allowance. Your choice is saved to your Shrtigo account.</p>
+<div id="domainGrid" class="domain-grid"></div>
+<div class="actions"><button id="save" class="save" disabled>Save Domain Selection</button><div id="status" class="status"></div></div>
+<div class="hint">💡 Example: Starter = 2 domains, Growth = 3, Pro = 4, Business = 5, Enterprise = 6, Weekly Unlimited = 7. Half-Month Unlimited can use all available Shrtigo domains.</div>
+</section>
+</div>
+</main>
+<script>
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
+const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const $=id=>document.getElementById(id);
+let session=null, maxDomains=1, selected=[];
+
+function labelPlan(plan){
+ const names={welcome:'Welcome Gift',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',weekly:'Weekly Unlimited',half_month:'Half-Month Unlimited',monthly:'Monthly Unlimited',quarterly:'Quarterly Unlimited',three_day:'3 Days'};
+ return names[plan]||plan;
+}
+function render(data){
+ maxDomains=Number(data.maxDomains||1);
+ selected=[...(data.selectedDomains||[])];
+ $('plan').textContent=labelPlan(data.plan);
+ $('planText').textContent=maxDomains>=data.availableDomains.length?'All available domains are included.':'Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+'.';
+ $('count').textContent=selected.length+' / '+maxDomains;
+ $('countText').textContent='Selected domains';
+ const grid=$('domainGrid');grid.innerHTML='';
+ (data.availableDomains||[]).forEach(domain=>{
+   const isSelected=selected.includes(domain);
+   const locked=!isSelected&&selected.length>=maxDomains;
+   const label=document.createElement('label');label.className='domain'+(isSelected?' selected':'')+(locked?' disabled':'');
+   label.innerHTML='<input type="checkbox" value="'+domain+'" '+(isSelected?'checked':'')+' '+(locked?'disabled':'')+'><div><b>'+domain+'</b><small>'+ (domain==='shrtigo.xyz'?'Primary Shrtigo domain':'Supported branded domain') +'</small></div>';
+   const input=label.querySelector('input');
+   input.addEventListener('change',()=>{
+     if(input.checked){if(!selected.includes(domain))selected.push(domain)}
+     else selected=selected.filter(x=>x!==domain);
+     render({...data,selectedDomains:selected});
+     $('save').disabled=false;
+   });
+   grid.appendChild(label);
+ });
+ $('save').disabled=false;
+}
+async function auth(){
+ const {data:{session:s}}=await sb.auth.getSession();
+ if(!s){location.href='/central-login.html?next=%2Fdomains.html';return null}
+ return s;
+}
+async function load(){
+ const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+session.access_token},cache:'no-store'});
+ const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not load domain settings.');
+ render(d);
+}
+$('save').onclick=async()=>{
+ $('save').disabled=true;$('status').className='status';$('status').textContent='Saving…';
+ try{
+   const r=await fetch('/api/domain-settings',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({selectedDomains:selected})});
+   const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not save domain selection.');
+   $('status').className='status ok';$('status').textContent='✓ '+d.message;
+   render(d);
+ }catch(e){$('status').className='status err';$('status').textContent=e.message;$('save').disabled=false}
+};
+async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}
+$('logout').onclick=e=>{e.preventDefault();logout()};$('logoutTop').onclick=logout;
+(async()=>{try{session=await auth();if(session)await load()}catch(e){$('status').className='status err';$('status').textContent=e.message}})();
+</script>
+<script src="/panel-status.js" defer></script>
+</body>
+</html>
