@@ -1,21 +1,101 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
-    { "source": "/", "destination": "/login", "permanent": false },
-    { "source": "/index.html", "destination": "/home", "permanent": true },
-    { "source": "/analytics-shortener.html", "destination": "/analytics-shortener", "permanent": true },
-    { "source": "/dashboard.html", "destination": "/dashboard", "permanent": true }
+    {
+      "source": "/",
+      "destination": "/login",
+      "permanent": false
+    },
+    {
+      "source": "/index.html",
+      "destination": "/home",
+      "permanent": true
+    },
+    {
+      "source": "/analytics-shortener.html",
+      "destination": "/analytics-shortener",
+      "permanent": true
+    },
+    {
+      "source": "/dashboard.html",
+      "destination": "/dashboard",
+      "permanent": true
+    },
+    {
+      "source": "/central-login",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/central-login.html",
+      "destination": "/login",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/home", "destination": "/index.html" },
-    { "source": "/login", "destination": "/central-login.html" },
-    { "source": "/subscription", "destination": "/subscription.html" },
-    { "source": "/analytics-shortener", "destination": "/analytics-account.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/:code([A-Za-z0-9_-]{3,24})", "destination": "/api/r/:code" }
+    {
+      "source": "/home",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/central-login.html"
+    },
+    {
+      "source": "/check-email",
+      "destination": "/check-email.html"
+    },
+    {
+      "source": "/subscription",
+      "destination": "/subscription.html"
+    },
+    {
+      "source": "/analytics-shortener",
+      "destination": "/analytics-account.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard.html"
+    },
+    {
+      "source": "/:code([A-Za-z0-9_-]{3,24})",
+      "destination": "/api/r/:code"
+    }
   ],
   "headers": [
-    { "source": "/sitemap.xml", "headers": [{ "key": "Content-Type", "value": "application/xml; charset=utf-8" }, { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }, { "key": "X-Content-Type-Options", "value": "nosniff" }] },
-    { "source": "/robots.txt", "headers": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }, { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }, { "key": "X-Content-Type-Options", "value": "nosniff" }] }
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
   ]
 }
