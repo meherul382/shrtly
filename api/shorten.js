@@ -19,6 +19,20 @@ export default async function handler(req, res) {
     if (mode === 'analytics' && !userId) return res.status(401).json({ error: 'Please log in to your Shrtigo account before creating an Analytics Short Link.' });
 
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
+
+    // Enforce the domain allowance of the user's active subscription.
+    // Users can only create new links on domains they selected in the Domains panel.
+    if (userId) {
+      const domainAccess = await getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain);
+      if (!domainAccess.allowed) {
+        return res.status(403).json({
+          error: domainAccess.error,
+          domainLimit: domainAccess.maxDomains,
+          selectedDomains: domainAccess.selectedDomains
+        });
+      }
+    }
+
     const entitlement = await getEntitlement(supabaseUrl, serviceKey, userId);
     const used = await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
     if (used >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
@@ -59,6 +73,64 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error(e);
     return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
+  }
+}
+
+async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) {
+  const limits = {
+    welcome: 1,
+    starter: 2,
+    growth: 3,
+    pro: 4,
+    business: 5,
+    enterprise: 6,
+    weekly: 7,
+    half_month: 9,
+    monthly: 1,
+    quarterly: 1,
+    three_day: 1
+  };
+  try {
+    const sub = await supabaseFetch(
+      `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=1`,
+      serviceKey
+    );
+    const rows = sub.ok ? await sub.json() : [];
+    const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
+    const maxDomains = Math.max(1, Math.min(9, Number(limits[plan] || 1)));
+
+    const settings = await supabaseFetch(
+      `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+      serviceKey
+    );
+    let selectedDomains = [];
+    if (settings.ok) {
+      const saved = await settings.json();
+      selectedDomains = Array.isArray(saved?.[0]?.selected_domains)
+        ? [...new Set(saved[0].selected_domains.map(d => String(d).toLowerCase()).filter(Boolean))]
+        : [];
+    }
+
+    if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
+    selectedDomains = selectedDomains.slice(0, maxDomains);
+
+    if (!selectedDomains.includes(selectedDomain)) {
+      return {
+        allowed: false,
+        maxDomains,
+        selectedDomains,
+        error: `This domain is not selected for your current ${plan} plan. Open Domains and select up to ${maxDomains} domain${maxDomains === 1 ? '' : 's'}.`
+      };
+    }
+
+    return { allowed: true, maxDomains, selectedDomains };
+  } catch {
+    return {
+      allowed: selectedDomain === 'shrtigo.xyz',
+      maxDomains: 1,
+      selectedDomains: ['shrtigo.xyz'],
+      error: 'Your selected domain could not be verified. Please select your domain again from the Domains page.'
+    };
   }
 }
 
