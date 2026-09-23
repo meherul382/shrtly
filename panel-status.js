@@ -1,5 +1,5 @@
 (function(){
- const URL='https://qbijrkdlaguwlvriaiky.supabase.co',KEY='sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ';
+ const URL='https://qbijrkdlaguwlvriaiky.supabase.co',KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
  const names={three_day:'3 Days','3-days':'3 Days',weekly:'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift'};
  function left(ends){
   if(!ends)return 'Unlimited';
