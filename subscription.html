@@ -57,10 +57,10 @@ async function loadActiveSubscription(){
   document.getElementById('activePlan').textContent=planNames[sub.plan]||sub.plan;
   document.getElementById('activeStatus').textContent='Active';
   document.getElementById('activeEnds').textContent=sub.ends_at?new Date(sub.ends_at).toLocaleDateString():'Unlimited';
-  message.textContent='Your approved subscription is active. You can create links according to your plan.';
+  message.textContent='Your approved subscription is active. You can still purchase another plan; approved plan credits/time will be added according to the plan rules.';
   panel.classList.add('show');
-  requestSection.style.display='none';
-  blockedNote.style.display='block';
+  requestSection.style.display='block';
+  blockedNote.style.display='none';
  }catch(error){console.error('Subscription status error:',error);message.textContent='Could not load subscription status. Please refresh the page.';panel.classList.add('show')}
 }
 
@@ -100,7 +100,7 @@ document.querySelectorAll('.couponBtn').forEach(button=>button.addEventListener(
 loadActiveSubscription();
 const statusEl=document.getElementById('status');
 document.getElementById('submit').onclick=async()=>{
- if(hasActiveSubscription){statusEl.textContent='Your subscription is already active. You cannot submit another payment before it expires.';return}
+ if(hasActiveSubscription){statusEl.textContent='Your current plan is active. This new plan request can be submitted for approval and added after approval.';}
  statusEl.textContent='Checking login…';
  try{
   const {data:{session}}=await client.auth.getSession();
