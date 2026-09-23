@@ -111,6 +111,19 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
         : [];
     }
 
+    // Preserve domains an existing account has already used when the new
+    // selection row has not been created yet.
+    if (!selectedDomains.length) {
+      const used = await supabaseFetch(
+        `${supabaseUrl}/rest/v1/links?select=domain&user_id=eq.${encodeURIComponent(userId)}&deleted_at=is.null&domain=not.is.null`,
+        serviceKey
+      );
+      if (used.ok) {
+        const rows = await used.json();
+        selectedDomains = [...new Set((rows || []).map(x => String(x.domain || '').toLowerCase()).filter(Boolean))];
+      }
+    }
+
     if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
     selectedDomains = selectedDomains.slice(0, maxDomains);
 
