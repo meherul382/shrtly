@@ -10,14 +10,13 @@ export default async function handler(req,res){
     const rows=await response.json();
     if(!rows.length)return res.status(404).send('Short link not found');
     const link=rows[0];
-    const activeSubResponse=await fetch(`${supabaseUrl}/rest/v1/subscriptions?select=id,plan,click_limit,clicks_used,status,ends_at&user_id=eq.${encodeURIComponent(link.user_id)}&status=eq.active&order=ends_at.desc&limit=1`,{headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey}});
-    if(activeSubResponse.ok){
-      const activeSubs=await activeSubResponse.json();
-      if(activeSubs.length){
-        const consumedResponse=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_consume_click`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json'},body:JSON.stringify({p_user_id:link.user_id})});
-        const consumed=consumedResponse.ok ? await consumedResponse.json() : false;
-        if(consumed!==true){
-          res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
+    const consumedResponse=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_consume_click`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json'},body:JSON.stringify({p_user_id:link.user_id,p_code:code})});
+    const consumed=consumedResponse.ok ? await consumedResponse.json() : true;
+    if(consumed!==true){
+      res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
+      return res.status(200).send(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade Required | Shrtigo</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090812;color:#f8fafc;font-family:Inter,system-ui,Arial}.card{width:min(520px,calc(100% - 36px));padding:38px;border:1px solid #2b2940;border-radius:24px;background:linear-gradient(145deg,#171329,#0d1018);text-align:center;box-shadow:0 25px 80px #0008}.logo{font-size:28px;font-weight:900;margin-bottom:12px}.logo span{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#2563eb,#7c3aed);margin-right:8px}.card h1{font-size:30px;margin:12px 0}.card p{color:#a9b1c3;line-height:1.6}.btn{display:inline-block;margin-top:16px;padding:13px 22px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;font-weight:800}</style></head><body><main class="card"><div class="logo"><span>S</span>Shrtigo</div><h1>Your free clicks are finished</h1><p>You have reached the click limit for your current plan. Upgrade your plan to continue receiving visitors through this short link.</p><a class="btn" href="https://shrtigo.xyz/subscription.html">View Plans & Upgrade</a></main></body></html>`);
+    }
+    res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
           return res.status(200).send(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade Required | Shrtigo</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090812;color:#f8fafc;font-family:Inter,system-ui,Arial}.card{width:min(520px,calc(100% - 36px));padding:38px;border:1px solid #2b2940;border-radius:24px;background:linear-gradient(145deg,#171329,#0d1018);text-align:center;box-shadow:0 25px 80px #0008}.logo{font-size:28px;font-weight:900;margin-bottom:12px}.logo span{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#2563eb,#7c3aed);margin-right:8px}.card h1{font-size:30px;margin:12px 0}.card p{color:#a9b1c3;line-height:1.6}.btn{display:inline-block;margin-top:16px;padding:13px 22px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;font-weight:800}</style></head><body><main class="card"><div class="logo"><span>S</span>Shrtigo</div><h1>Your free clicks are finished</h1><p>You have reached the click limit for your current plan. Upgrade your plan to continue receiving visitors through this short link.</p><a class="btn" href="https://shrtigo.xyz/subscription.html">View Plans & Upgrade</a></main></body></html>`);
         }
       }
