@@ -90,10 +90,23 @@ if(requestedPlan){
  const requested=document.querySelector('[data-select-plan="'+requestedPlan+'"]');
  if(requested){ requested.closest('.plan')?.classList.add('selected'); const select=document.getElementById('plan'); if(select) select.value=requestedPlan; }
 }
-document.querySelectorAll('[data-select-plan]').forEach(button=>button.addEventListener('click',()=>{
+document.querySelectorAll('[data-select-plan]').forEach(button=>button.addEventListener('click',async()=>{
  const key=button.getAttribute('data-select-plan');
  document.querySelectorAll('.plan').forEach(x=>x.classList.remove('selected'));
  button.closest('.plan')?.classList.add('selected');
+ if(key==='welcome'){
+   const status=document.getElementById('status');
+   status.textContent='Activating your 500 free clicks…';
+   try{
+     const {data:{session}}=await client.auth.getSession();
+     if(!session){location.href='/login.html?next=%2Fsubscription.html';return}
+     const response=await fetch('/api/subscription-request',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({plan:'welcome',payment_method:'manual',transaction_id:''})});
+     const data=await response.json();
+     status.textContent=data.message||data.error||'Could not claim Welcome Gift.';
+     if(response.ok){button.disabled=true;button.textContent='Gift Claimed';setTimeout(()=>location.reload(),700);}
+   }catch(e){status.textContent='Unable to claim the Welcome Gift right now.'}
+   return;
+ }
  const select=document.getElementById('plan');
  if(select){select.value=planToRequest[key]||key;document.getElementById('requestSection')?.scrollIntoView({behavior:'smooth',block:'center'});}
 }));
