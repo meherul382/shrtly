@@ -7,41 +7,40 @@ export default async function handler(req,res){
     const serviceKey=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();
     if(!supabaseUrl||!serviceKey)return res.status(500).send('Backend is not configured.');
 
-    const response=await fetch(
-      `${supabaseUrl}/rest/v1/links?select=code,url,image_url,youtube_url,clicks,link_mode,user_id&code=eq.${encodeURIComponent(code)}&limit=1`,
-      {headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey}}
-    );
-    if(!response.ok)return res.status(500).send('Database error');
-
-    const rows=await response.json();
-    if(!rows.length)return res.status(404).send('Short link not found');
-
-    const link=rows[0];
-
-    const consumedResponse=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_consume_click`,{
+    // Resolve the short link and consume its click entitlement in one
+    // atomic database call. This removes the old two-request lookup +
+    // quota/update sequence from the hot redirect path.
+    const response=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_resolve_and_consume`,{
       method:'POST',
       headers:{
         Authorization:`Bearer ${serviceKey}`,
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_user_id:link.user_id,p_code:code})
+      body:JSON.stringify({p_code:code})
     });
+    if(!response.ok)return res.status(500).send('Database error');
 
-    let consumed=true;
-    if(consumedResponse.ok){
-      const value=await consumedResponse.json();
-      consumed=value===true;
-    }
+    const result=await response.json();
+    if(!result?.found)return res.status(404).send('Short link not found');
 
-    if(!consumed){
+    if(result.consumed===false){
       res.setHeader('Content-Type','text/html; charset=utf-8');
       res.setHeader('Cache-Control','no-store');
       return res.status(200).send(`<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade Required | Shrtigo</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#090812;color:#f8fafc;font-family:Inter,system-ui,Arial}.card{width:min(520px,calc(100% - 36px));padding:38px;border:1px solid #2b2940;border-radius:24px;background:linear-gradient(145deg,#171329,#0d1018);text-align:center;box-shadow:0 25px 80px #0008}.logo{font-size:28px;font-weight:900;margin-bottom:12px}.logo span{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#2563eb,#7c3aed);margin-right:8px}.card h1{font-size:30px;margin:12px 0}.card p{color:#a9b1c3;line-height:1.6}.btn{display:inline-block;margin-top:16px;padding:13px 22px;border-radius:12px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;text-decoration:none;font-weight:800}</style></head><body><main class="card"><div class="logo"><span>S</span>Shrtigo</div><h1>Your free clicks are finished</h1><p>You have reached the click limit for your current plan. Upgrade your plan to continue receiving visitors through this short link.</p><a class="btn" href="https://shrtigo.xyz/subscription.html">View Plans &amp; Upgrade</a></main></body></html>`);
     }
 
-    // Zero-delay fast path: normal links without an image/video go straight to the destination.
-    // Keep analytics/media links on the HTML path so their tracking/preview behavior is preserved.
+    const link={
+      url:String(result.url||''),
+      image_url:result.image_url||null,
+      youtube_url:result.youtube_url||null,
+      link_mode:String(result.link_mode||'advanced')
+    };
+
+    if(!link.url)return res.status(500).send('Short link destination is missing.');
+
+    // Zero-delay fast path: normal links without an image/video go straight
+    // to the destination. Analytics/media links keep the HTML path.
     if(link.link_mode!=='analytics'&&!link.image_url&&!link.youtube_url){
       res.writeHead(302,{'Location':link.url,'Cache-Control':'no-store'});
       return res.end();
@@ -85,6 +84,4 @@ function getYouTubeId(value){
   return null;
 }
 
-function escapeHtml(value){
-  return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
