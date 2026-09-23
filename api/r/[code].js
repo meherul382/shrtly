@@ -21,7 +21,6 @@ export default async function handler(req,res){
         }
       }
     }
-    await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_increment_click`,{method:'POST',headers:{Authorization:`Bearer ${serviceKey}`,apikey:serviceKey,'Content-Type':'application/json'},body:JSON.stringify({p_code:code})});
     res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');res.setHeader('X-Robots-Tag','noindex, nofollow, noarchive');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
     const safeImage=link.image_url?escapeHtml(link.image_url):'';const videoId=getYouTubeId(link.youtube_url);const shortUrl=`https://shrtigo.xyz/${encodeURIComponent(code)}`;const safeShortUrl=escapeHtml(shortUrl);
     const image=link.image_url?`<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`:'';const video=videoId?`<div class="video"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&autoplay=1&mute=1" title="Shrtigo video preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`:'';
