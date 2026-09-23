@@ -102,7 +102,7 @@ module.exports = async (req, res) => {
       return json(res, 404, { error: existingResult.data?.message || 'Subscription request not found.' });
     }
 
-    const durationDays = existing.plan === 'three_day' ? 3 : existing.plan === 'weekly' ? 7 : 30;
+    const durationDays = existing.plan === 'three_day' ? 3 : existing.plan === 'weekly' ? 7 : existing.plan === 'half_month' ? 15 : existing.plan === 'quarterly' ? 90 : existing.plan === 'welcome' ? 30 : existing.plan === 'starter' || existing.plan === 'growth' || existing.plan === 'pro' || existing.plan === 'business' || existing.plan === 'enterprise' ? 30 : 30;
     const now = new Date();
     const patch = action === 'approve'
       ? {
