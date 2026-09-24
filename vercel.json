@@ -20,16 +20,6 @@
       "source": "/dashboard.html",
       "destination": "/dashboard",
       "permanent": true
-    },
-    {
-      "source": "/central-login",
-      "destination": "/login",
-      "permanent": true
-    },
-    {
-      "source": "/central-login.html",
-      "destination": "/login",
-      "permanent": true
     }
   ],
   "rewrites": [
