@@ -511,3 +511,113 @@ body.panel-shell.panel-view .active-panel{
   width:calc(100% - 20px)!important;
  }
 }
+
+/* ===== MASTER SHRTIGO SIDEBAR — FINAL ===== */
+body.panel-shell .site-sidebar{
+  width:270px!important;
+  padding:12px 14px 10px!important;
+  background:linear-gradient(180deg,#061126 0%,#030a18 100%)!important;
+  border-right:1px solid #214e92!important;
+  box-shadow:10px 0 35px rgba(0,35,110,.18)!important;
+}
+body.panel-shell .side-brand{
+  height:62px!important;
+  padding:4px 10px 12px!important;
+  gap:9px!important;
+  font-size:22px!important;
+}
+body.panel-shell .side-brand>span{
+  width:38px!important;height:38px!important;border-radius:11px!important;
+  background:linear-gradient(135deg,#4b8cff 0%,#703cff 58%,#a72dff 100%)!important;
+  box-shadow:0 0 22px rgba(79,91,255,.42)!important;
+}
+body.panel-shell .side-brand b{
+  color:#f8fbff!important;font-weight:950!important;letter-spacing:-.5px!important;
+}
+body.panel-shell .side-brand em{
+  font-size:9px!important;font-weight:950!important;
+  padding:5px 7px!important;border-radius:6px!important;
+  background:linear-gradient(135deg,#622dff,#d819ff)!important;
+  box-shadow:0 0 12px rgba(190,25,255,.3)!important;
+}
+body.panel-shell .site-nav{
+  gap:4px!important;
+}
+body.panel-shell .site-nav a{
+  width:100%!important;
+  min-height:48px!important;
+  padding:10px 13px!important;
+  gap:13px!important;
+  border-radius:11px!important;
+  color:#a9bddf!important;
+  font-size:13px!important;
+  font-weight:900!important;
+  letter-spacing:.05px!important;
+}
+body.panel-shell .site-nav a .nav-icon{
+  width:27px!important;height:27px!important;flex:0 0 27px!important;
+  color:#d8e7ff!important;
+}
+body.panel-shell .site-nav a .nav-icon svg{
+  width:22px!important;height:22px!important;
+  stroke-width:1.9!important;
+}
+body.panel-shell .site-nav a:hover{
+  color:#fff!important;
+  background:linear-gradient(90deg,rgba(24,91,194,.24),rgba(113,44,218,.18))!important;
+  border-color:rgba(76,137,255,.22)!important;
+}
+body.panel-shell .site-nav a.active{
+  color:#fff!important;
+  background:linear-gradient(90deg,#1478ff 0%,#6338f5 58%,#d91cff 100%)!important;
+  border-color:#72aaff!important;
+  box-shadow:0 0 25px rgba(70,82,255,.40),inset 0 0 18px rgba(255,255,255,.08)!important;
+}
+body.panel-shell .site-nav a.active .nav-icon{
+  color:#fff!important;
+}
+body.panel-shell .upgrade-card{
+  margin:12px 0 2px!important;
+  padding:12px!important;
+  min-height:118px!important;
+  border:1px solid #793cff!important;
+  border-radius:15px!important;
+  background:linear-gradient(145deg,#111c4f 0%,#1a0b42 100%)!important;
+  box-shadow:0 0 25px rgba(111,47,255,.20)!important;
+}
+body.panel-shell .upgrade-card .upgrade-icon{
+  width:39px!important;height:39px!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#4325bd,#f326d4)!important;
+}
+body.panel-shell .upgrade-card strong{font-size:13px!important;color:#fff!important}
+body.panel-shell .upgrade-card small{font-size:9px!important;color:#a9bde0!important}
+body.panel-shell .upgrade-card>a{
+  padding:9px!important;margin-top:5px!important;border-radius:10px!important;
+  background:linear-gradient(135deg,#4335ff,#bd28f0)!important;
+  border-color:#7445ff!important;
+}
+body.panel-shell .shell-time{
+  display:none!important;
+}
+@media(max-width:700px){
+  body.panel-shell .site-sidebar{
+    width:78px!important;padding:12px 8px!important;
+  }
+  body.panel-shell .side-brand{
+    height:56px!important;padding:3px 0 10px!important;justify-content:center!important;
+  }
+  body.panel-shell .side-brand>span{
+    width:40px!important;height:40px!important;
+  }
+  body.panel-shell .site-nav{gap:6px!important}
+  body.panel-shell .site-nav a{
+    width:60px!important;min-height:48px!important;
+    margin:0 auto!important;padding:10px 5px!important;
+    justify-content:center!important;
+  }
+  body.panel-shell .site-nav a>span:last-child{display:none!important}
+  body.panel-shell .site-nav a .nav-icon{
+    width:27px!important;height:27px!important;
+  }
+  body.panel-shell .upgrade-card{display:none!important}
+}
