@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
     if (transaction_id.length > 120) return json(res, 400, { error: 'Transaction ID is too long.' });
 
     if (plan === 'welcome') {
-      const existing = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${encodeURIComponent(user.id)}&plan=eq.welcome&status=in.(active,pending)&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } });
+      const existing = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${encodeURIComponent(user.id)}&plan=eq.welcome&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } });
       const rows = existing.ok ? await existing.json() : [];
       if (rows.length) return json(res, 409, { error: 'Welcome Gift has already been claimed.' });
     }
