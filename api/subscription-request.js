@@ -67,6 +67,7 @@ module.exports = async (req, res) => {
     }
 
     const raw = await insertResponse.text();
+    if (plan === 'welcome' && (insertResponse.status === 409 || raw.includes('subscriptions_one_welcome_per_user_idx'))) return json(res, 409, { error: 'Welcome Gift has already been claimed for this account.' });
     let details = raw;
     try { details = JSON.parse(raw); } catch (_) {}
     console.error('Supabase subscription insert failed:', insertResponse.status, details);
