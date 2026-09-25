@@ -35,7 +35,7 @@ function json(res, status, body) {
 
 function readBearer(req) {
   const value = String(req.headers.authorization || '');
-  return value.replace(/^Bearer\\s+/i, '').trim();
+  return value.replace(/^Bearer\s+/i, '').trim();
 }
 
 async function getUserId(token) {
