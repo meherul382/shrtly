@@ -74,10 +74,14 @@ function domainLimit(plan) {
 }
 
 async function getSavedSelection(userId) {
-  const r = await dbFetch(`user_domain_settings?select=selected_domains&user_id=eq.${encodeURIComponent(userId)}&limit=1`);
+  const r = await dbFetch(`user_domain_settings?select=selected_domains,selection_plan&user_id=eq.${encodeURIComponent(userId)}&limit=1`);
   if (!r.ok) return null;
   const rows = await r.json();
-  return Array.isArray(rows?.[0]?.selected_domains) ? rows[0].selected_domains : null;
+  if (!rows?.length) return null;
+  return {
+    selectedDomains: Array.isArray(rows[0]?.selected_domains) ? rows[0].selected_domains : [],
+    selectionPlan: String(rows[0]?.selection_plan || '').toLowerCase()
+  };
 }
 
 async function seedSelection(userId, max) {
@@ -111,17 +115,61 @@ module.exports = async (req, res) => {
     const plan = await getActivePlan(userId);
     const maxDomains = domainLimit(plan);
 
-    if (req.method === 'GET') {
-      let selected = await getSavedSelection(userId);
-      if (!selected) selected = await seedSelection(userId, maxDomains);
+    const unlimited = ['weekly', 'half_month', 'monthly', 'quarterly'].includes(plan);
 
-      const cleaned = [...new Set(selected.filter(d => SUPPORTED_DOMAINS.includes(String(d).toLowerCase())).map(d => String(d).toLowerCase()))];
+    if (req.method === 'GET') {
+      if (unlimited) {
+        return json(res, 200, {
+          ok: true,
+          plan,
+          maxDomains: SUPPORTED_DOMAINS.length,
+          unlimited: true,
+          locked: true,
+          selectedDomains: SUPPORTED_DOMAINS,
+          availableDomains: SUPPORTED_DOMAINS,
+          message: 'Unlimited plan includes all Shrtigo domains. No domain selection is required.'
+        });
+      }
+
+      const saved = await getSavedSelection(userId);
+      const cleaned = [...new Set((saved?.selectedDomains || [])
+        .filter(d => SUPPORTED_DOMAINS.includes(String(d).toLowerCase()))
+        .map(d => String(d).toLowerCase()))];
+
       return json(res, 200, {
         ok: true,
         plan,
         maxDomains,
+        unlimited: false,
+        locked: !!saved,
+        selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
+        availableDomains: SUPPORTED_DOMAINS,
+        message: saved
+          ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
+          : 'Select your domains and save once. The selection cannot be changed while this plan remains active.'
+      });
+    }
+
+    if (unlimited) {
+      return json(res, 200, {
+        ok: true,
+        message: 'All Shrtigo domains are included with your unlimited plan. No domain selection is required.',
+        plan,
+        maxDomains: SUPPORTED_DOMAINS.length,
+        unlimited: true,
+        locked: true,
+        selectedDomains: SUPPORTED_DOMAINS,
         availableDomains: SUPPORTED_DOMAINS
+      });
+    }
+
+    const saved = await getSavedSelection(userId);
+    if (saved && saved.selectionPlan === plan) {
+      return json(res, 409, {
+        error: 'Your domain selection is locked for this active plan. Change your plan to select different domains.',
+        locked: true,
+        selectedDomains: saved.selectedDomains
       });
     }
 
@@ -146,14 +194,14 @@ module.exports = async (req, res) => {
       : 'user_domain_settings', {
         method: exists ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-        body: JSON.stringify({ user_id: userId, selected_domains: cleaned, updated_at: new Date().toISOString() })
+        body: JSON.stringify({ user_id: userId, selected_domains: cleaned, selection_plan: plan, updated_at: new Date().toISOString() })
       });
 
     if (!response.ok) return json(res, 500, { error: 'Could not save your domain selection.' });
 
     return json(res, 200, {
       ok: true,
-      message: `${cleaned.length} domain${cleaned.length === 1 ? '' : 's'} selected successfully.`,
+      message: `${cleaned.length} domain${cleaned.length === 1 ? '' : 's'} selected successfully. This selection is now locked for your ${plan} plan.`,
       plan,
       maxDomains,
       selectedDomains: cleaned,
