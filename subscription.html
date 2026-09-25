@@ -163,7 +163,61 @@ document.getElementById('submit').onclick=async()=>{
 };
 </script>
 <script src="/panel-status.js" defer></script><script src="/panel-shell.js?v=20260925"></script>
-</body>
+<style id="shrtigo-subscription-compact">
+/* Compact premium subscription layout */
+body.panel-shell .wrap{max-width:1180px!important}
+body.panel-shell .hero{margin:24px auto 16px!important}
+body.panel-shell .hero h1{font-size:30px!important;margin:0 0 5px!important}
+body.panel-shell .hero p{font-size:12px!important;margin:0!important}
+body.panel-shell .active-panel{padding:16px!important;margin-bottom:14px!important}
+body.panel-shell .active-panel h2{font-size:18px!important;margin:0 0 5px!important}
+body.panel-shell .active-panel p{font-size:12px!important;margin:4px 0 10px!important}
+body.panel-shell .active-grid{gap:10px!important}
+body.panel-shell .active-grid>div{padding:11px 13px!important}
+body.panel-shell .active-grid .label{font-size:10px!important}
+body.panel-shell .active-grid .value{font-size:14px!important;margin-top:3px!important}
+body.panel-shell .plans{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important}
+body.panel-shell .plan{padding:14px!important;min-height:0!important}
+body.panel-shell .plan h2{font-size:15px!important;margin:8px 0 7px!important}
+body.panel-shell .plan .planIcon{width:30px!important;height:30px!important}
+body.panel-shell .plan .domain-hint{font-size:9px!important;padding:4px 7px!important}
+body.panel-shell .plan .price{font-size:25px!important;margin:9px 0 1px!important}
+body.panel-shell .plan .plan-price{font-size:17px!important}
+body.panel-shell .plan .meta{font-size:9px!important;margin:4px 0 8px!important}
+body.panel-shell .plan .gift{font-size:8px!important;padding:5px 6px!important}
+body.panel-shell .plan-actions{gap:6px!important}
+body.panel-shell .plan-actions button,.panel-shell .couponBtn,.panel-shell .buy{min-height:38px!important;padding:8px 10px!important;font-size:11px!important}
+body.panel-shell .pay{padding:16px!important;margin-top:14px!important}
+body.panel-shell .pay h2,body.panel-shell .request h2{font-size:17px!important;margin:0 0 5px!important}
+body.panel-shell .pay>p{font-size:11px!important;margin:4px 0 10px!important}
+body.panel-shell .payment-grid{gap:10px!important}
+body.panel-shell .payment-card{padding:13px!important}
+body.panel-shell .payment-card h3{font-size:14px!important;margin:0 0 5px!important}
+body.panel-shell .payment-card p{font-size:10px!important;margin:3px 0 6px!important}
+body.panel-shell .payment-value{font-size:17px!important}
+body.panel-shell .copy-btn{padding:7px 10px!important;font-size:10px!important}
+body.panel-shell .request{padding:16px!important;margin-top:14px!important}
+body.panel-shell .request label{font-size:10px!important;margin:8px 0 4px!important}
+body.panel-shell .request input,body.panel-shell .request select{min-height:40px!important;height:40px!important;padding:8px 11px!important;font-size:12px!important}
+body.panel-shell .request textarea{font-size:12px!important}
+body.panel-shell #couponStatus,body.panel-shell #couponSummary,body.panel-shell #payableAmount{font-size:11px!important;margin:5px 0!important}
+body.panel-shell .request #submit{min-height:42px!important;margin-top:10px!important}
+body.panel-shell .domain-modal .domain-dialog{max-width:560px!important;padding:18px!important}
+body.panel-shell .domain-modal h2{font-size:18px!important}
+@media(max-width:900px){
+ body.panel-shell .plans{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(max-width:600px){
+ body.panel-shell .hero{margin:18px 0 12px!important}
+ body.panel-shell .hero h1{font-size:24px!important}
+ body.panel-shell .plans{grid-template-columns:1fr!important}
+ body.panel-shell .active-grid,.panel-shell .payment-grid{grid-template-columns:1fr!important}
+ body.panel-shell .request,.panel-shell .pay,.panel-shell .active-panel{padding:13px!important}
+ body.panel-shell .plan{padding:13px!important}
+ body.panel-shell #coupon{min-width:0!important}
+ body.panel-shell #applyCoupon{min-width:96px!important}
+}
+</style></body>
 </html><style id="shrtigo-subscription-polish">
 body.panel-shell .hero h1{color:#f5f8ff!important}.panel-shell .hero p{color:#91a7ce!important}
 body.panel-shell .plan h2,.panel-shell .plan .price{color:#fff!important}.panel-shell .plan .meta{color:#91a7ce!important}
