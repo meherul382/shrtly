@@ -32,3 +32,23 @@ footer{color:#7189b0!important}
 
 /* Consistent panel sizing: same sidebar/topbar proportions on every non-Overview page */
 @media(min-width:801px){.side,.panel-side,.sidebar{width:270px!important}.main{margin-left:270px!important}}
+
+/* === Shrtigo unified panel frame ===
+   Every account page keeps the exact Overview frame dimensions.
+   Search is intentionally an Overview-only control.
+*/
+@media(min-width:801px){
+  .side,.panel-side,.sidebar{width:270px!important;min-width:270px!important}
+  .main{margin-left:270px!important;min-height:100vh!important;padding:0!important;width:auto!important}
+  .topbar,.top{height:78px!important;min-height:78px!important;padding:0 34px!important}
+}
+@media(max-width:800px){
+  .side,.panel-side,.sidebar{width:72px!important;min-width:72px!important}
+  .main{margin-left:72px!important;width:auto!important;padding:0!important}
+  .topbar,.top{height:70px!important;min-height:70px!important;padding:0 14px!important}
+}
+/* Keep page content from inheriting different left/right frame sizes. */
+.main>.content,.main>.head,.main>.box,.main>.panel,.main>.request,.main>.pay,
+.main>.active-panel,.main>.plans,.main>.hero{
+  box-sizing:border-box;
+}
