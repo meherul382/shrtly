@@ -33,7 +33,7 @@ html,body{background:radial-gradient(900px 500px at 8% 0%,rgba(91,0,255,.30),tra
 <article class="plan" data-plan="pro"><div class="planIcon">ϟ</div><h2>🚀 Pro Pack</h2><div class="price">100K</div><div class="plan-price">৳249 <small>BDT</small></div><div class="meta">Clicks · 4 domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="pro">Buy Plan</button></div></article>
 <article class="plan" data-plan="business"><div class="planIcon">ϟ</div><h2>💎 Business Pack</h2><div class="price">250K</div><div class="plan-price">৳499 <small>BDT</small></div><div class="meta">Clicks · 5 domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="business">Buy Plan</button></div></article>
 <article class="plan" data-plan="enterprise"><div class="planIcon">ϟ</div><h2>👑 Enterprise Pack</h2><div class="price">500K</div><div class="plan-price">৳899 <small>BDT</small></div><div class="meta">Clicks · 6 domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="enterprise">Buy Plan</button></div></article>
-<article class="plan" data-plan="weekly"><div class="planIcon">ϟ</div><h2>✅ Weekly Unlimited</h2><div class="price">7 Days</div><div class="plan-price">৳249 <small>BDT</small></div><div class="meta">Unlimited clicks · 7 domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="weekly">Buy Plan</button></div></article>
+<article class="plan" data-plan="weekly"><div class="planIcon">ϟ</div><h2>✅ Weekly Unlimited</h2><div class="price">7 Days</div><div class="plan-price">৳249 <small>BDT</small></div><div class="meta">Unlimited clicks · All domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="weekly">Buy Plan</button></div></article>
 <article class="plan" data-plan="half-month"><div class="planIcon">ϟ</div><h2>✅ Half-Month Unlimited</h2><div class="price">15 Days</div><div class="plan-price">৳399 <small>BDT</small></div><div class="meta">Unlimited clicks · All domains</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="half-month">Buy Plan</button></div></article>
 <article class="plan" data-plan="monthly"><div class="planIcon">ϟ</div><h2>⭐ Monthly Unlimited</h2><div class="price">30 Days</div><div class="plan-price">৳649 <small>BDT</small></div><div class="meta">Unlimited clicks</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="monthly">Buy Plan</button></div></article>
 <article class="plan" data-plan="quarterly"><div class="planIcon">ϟ</div><h2>👑 Quarterly Unlimited</h2><div class="price">90 Days</div><div class="plan-price">৳1,499 <small>BDT</small></div><div class="meta">Unlimited clicks</div><div class="plan-actions"><button class="couponBtn" type="button">Have a coupon?</button><button class="buy" data-select-plan="quarterly">Buy Plan</button></div></article>
@@ -101,15 +101,15 @@ const planToRequest={
  starter:'starter',growth:'growth',pro:'pro',business:'business',enterprise:'enterprise',
  weekly:'weekly','half-month':'half-month',monthly:'monthly',quarterly:'quarterly',welcome:'welcome'
 };
+const domainCatalog=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
+const domainLimits={welcome:1,starter:2,growth:3,pro:4,business:5,enterprise:6,weekly:9,'half-month':9,monthly:9,quarterly:9};
+const unlimitedPlans=new Set(['weekly','half-month','monthly','quarterly']);
+let pendingPlan=null,pendingDomains=[];
 const requestedPlan=new URLSearchParams(location.search).get('plan');
 if(requestedPlan){
  const requested=document.querySelector('[data-select-plan="'+requestedPlan+'"]');
  if(requested){ requested.closest('.plan')?.classList.add('selected'); const select=document.getElementById('plan'); if(select) select.value=requestedPlan; pendingPlan=requestedPlan; pendingDomains=unlimitedPlans.has(requestedPlan)?domainCatalog.slice():domainCatalog.slice(0,Math.min(domainLimits[requestedPlan]||1,domainCatalog.length)); }
 }
-const domainCatalog=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
-const domainLimits={welcome:1,starter:2,growth:3,pro:4,business:5,enterprise:6,weekly:7,'half-month':9,monthly:9,quarterly:9};
-const unlimitedPlans=new Set(['weekly','half-month','monthly','quarterly']);
-let pendingPlan=null,pendingDomains=[];
 const domainModal=document.getElementById('domainModal');
 const domainOptions=document.getElementById('domainOptions');
 function openDomainSelector(key){
