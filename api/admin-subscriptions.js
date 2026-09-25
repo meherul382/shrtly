@@ -6,11 +6,6 @@ const PUBLIC_KEY = String(
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ'
 ).trim();
-const SERVICE_KEY = String(
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SECRET_KEY ||
-  ''
-).trim();
 
 function json(res, status, body) {
   res.status(status).setHeader('Content-Type', 'application/json');
@@ -22,117 +17,66 @@ function tokenFrom(req) {
   return header.startsWith('Bearer ') ? header.slice(7).trim() : '';
 }
 
-async function supabaseFetch(path, options = {}, key = SERVICE_KEY || PUBLIC_KEY) {
-  const headers = {
-    apikey: key,
-    Authorization: `Bearer ${key}`,
-    'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
-  const response = await fetch(`${SUPABASE_URL}${path}`, { ...options, headers });
-  const text = await response.text();
-  let data = null;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
-  return { response, data };
+async function callRpc(name, token, body) {
+  return fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      apikey: PUBLIC_KEY,
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body || {})
+  });
 }
 
 async function requireAdmin(req) {
   const token = tokenFrom(req);
-  if (!token || !SUPABASE_URL || !PUBLIC_KEY) return null;
-
-  const authResult = await supabaseFetch('/auth/v1/user', {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${token}`, apikey: PUBLIC_KEY }
-  }, PUBLIC_KEY);
-
-  const user = authResult.data;
-  const email = String(user?.email || '').toLowerCase();
-  if (!authResult.response.ok || !user?.id || email !== ADMIN_EMAIL) return null;
-
-  return { user, serviceConfigured: Boolean(SERVICE_KEY), token };
+  if (!token) return null;
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: PUBLIC_KEY, Authorization: `Bearer ${token}` }
+  });
+  if (!r.ok) return null;
+  const user = await r.json();
+  if (!user?.id || String(user.email || '').toLowerCase() !== ADMIN_EMAIL) return null;
+  return { token };
 }
 
 module.exports = async (req, res) => {
-  if (!['GET', 'PATCH'].includes(req.method)) {
-    return json(res, 405, { error: 'Method not allowed' });
-  }
+  if (!['GET', 'PATCH'].includes(req.method)) return json(res, 405, { error: 'Method not allowed' });
 
   try {
     const admin = await requireAdmin(req);
     if (!admin) return json(res, 403, { error: 'Admin access required.' });
 
     if (req.method === 'GET') {
-      const result = await supabaseFetch(
-        '/rest/v1/subscriptions?select=*&order=created_at.desc',
-        { method: 'GET' },
-        SERVICE_KEY || PUBLIC_KEY
-      );
-
-      if (!result.response.ok) {
-        console.error('Admin subscription load failed:', result.data);
-        return json(res, 500, {
-          error: admin.serviceConfigured
-            ? (result.data?.message || result.data?.hint || 'Could not load subscription requests.')
-            : 'SUPABASE_SERVICE_ROLE_KEY is missing in Vercel Environment Variables. Add it, then redeploy.'
-        });
+      const r = await callRpc('shrtigo_admin_list_subscriptions', admin.token, {});
+      const raw = await r.text();
+      if (!r.ok) {
+        let d = {};
+        try { d = JSON.parse(raw); } catch {}
+        return json(res, r.status, { error: d.message || d.hint || 'Could not load subscription requests.' });
       }
-      return json(res, 200, { requests: Array.isArray(result.data) ? result.data : [] });
+      let requests = [];
+      try { requests = JSON.parse(raw); } catch {}
+      return json(res, 200, { requests: Array.isArray(requests) ? requests : [] });
     }
 
     let body = req.body || {};
     if (typeof body === 'string') body = JSON.parse(body || '{}');
     const id = String(body.id || '').trim();
     const action = String(body.action || '').trim().toLowerCase();
-    if (!id || !['approve', 'reject'].includes(action)) {
-      return json(res, 400, { error: 'Invalid request.' });
-    }
+    if (!id || !['approve', 'reject'].includes(action)) return json(res, 400, { error: 'Invalid request.' });
 
-    const existingResult = await supabaseFetch(
-      `/rest/v1/subscriptions?select=id,plan,status,click_limit,clicks_used&id=eq.${encodeURIComponent(id)}&limit=1`,
-      { method: 'GET' },
-      SERVICE_KEY || PUBLIC_KEY
-    );
-    const existing = Array.isArray(existingResult.data) ? existingResult.data[0] : null;
+    const r = await callRpc('shrtigo_admin_update_subscription', admin.token, {
+      p_id: id,
+      p_action: action
+    });
+    const raw = await r.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch {}
 
-    if (!existingResult.response.ok || !existing) {
-      return json(res, 404, { error: existingResult.data?.message || 'Subscription request not found.' });
-    }
-
-    const durationDays = existing.plan === 'three_day' ? 3 : existing.plan === 'weekly' ? 7 : existing.plan === 'half_month' ? 15 : existing.plan === 'quarterly' ? 90 : existing.plan === 'welcome' ? 30 : 30;
-    const clickLimit = ({starter:10000,growth:50000,pro:100000,business:250000,enterprise:500000,welcome:500})[existing.plan] ?? null;
-    const now = new Date();
-    const patch = action === 'approve'
-      ? {
-          status: 'active',
-          started_at: now.toISOString(),
-          ends_at: new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
-          updated_at: now.toISOString(),
-          click_limit: clickLimit,
-          clicks_used: Number(existing.clicks_used || 0)
-        }
-      : { status: 'rejected', updated_at: now.toISOString() };
-
-    const updateResult = await supabaseFetch(
-      `/rest/v1/subscriptions?id=eq.${encodeURIComponent(id)}`,
-      {
-        method: 'PATCH',
-        headers: { Prefer: 'return=representation' },
-        body: JSON.stringify(patch)
-      },
-      SERVICE_KEY || PUBLIC_KEY
-    );
-    const updated = Array.isArray(updateResult.data) ? updateResult.data[0] : null;
-
-    if (!updateResult.response.ok || !updated) {
-      console.error('Admin subscription update failed:', updateResult.data);
-      return json(res, 500, { error: updateResult.data?.message || 'Could not update subscription request.' });
-    }
-
-    return json(res, 200, { ok: true, request: updated });
+    if (!r.ok) return json(res, r.status, { error: data?.message || data?.hint || 'Could not update subscription request.' });
+    return json(res, 200, { ok: true, request: data });
   } catch (error) {
     console.error('Admin subscription API error:', error);
     return json(res, 500, { error: error.message || 'Unexpected server error.' });
