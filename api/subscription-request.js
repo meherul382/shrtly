@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
     const plan = planMap[String(body.plan || '').trim().toLowerCase()];
     const payment_method = methodMap[String(body.payment_method || '').trim().toLowerCase()];
     const transaction_id = String(body.transaction_id || '').trim();
+    const coupon_code = String(body.coupon_code || '').trim().toUpperCase();
     const supportedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
     const domainLimits = { welcome:1, starter:2, growth:3, pro:4, business:5, enterprise:6, weekly:7, half_month:9, monthly:9, quarterly:9 };
     const unlimitedPlans = new Set(['weekly','half_month','monthly','quarterly']);
@@ -42,6 +43,14 @@ module.exports = async (req, res) => {
     if (!payment_method) return json(res, 400, { error: 'Please select a valid payment method.' });
     if (plan !== 'welcome' && !transaction_id) return json(res, 400, { error: 'Please enter the transaction ID.' });
     if (transaction_id.length > 120) return json(res, 400, { error: 'Transaction ID is too long.' });
+    const planPrices = { three_day:150, starter:49, growth:149, pro:249, business:499, enterprise:899, weekly:249, half_month:399, monthly:649, quarterly:1499, welcome:0 };
+    let couponData = { valid:false, discount_amount:0, final_amount:planPrices[plan]||0 };
+    if (coupon_code) {
+      const cr = await fetch(SUPABASE_URL + '/rest/v1/rpc/shrtigo_validate_coupon', { method:'POST', headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({p_code:coupon_code,p_plan:plan,p_amount:planPrices[plan]||0}) });
+      const cd = await cr.json();
+      if (!cr.ok || !cd.valid) return json(res,400,{error:cd?.error||'Coupon code is invalid.'});
+      couponData=cd;
+    }
 
     if (plan === 'welcome') {
       const existing = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${encodeURIComponent(user.id)}&plan=eq.welcome&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } });
@@ -52,7 +61,7 @@ module.exports = async (req, res) => {
     const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
       method: 'POST',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0, selected_domains } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id, selected_domains })
+      body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0, selected_domains, coupon_code: couponData.code || null, discount_amount: couponData.discount_amount || 0, final_amount: couponData.final_amount } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id, selected_domains, coupon_code: couponData.code || null, discount_amount: couponData.discount_amount || 0, final_amount: couponData.final_amount })
     });
 
     if (insertResponse.ok) {
