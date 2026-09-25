@@ -347,10 +347,23 @@ body.panel-view .content{display:none!important}
         .sidebar,.side,.panel-side{display:none!important}
         .topbar,.top{display:none!important}
         .main,.wrap{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
-        .content{width:min(1180px,calc(100% - 56px))!important;margin:0 auto!important;padding:38px 0 55px!important}
-        .hero,.head{max-width:1180px!important}
+        .content{width:calc(100% - 48px)!important;max-width:none!important;margin:0 auto!important;padding:34px 0 55px!important}
+        .hero,.head,.plans,.box,.panel,.table,.summary,.cards,.stats,.domain-grid,.payment-grid,.request,.active-panel,.history,.list{width:100%!important;max-width:none!important}
+        .head{margin-bottom:24px!important}
+        .box,.panel,.table,.summary,.request,.active-panel{min-width:0!important}
+        .plans{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:16px!important}
+        .domain-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important}
+        .payment-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:16px!important}
         footer{display:none!important}
-        @media(max-width:800px){.content{width:calc(100% - 28px)!important;padding-top:25px!important}}
+        @media(max-width:900px){
+          .content{width:calc(100% - 32px)!important}
+          .plans{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+          .domain-grid,.payment-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+        }
+        @media(max-width:600px){
+          .content{width:calc(100% - 20px)!important;padding-top:22px!important}
+          .plans,.domain-grid,.payment-grid{grid-template-columns:1fr!important}
+        }
       `;
       (doc.head||doc.documentElement).appendChild(style);
 
