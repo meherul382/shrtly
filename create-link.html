@@ -38,8 +38,16 @@ async function loadDomainOptions(s){
   const select=document.getElementById('domain');
   const current=select.value;
   select.innerHTML='';
-  (d.selectedDomains||['shrtigo.xyz']).forEach(domain=>{
-    const option=document.createElement('option');option.value=domain;option.textContent=domain;select.appendChild(option);
+  const domains=d.supportedDomains||d.availableDomains||d.selectedDomains||['shrtigo.xyz'];
+  domains.forEach(domain=>{
+    const option=document.createElement('option');
+    option.value=domain;
+    option.textContent=domain;
+    if(domain==='shrtigo.com' && d.comAllowed===false){
+      option.disabled=true;
+      option.textContent='shrtigo.com — Pro Pack+ only';
+    }
+    select.appendChild(option);
   });
   if((d.selectedDomains||[]).includes(current))select.value=current;
   select.title='Your plan allows '+d.maxDomains+' domain'+(d.maxDomains===1?'':'s')+'. Change your selection from Domains.';

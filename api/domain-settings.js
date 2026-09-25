@@ -135,6 +135,8 @@ module.exports = async (req, res) => {
           locked: true,
           selectedDomains: availableDomains,
           availableDomains,
+        supportedDomains: SUPPORTED_DOMAINS,
+        comAllowed: availableDomains.includes('shrtigo.com'),
           message: 'Unlimited plan includes all Shrtigo domains. No domain selection is required.'
         });
       }
@@ -154,6 +156,8 @@ module.exports = async (req, res) => {
         selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
         availableDomains,
+        supportedDomains: SUPPORTED_DOMAINS,
+        comAllowed: availableDomains.includes('shrtigo.com'),
         message: saved
           ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
           : 'Select your domains and save once. The selection cannot be changed while this plan remains active.'
