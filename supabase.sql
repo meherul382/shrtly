@@ -118,3 +118,7 @@ $function$;
 
 revoke execute on function public.shrtigo_resolve_and_consume(text) from public, anon, authenticated;
 grant execute on function public.shrtigo_resolve_and_consume(text) to service_role;
+
+
+-- Domain selection is locked to the active plan until the user changes plans.
+alter table if exists public.user_domain_settings add column if not exists selection_plan text;
