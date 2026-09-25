@@ -125,7 +125,7 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
+    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
     else {
       if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
       selectedDomains = selectedDomains.slice(0, maxDomains);
@@ -193,7 +193,7 @@ function respond(res, req, code, imageUrl, youtubeUrl, mode, domain, ownerToken)
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
 function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
-function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/+$/,''); return ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'].includes(domain) ? domain : null; }
+function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/+$/,''); return ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'].includes(domain) ? domain : null; }
 function randomCode() { return Math.random().toString(36).slice(2, 6); }
 function extension(mime) { return ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[mime] || 'jpg'; }
 function parseDataUrl(value) { const m = String(value).match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/); if (!m) return null; return { mime: m[1], buffer: Buffer.from(m[2], 'base64') }; }

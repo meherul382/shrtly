@@ -10,7 +10,8 @@ const SUPPORTED_DOMAINS = [
   'shrtigo.world',
   'shrtigo.store',
   'shrtigourl.site',
-  'shrtigo.website'
+  'shrtigo.website',
+  'shrtigo.com'
 ];
 
 const PLAN_DOMAIN_LIMITS = {
