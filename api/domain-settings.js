@@ -29,7 +29,7 @@ const PLAN_DOMAIN_LIMITS = {
   three_day: 1
 };
 
-// shrtigo.com is a premium domain available only from Pro Pack upward.
+// All supported Shrtigo domains are available on every plan.
 function domainsForPlan(plan) {
   return SUPPORTED_DOMAINS;
 }
