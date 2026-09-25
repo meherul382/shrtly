@@ -1,7 +1,7 @@
 :root{--bg:#030817;--surface:#071a38;--ink:#f5f8ff;--muted:#93acd6;--line:#1d4d92;--accent:#3e7eff;--accent2:#8d35ff;--soft:rgba(62,126,255,.16);--shadow:0 16px 40px rgba(0,0,0,.24)}
 *{box-sizing:border-box}
 body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparent 27%),radial-gradient(circle at 90% 5%,rgba(132,45,255,.12),transparent 30%),var(--bg)!important;color:var(--ink)!important;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif!important}
-.side,.panel-side,.sidebar{background:linear-gradient(180deg,#061127,#030a1d)!important;border-right:1px solid var(--line)!important;width:205px!important;box-shadow:4px 0 24px rgba(20,67,160,.10)}
+.side,.panel-side,.sidebar{background:linear-gradient(180deg,#061127,#030a1d)!important;border-right:1px solid var(--line)!important;width:270px!important;box-shadow:4px 0 24px rgba(20,67,160,.10)}
 .brand,.panel-brand{color:var(--ink)!important;text-decoration:none!important}
 .brand>span:first-child,.panel-brand>span:first-child{background:linear-gradient(135deg,#4f8dff,#8d35ff)!important;color:#fff!important;box-shadow:0 0 18px rgba(72,105,255,.35)}
 .brand small,.panel-brand small{color:#8299bd!important}
@@ -10,7 +10,7 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 .nav a:hover,.panel-side nav a:hover,.side-nav a:hover{background:linear-gradient(90deg,rgba(62,126,255,.14),rgba(141,53,255,.10))!important;color:#fff!important}
 .nav a.active,.panel-side nav a.active,.side-nav a.active{background:linear-gradient(90deg,#2168e8,#7436ed)!important;color:#fff!important;box-shadow:0 0 18px rgba(72,91,255,.28)!important;border:1px solid #5b8cff!important}
 .main{background:transparent!important}
-.topbar,.top{background:rgba(4,12,30,.86)!important;border-bottom:1px solid var(--line)!important;min-height:64px!important;backdrop-filter:blur(14px)!important}
+.topbar,.top{background:rgba(4,12,30,.86)!important;border-bottom:1px solid var(--line)!important;min-height:78px!important;backdrop-filter:blur(14px)!important}
 .wallet,.logout,.back{background:#071a38!important;color:var(--ink)!important;border:1px solid #28549a!important;box-shadow:none!important}
 .head,.hero{max-width:1100px!important;margin:38px auto 22px!important}
 .head h1,.hero h1{color:var(--ink)!important;font-size:32px!important;letter-spacing:-.7px}
@@ -29,3 +29,6 @@ button:hover,.btn:hover,.create:hover,.buy:hover{background:linear-gradient(135d
 .table-head,.panel-head{border-bottom:1px solid var(--line)!important}
 footer{color:#7189b0!important}
 @media(max-width:760px){.side,.panel-side,.sidebar{width:70px!important}.main{margin-left:70px!important}}
+
+/* Consistent panel sizing: same sidebar/topbar proportions on every non-Overview page */
+@media(min-width:801px){.side,.panel-side,.sidebar{width:270px!important}.main{margin-left:270px!important}}
