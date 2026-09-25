@@ -12,7 +12,7 @@
 .main{margin-left:205px;min-height:100vh}.topbar{height:72px;border-bottom:1px solid #e4e9f1;background:#fff;display:flex;align-items:center;justify-content:flex-end;gap:9px;padding:0 34px}.wallet,.logout{border:1px solid #dce3ed;background:#fff;color:#172033;border-radius:9px;padding:10px 13px;font-size:11px;font-weight:900}.wallet{border-radius:999px}.logout{cursor:pointer}
 .content{width:min(1060px,calc(100% - 56px));margin:auto;padding:40px 0 55px}.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:22px}.head h1{margin:0;font-size:34px;letter-spacing:-1px}.head p{margin:8px 0 0;color:#687386;font-size:12px}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}.summary-card,.box{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 12px 35px rgba(23,32,51,.05)}.summary-card{padding:18px}.summary-card small{display:block;color:#7a8495;font-size:9px;font-weight:900;text-transform:uppercase}.summary-card strong{display:block;font-size:25px;margin-top:5px}.summary-card span{display:block;color:#687386;font-size:11px;margin-top:4px}
-.box{padding:22px}.box h2{margin:0 0 6px;font-size:19px}.box>p{margin:0;color:#687386;font-size:12px;line-height:1.6}.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.domain{position:relative;display:flex;align-items:center;gap:11px;padding:15px;border:1px solid #dfe6ef;border-radius:13px;background:#fff;cursor:pointer;transition:.15s}.domain:hover{border-color:#8b7cff;box-shadow:0 7px 22px rgba(109,93,252,.08)}.domain.selected{border-color:#8b7cff;background:#faf8ff}.domain.disabled{opacity:.45;cursor:not-allowed}.domain input{width:17px;height:17px;accent-color:#6d5dfc}.domain b{font-size:13px}.domain small{display:block;color:#7a8495;font-size:9px;margin-top:3px}.actions{display:flex;align-items:center;gap:10px;margin-top:18px}.save{border:0;background:#151922;color:#fff;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer}.save:disabled{opacity:.55;cursor:not-allowed}.status{font-size:11px;color:#687386}.status.ok{color:#16834f}.status.err{color:#b42318}.hint{margin-top:14px;padding:13px 14px;background:#f7f5ff;border:1px solid #e6defd;border-radius:12px;color:#5b5375;font-size:11px;line-height:1.6}
+.box{padding:22px}.box h2{margin:0 0 6px;font-size:19px}.box>p{margin:0;color:#687386;font-size:12px;line-height:1.6}.domain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.domain{position:relative;display:flex;align-items:center;gap:11px;padding:15px;border:1px solid #dfe6ef;border-radius:13px;background:#fff;cursor:pointer;transition:.15s}.domain:hover{border-color:#8b7cff;box-shadow:0 7px 22px rgba(109,93,252,.08)}.domain.selected{border-color:#8b7cff;background:#faf8ff}.domain.disabled{opacity:.45;cursor:not-allowed}.domain input{width:17px;height:17px;accent-color:#6d5dfc}.domain b{font-size:13px;color:#172033!important}.domain small{display:block;color:#657187!important;font-size:9px;margin-top:3px}.domain input{accent-color:#6d5dfc}.domain.disabled{opacity:.55}.domain.disabled b{color:#475569!important}.domain.disabled small{color:#64748b!important}.actions{display:flex;align-items:center;gap:10px;margin-top:18px}.save{border:0;background:#151922;color:#fff;border-radius:10px;padding:12px 18px;font-weight:900;cursor:pointer}.save:disabled{opacity:.55;cursor:not-allowed}.status{font-size:11px;color:#687386}.status.ok{color:#16834f}.status.err{color:#b42318}.hint{margin-top:14px;padding:13px 14px;background:#f7f5ff;border:1px solid #e6defd;border-radius:12px;color:#5b5375;font-size:11px;line-height:1.6}
 @media(max-width:850px){.domain-grid{grid-template-columns:1fr 1fr}}@media(max-width:800px){.side{width:70px;padding:17px 8px}.brand{justify-content:center;padding:2px 0 28px;font-size:0}.brand small{display:none}.nav a{justify-content:center;padding:11px 5px}.nav span,.bottom{display:none}.main{margin-left:70px}.topbar{padding:0 14px}.wallet{display:none}.content{width:calc(100% - 28px);padding-top:28px}}@media(max-width:560px){.summary,.domain-grid{grid-template-columns:1fr}.head{align-items:flex-start;flex-direction:column}}
 </style>
 <link rel="stylesheet" href="/panel-theme.css">
@@ -47,36 +47,69 @@ const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co';
 const SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
-let session=null, maxDomains=1, selected=[];
+let session=null, maxDomains=1, selected=[], currentData=null;
 
 function labelPlan(plan){
  const names={welcome:'Welcome Gift',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',weekly:'Weekly Unlimited',half_month:'Half-Month Unlimited',monthly:'Monthly Unlimited',quarterly:'Quarterly Unlimited',three_day:'3 Days'};
  return names[plan]||plan;
 }
 function render(data){
+ currentData=data;
  maxDomains=Number(data.maxDomains||1);
  selected=[...(data.selectedDomains||[])];
+ const unlimited=!!data.unlimited;
+ const locked=!!data.locked && !unlimited;
  $('plan').textContent=labelPlan(data.plan);
- $('planText').textContent=maxDomains>=data.availableDomains.length?'All available domains are included.':'Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+'.';
- $('count').textContent=selected.length+' / '+maxDomains;
- $('countText').textContent='Selected domains';
- const grid=$('domainGrid');grid.innerHTML='';
+ $('planText').textContent=unlimited
+   ? 'All available Shrtigo domains are included with this unlimited plan.'
+   : locked
+     ? 'Selection locked for this active plan.'
+     : 'Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+' and save once.';
+ $('count').textContent=unlimited ? 'ALL' : selected.length+' / '+maxDomains;
+ $('countText').textContent=unlimited ? 'All domains included' : 'Selected domains';
+
+ const grid=$('domainGrid');
+ const save=$('save');
+ const status=$('status');
+ grid.innerHTML='';
+
+ if(unlimited){
+   grid.innerHTML='<div style="grid-column:1/-1;padding:20px 22px;border:1px solid #bfe5d3;border-radius:14px;background:#f4fbf8;color:#176b4a;font-weight:800;line-height:1.7">✓ Unlimited plan active — all Shrtigo domains are automatically available. You do not need to select or save any domain.</div>';
+   save.style.display='none';
+   status.className='status ok';
+   status.textContent='All domains included automatically.';
+   return;
+ }
+
+ save.style.display='inline-block';
+ if(locked){
+   status.className='status ok';
+   status.textContent='🔒 Your domain selection is locked. Change your plan to select different domains.';
+ } else {
+   status.className='status';
+   status.textContent='Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+', then save. You cannot change this selection while the same plan is active.';
+ }
+
  (data.availableDomains||[]).forEach(domain=>{
    const isSelected=selected.includes(domain);
-   const locked=!isSelected&&selected.length>=maxDomains;
-   const label=document.createElement('label');label.className='domain'+(isSelected?' selected':'')+(locked?' disabled':'');
-   label.innerHTML='<input type="checkbox" value="'+domain+'" '+(isSelected?'checked':'')+' '+(locked?'disabled':'')+'><div><b>'+domain+'</b><small>'+ (domain==='shrtigo.xyz'?'Primary Shrtigo domain':'Supported branded domain') +'</small></div>';
+   const atLimit=!isSelected&&selected.length>=maxDomains;
+   const disabled=locked||atLimit;
+   const label=document.createElement('label');
+   label.className='domain'+(isSelected?' selected':'')+(disabled?' disabled':'');
+   label.innerHTML='<input type="checkbox" value="'+domain+'" '+(isSelected?'checked':'')+' '+(disabled?'disabled':'')+'><div><b>'+domain+'</b><small>'+ (domain==='shrtigo.xyz'?'Primary Shrtigo domain':'Supported branded domain') +'</small></div>';
    const input=label.querySelector('input');
    input.addEventListener('change',()=>{
+     if(locked)return;
      if(input.checked){if(!selected.includes(domain))selected.push(domain)}
      else selected=selected.filter(x=>x!==domain);
-     render({...data,selectedDomains:selected});
-     $('save').disabled=false;
+     render({...data,selectedDomains:selected,locked:false});
+     $('save').disabled=selected.length===0;
    });
    grid.appendChild(label);
  });
- $('save').disabled=false;
+ save.disabled=selected.length===0;
 }
+
 async function auth(){
  const {data:{session:s}}=await sb.auth.getSession();
  if(!s){location.href='/central-login.html?next=%2Fdomains.html';return null}
@@ -93,7 +126,7 @@ $('save').onclick=async()=>{
    const r=await fetch('/api/domain-settings',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({selectedDomains:selected})});
    const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not save domain selection.');
    $('status').className='status ok';$('status').textContent='✓ '+d.message;
-   render(d);
+   render({...d,locked:true});
  }catch(e){$('status').className='status err';$('status').textContent=e.message;$('save').disabled=false}
 };
 async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}
