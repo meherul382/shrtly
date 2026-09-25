@@ -24,10 +24,16 @@ const PLAN_DOMAIN_LIMITS = {
   weekly: 7,
   half_month: SUPPORTED_DOMAINS.length,
   // Plans not specified in the requested domain ladder keep the safe default.
-  monthly: 1,
-  quarterly: 1,
+  monthly: SUPPORTED_DOMAINS.length,
+  quarterly: SUPPORTED_DOMAINS.length,
   three_day: 1
 };
+
+// shrtigo.com is a premium domain available only from Pro Pack upward.
+const PREMIUM_COM_DOMAIN_PLANS = new Set(['pro','business','enterprise','weekly','half_month','monthly','quarterly']);
+function domainsForPlan(plan) {
+  return PREMIUM_COM_DOMAIN_PLANS.has(plan) ? SUPPORTED_DOMAINS : SUPPORTED_DOMAINS.filter(d => d !== 'shrtigo.com');
+}
 
 function json(res, status, body) {
   res.status(status).setHeader('Content-Type', 'application/json');
@@ -115,6 +121,7 @@ module.exports = async (req, res) => {
   try {
     const plan = await getActivePlan(userId);
     const maxDomains = domainLimit(plan);
+    const availableDomains = domainsForPlan(plan);
 
     const unlimited = ['weekly', 'half_month', 'monthly', 'quarterly'].includes(plan);
 
@@ -126,8 +133,8 @@ module.exports = async (req, res) => {
           maxDomains: SUPPORTED_DOMAINS.length,
           unlimited: true,
           locked: true,
-          selectedDomains: SUPPORTED_DOMAINS,
-          availableDomains: SUPPORTED_DOMAINS,
+          selectedDomains: availableDomains,
+          availableDomains,
           message: 'Unlimited plan includes all Shrtigo domains. No domain selection is required.'
         });
       }
@@ -145,7 +152,7 @@ module.exports = async (req, res) => {
         locked: !!saved,
         selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
-        availableDomains: SUPPORTED_DOMAINS,
+        availableDomains,
         message: saved
           ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
           : 'Select your domains and save once. The selection cannot be changed while this plan remains active.'
@@ -179,7 +186,7 @@ module.exports = async (req, res) => {
     const cleaned = [...new Set(selected.map(d => String(d || '').trim().toLowerCase()).filter(Boolean))];
 
     if (!cleaned.length) return json(res, 400, { error: 'Select at least one domain.' });
-    if (cleaned.some(d => !SUPPORTED_DOMAINS.includes(d))) return json(res, 400, { error: 'One or more selected domains are not supported.' });
+    if (cleaned.some(d => !availableDomains.includes(d))) return json(res, 400, { error: 'One or more selected domains are not supported.' });
     if (cleaned.length > maxDomains) {
       return json(res, 400, {
         error: `Your ${plan} plan allows up to ${maxDomains} domain${maxDomains === 1 ? '' : 's'}.`,
@@ -206,7 +213,7 @@ module.exports = async (req, res) => {
       plan,
       maxDomains,
       selectedDomains: cleaned,
-      availableDomains: SUPPORTED_DOMAINS
+      availableDomains
     });
   } catch (error) {
     console.error('Domain settings error:', error);

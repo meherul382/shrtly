@@ -99,6 +99,9 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
     const maxDomains = Math.max(1, Math.min(9, Number(limits[plan] || 1)));
     const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
+    const premiumComPlans = new Set(['pro','business','enterprise','weekly','half_month','monthly','quarterly']);
+    const allDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
+    const availableDomains = premiumComPlans.has(plan) ? allDomains : allDomains.filter(d => d !== 'shrtigo.com');
 
     const settings = await supabaseFetch(
       `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
@@ -125,10 +128,14 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
+    if (unlimited) selectedDomains = availableDomains;
     else {
       if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
-      selectedDomains = selectedDomains.slice(0, maxDomains);
+      selectedDomains = selectedDomains.filter(d => availableDomains.includes(d)).slice(0, maxDomains);
+    }
+
+    if (!availableDomains.includes(selectedDomain)) {
+      return { allowed:false, maxDomains, selectedDomains, error:'shrtigo.com is a premium domain available from Pro Pack and higher plans only.' };
     }
 
     if (!selectedDomains.includes(selectedDomain)) {
