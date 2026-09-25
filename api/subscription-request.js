@@ -55,7 +55,16 @@ module.exports = async (req, res) => {
       body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0, selected_domains } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id, selected_domains })
     });
 
-    if (insertResponse.ok) return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.', selected_domains });
+    if (insertResponse.ok) {
+      if (plan === 'welcome') {
+        await fetch(SUPABASE_URL + '/rest/v1/user_domain_settings?on_conflict=user_id', {
+          method: 'POST',
+          headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+          body: JSON.stringify({ user_id: user.id, selected_domains, selection_plan: plan, updated_at: new Date().toISOString() })
+        });
+      }
+      return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.', selected_domains });
+    }
 
     const raw = await insertResponse.text();
     let details = raw;
