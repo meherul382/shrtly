@@ -42,11 +42,11 @@ body{background:radial-gradient(circle at 12% 0%,rgba(37,110,255,.20),transparen
 header.site-content{background:rgba(4,12,30,.86)!important;border-bottom:1px solid #1b4381!important;backdrop-filter:blur(18px)!important;box-shadow:0 8px 30px rgba(0,0,0,.18)!important}
 header.site-content .nav{height:78px!important;padding:0 34px!important;max-width:none!important}
 header.site-content>.nav>.brand{display:none}
-.ov-tools{margin-left:auto;display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-end}.ov-menu{font-size:20px!important}
+.ov-tools{margin-left:0;display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-start}.ov-search-wrap{flex:0 1 680px}.ov-notify{margin-left:auto}.ov-menu{font-size:20px!important}
 .ov-search{height:44px;width:min(510px,45vw);border:1px solid #2857a3!important;border-radius:13px!important;background:#071a38!important;color:#eaf2ff!important;padding:0 15px 0 42px!important;outline:none;font-size:13px!important;box-shadow:inset 0 1px rgba(255,255,255,.04)}
 .ov-search::placeholder{color:#7894c0}.ov-search-wrap{position:relative}.ov-search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#78aaff;font-size:18px}
 .ov-tool{width:44px;height:44px;border:1px solid #2857a3!important;border-radius:13px!important;background:#091b3b!important;color:#dce9ff!important;display:grid;place-items:center;cursor:pointer;font-size:17px!important}
-.ov-notify{position:relative}.ov-notify b{position:absolute;right:-2px;top:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#ff2d65;color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid #071a38}.ov-profile-copy{display:flex;flex-direction:column;line-height:1.05}.ov-profile-copy b{font-size:13px}.ov-profile-copy small{font-size:9px;color:#9bb0d6;margin-top:3px}.ov-chevron{font-size:20px;margin-left:8px}.ov-tool:hover{border-color:#6597ff!important;box-shadow:0 0 18px rgba(52,110,255,.25)}
+.ov-notify{position:relative}.ov-notify b{position:absolute;right:-2px;top:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:#ff2d65;color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid #071a38}.ov-profile{min-width:225px;justify-content:flex-start}.ov-profile-copy{display:flex;flex-direction:column;line-height:1.05}.ov-profile-copy b{font-size:13px}.ov-profile-copy small{font-size:9px;color:#9bb0d6;margin-top:3px}.ov-chevron{font-size:20px;margin-left:8px}.ov-tool:hover{border-color:#6597ff!important;box-shadow:0 0 18px rgba(52,110,255,.25)}
 header.site-content .sh-profile,header.site-content #shProfile,header.site-content .navlinks,header.site-content>.wrap>.brand{display:none!important}.ov-profile{height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #315da7!important;border-radius:14px!important;background:linear-gradient(135deg,#0b2450,#18265b)!important;color:#fff!important;font-size:12px;font-weight:900}
 .ov-avatar{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3e83ff,#8e35ff);font-weight:950}
 .control-section{padding:48px 0 65px!important}
@@ -88,6 +88,21 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
 .card-graphic.user:before{content:"●";position:absolute;right:45px;top:4px;font-size:45px;color:#7b39ff}.card-graphic.user:after{content:"";position:absolute;right:5px;bottom:-25px;width:105px;height:85px;border-radius:60px 60px 0 0;background:#7b39ff}
 .card-graphic.clock{border:22px solid #16c9a8;border-radius:50%}.card-graphic.clock:before{content:"";position:absolute;width:4px;height:45px;background:#16c9a8;left:58px;top:5px}.card-graphic.clock:after{content:"";position:absolute;width:40px;height:4px;background:#16c9a8;left:58px;top:48px;transform:rotate(35deg);transform-origin:left}
 .control-card{min-height:178px!important;padding:21px 22px!important}.control-card h3{padding-right:48px!important;position:relative;z-index:2}.control-card p{max-width:75%;position:relative;z-index:2}.control-card .control-btn{position:relative;z-index:3}
+/* Reference icon treatments */
+.control-card .icon{width:62px!important;height:62px!important;border-radius:15px!important;display:grid!important;place-items:center!important;font-size:28px!important;color:#fff!important;box-shadow:0 0 22px rgba(40,130,255,.35)!important}
+.control-card:nth-child(1) .icon{background:linear-gradient(145deg,#23a7ff,#174cff 58%,#7432ff)!important}
+.control-card:nth-child(2) .icon{background:linear-gradient(145deg,#8b2cff,#c21dff)!important}
+.control-card:nth-child(3) .icon{background:linear-gradient(145deg,#18d7bd,#168cff)!important}
+.control-card:nth-child(4) .icon{background:linear-gradient(145deg,#ffb300,#ff3f71)!important}
+.control-card:nth-child(5) .icon{background:linear-gradient(145deg,#ff2db0,#7c2cff)!important}
+.control-card:nth-child(6) .icon{background:linear-gradient(145deg,#1dd7ff,#1269ff)!important}
+.control-card:nth-child(7) .icon{background:linear-gradient(145deg,#27a9ff,#5031ff)!important}
+.control-card:nth-child(8) .icon{background:linear-gradient(145deg,#25a9ff,#783cff)!important}
+.control-card:nth-child(9) .icon{background:linear-gradient(145deg,#1bd9b1,#138bff)!important}
+.site-nav .nav-icon{font-size:22px!important;width:30px!important;text-align:center;color:#d9e7ff!important;text-shadow:0 0 10px rgba(89,149,255,.2)}
+.site-nav a{min-height:44px!important;padding:9px 12px!important;font-size:14px!important}
+.site-nav a.active{background:linear-gradient(90deg,#1478ff,#7926ff,#ef19e9)!important;box-shadow:0 0 24px rgba(113,44,255,.55)!important;border:1px solid #7aa1ff!important}
+
 @media(max-width:1000px){.overview-top{grid-template-columns:1fr}.welcome-banner{min-height:100px}}
 @media(max-width:800px){.upgrade-card{display:none}.overview-top{gap:15px}.welcome-banner{padding:16px}.control-card p{max-width:90%}}
 </style>
@@ -118,15 +133,15 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
 <main class="site-content"><section id="overview" class="control-section wrap section-anchor">
 <div class="overview-top"><div class="control-head"><div><div class="welcome-pill">👋 Welcome Back</div><h2>Shrtigo <span>Control Center</span></h2><p>Everything you need to create, manage and monitor your short links.</p></div></div><div class="welcome-banner"><div class="welcome-crown">👑</div><div><h3>Welcome to Shrtigo</h3><p>Short links. Big possibilities. Manage your links, domains,<br>payments and more — all in one place.</p></div><i></i></div></div>
 <div class="control-grid">
-<article class="control-card"><div class="icon">📊</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Analytics</h3><p>View click activity, visitors and link performance from your private dashboard.</p><a class="control-btn" href="/panel-analytics.html">Open Analytics</a><div class="card-graphic chart"></div></article>
-<article class="control-card"><div class="icon">↗</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Links Management</h3><p>Manage your saved links, destinations and analytics links in one place.</p><a class="control-btn" href="/links.html">Manage Links</a><div class="card-graphic link"></div></article>
-<article id="domains" class="control-card section-anchor"><div class="icon">◎</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Custom Domains</h3><p>Connect and manage supported custom domains for branded short URLs.</p><a class="control-btn" href="/domains.html">Manage Domains</a><div class="card-graphic globe"></div></article>
-<article id="invoices" class="control-card section-anchor"><div class="icon">▤</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Invoices</h3><p>Keep your plan and payment records organized from your account panel.</p><a class="control-btn" href="/invoices.html">Open Invoices</a><div class="card-graphic doc"></div></article>
-<article id="add-fund" class="control-card section-anchor"><div class="icon">＋</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Add Fund</h3><p>Payment and account funding options are available from the Shrtigo panel.</p><a class="control-btn" href="/subscription.html">Plans & Payment</a><div class="card-graphic wallet"></div></article>
-<article id="notifications" class="control-card section-anchor"><div class="icon">♧</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Notifications</h3><p>Account notices and service updates can be accessed from your private panel.</p><a class="control-btn" href="/notifications.html">Open Panel</a><div class="card-graphic bell"></div></article>
-<article id="tickets" class="control-card section-anchor"><div class="icon">▱</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Tickets</h3><p>Use your account panel for support and ticket-related account activity.</p><a class="control-btn" href="/tickets.html">Get Support</a><div class="card-graphic headset"></div></article>
-<article id="profile" class="control-card section-anchor"><div class="icon">♙</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Profile</h3><p>Access your secure account profile and dashboard settings.</p><a class="control-btn" href="/profile.html">Open Profile</a><div class="card-graphic user"></div></article>
-<article id="plan-status" class="control-card section-anchor"><div class="icon">◷</div><div class="card-arrow">›</div><div class="card-arrow">›</div><h3>Plan / Time Left</h3><p>Your active plan, remaining time and account limits are shown after login.</p><a class="control-btn" href="/subscription.html">View Status</a><div class="card-graphic clock"></div></article>
+<article class="control-card"><div class="icon">📊</div><div class="card-arrow">›</div><h3>Analytics</h3><p>View click activity, visitors and link performance from your private dashboard.</p><a class="control-btn" href="/panel-analytics.html">Open Analytics</a><div class="card-graphic chart"></div></article>
+<article class="control-card"><div class="icon">↗</div><div class="card-arrow">›</div><h3>Links Management</h3><p>Manage your saved links, destinations and analytics links in one place.</p><a class="control-btn" href="/links.html">Manage Links</a><div class="card-graphic link"></div></article>
+<article id="domains" class="control-card section-anchor"><div class="icon">◎</div><div class="card-arrow">›</div><h3>Custom Domains</h3><p>Connect and manage supported custom domains for branded short URLs.</p><a class="control-btn" href="/domains.html">Manage Domains</a><div class="card-graphic globe"></div></article>
+<article id="invoices" class="control-card section-anchor"><div class="icon">▤</div><div class="card-arrow">›</div><h3>Invoices</h3><p>Keep your plan and payment records organized from your account panel.</p><a class="control-btn" href="/invoices.html">Open Invoices</a><div class="card-graphic doc"></div></article>
+<article id="add-fund" class="control-card section-anchor"><div class="icon">＋</div><div class="card-arrow">›</div><h3>Add Fund</h3><p>Payment and account funding options are available from the Shrtigo panel.</p><a class="control-btn" href="/subscription.html">Plans & Payment</a><div class="card-graphic wallet"></div></article>
+<article id="notifications" class="control-card section-anchor"><div class="icon">♧</div><div class="card-arrow">›</div><h3>Notifications</h3><p>Account notices and service updates can be accessed from your private panel.</p><a class="control-btn" href="/notifications.html">Open Panel</a><div class="card-graphic bell"></div></article>
+<article id="tickets" class="control-card section-anchor"><div class="icon">▱</div><div class="card-arrow">›</div><h3>Tickets</h3><p>Use your account panel for support and ticket-related account activity.</p><a class="control-btn" href="/tickets.html">Get Support</a><div class="card-graphic headset"></div></article>
+<article id="profile" class="control-card section-anchor"><div class="icon">♙</div><div class="card-arrow">›</div><h3>Profile</h3><p>Access your secure account profile and dashboard settings.</p><a class="control-btn" href="/profile.html">Open Profile</a><div class="card-graphic user"></div></article>
+<article id="plan-status" class="control-card section-anchor"><div class="icon">◷</div><div class="card-arrow">›</div><h3>Plan / Time Left</h3><p>Your active plan, remaining time and account limits are shown after login.</p><a class="control-btn" href="/subscription.html">View Status</a><div class="card-graphic clock"></div></article>
 </div>
 </section></main>
 
@@ -149,5 +164,24 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
  }catch(e){box.innerHTML='<div class="analytics-table"><div class="analytics-empty">'+String(e.message||'Could not load analytics')+'</div></div>'}
 })();
 </script>
-<script src="/profile.js"></script><script src="/panel-status.js" defer></script><script>(function(){const b=document.getElementById("ovTheme"),s=document.getElementById("ovSearch"),m=document.getElementById("ovMenu");if(localStorage.getItem("shrtigo-theme")==="light"){document.body.classList.add("ov-light");}m.onclick=function(){document.body.classList.toggle("ov-sidebar-collapsed");};b.onclick=function(){document.body.classList.toggle("ov-light");localStorage.setItem("shrtigo-theme",document.body.classList.contains("ov-light")?"light":"dark");b.textContent=document.body.classList.contains("ov-light")?"☀":"☾"};s.addEventListener("keydown",function(e){if(e.key==="Enter"&&s.value.trim())location.href="/links.html?search="+encodeURIComponent(s.value.trim())});})();</script></body>
+<script src="/profile.js"></script><script src="/panel-status.js" defer></script><script>(function(){const b=document.getElementById("ovTheme"),s=document.getElementById("ovSearch"),m=document.getElementById("ovMenu");if(localStorage.getItem("shrtigo-theme")==="light"){document.body.classList.add("ov-light");}m.onclick=function(){document.body.classList.toggle("ov-sidebar-collapsed");};b.onclick=function(){document.body.classList.toggle("ov-light");localStorage.setItem("shrtigo-theme",document.body.classList.contains("ov-light")?"light":"dark");b.textContent=document.body.classList.contains("ov-light")?"☀":"☾"};s.addEventListener("keydown",function(e){if(e.key==="Enter"&&s.value.trim())location.href="/links.html?search="+encodeURIComponent(s.value.trim())});})();</script><script>
+(async function(){
+ try{
+  const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');
+  const s=(await sb.auth.getSession()).data.session;
+  if(!s)return;
+  const user=s.user||{}, meta=user.user_metadata||{};
+  const name=meta.full_name||meta.name||meta.display_name||String(user.email||'').split('@')[0]||'User';
+  let plan='Free Plan';
+  try{
+   const {data}=await sb.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',user.id).eq('status','active').order('ends_at',{ascending:false}).limit(1);
+   if(data&&data[0]){
+    const names={three_day:'3 Days','weekly':'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift'};
+    plan=names[data[0].plan]||data[0].plan||'Free Plan';
+   }
+  }catch(e){}
+  const p=document.querySelector('.ov-profile-copy');if(p){p.querySelector('b').textContent=name;p.querySelector('small').textContent=plan}
+ }catch(e){console.warn('Profile display:',e)}
+})();
+</script></body>
 </html>
