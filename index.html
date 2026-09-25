@@ -105,24 +105,29 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
 
 @media(max-width:1000px){.overview-top{grid-template-columns:1fr}.welcome-banner{min-height:100px}}
 @media(max-width:800px){.upgrade-card{display:none}.overview-top{gap:15px}.welcome-banner{padding:16px}.control-card p{max-width:90%}}
+
+.site-nav .nav-icon svg{width:22px;height:22px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.control-card .icon svg{width:36px;height:36px;display:block;fill:none;stroke:#fff;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 4px rgba(255,255,255,.25))}
+.control-card .icon svg path[fill],.control-card .icon svg rect[fill]{fill:#fff}
+.control-card:nth-child(1) .icon svg{width:39px;height:39px}
 </style>
 <script src="/home-polish.js" defer></script></head>
 <body>
 <aside class="site-sidebar">
 <a class="side-brand" href="/"><span>S</span><b>Shrtigo</b><em>PRO</em></a>
 <nav class="site-nav">
-<a class="active" href="/"><span class="nav-icon">▦</span><span>Overview</span></a>
-<a href="/create-link.html"><span class="nav-icon">＋</span><span>Create Link</span></a>
-<a href="/panel-analytics.html"><span class="nav-icon">⌁</span><span>Analytics</span></a>
-<a href="/links.html"><span class="nav-icon">↗</span><span>Links</span></a>
-<a href="/subscription.html"><span class="nav-icon">▣</span><span>Plans</span></a>
-<a href="/domains.html"><span class="nav-icon">◎</span><span>Domains</span></a>
-<a href="/invoices.html"><span class="nav-icon">▤</span><span>Invoices</span></a>
-<a href="/add-fund.html"><span class="nav-icon">＋</span><span>Add Fund</span></a>
-<a href="/notifications.html"><span class="nav-icon">♧</span><span>Notifications</span></a>
-<a href="/tickets.html"><span class="nav-icon">▱</span><span>Tickets</span></a>
-<a href="/profile.html"><span class="nav-icon">♙</span><span>Profile</span></a>
-<a href="/"><span class="nav-icon">↪</span><span>Logout</span></a>
+<a class="active" href="/"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9 21v-7h6v7"/></svg></span><span>Overview</span></a>
+<a href="/create-link.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5 8.5 15a4 4 0 0 1-5.5-5.5l3-3A4 4 0 0 1 12 6.5"/><path d="m14 10.5 1.5-1.5A4 4 0 0 1 21 14.5l-3 3A4 4 0 0 1 12 17.5"/><path d="m8 16 8-8"/></svg></span><span>Create Link</span></a>
+<a href="/panel-analytics.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 4-4 3 2 6-7"/></svg></span><span>Analytics</span></a>
+<a href="/links.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5 8.5 15a4 4 0 0 1-5.5-5.5l3-3A4 4 0 0 1 12 6.5"/><path d="m14 10.5 1.5-1.5A4 4 0 0 1 21 14.5l-3 3A4 4 0 0 1 12 17.5"/><path d="m8 16 8-8"/></svg></span><span>Links</span></a>
+<a href="/subscription.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M7 9h10M7 13h5"/></svg></span><span>Plans</span></a>
+<a href="/domains.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.8 9h16.4M3.8 15h16.4M12 3.5c2.2 2.3 3.3 5.1 3.3 8.5S14.2 18.2 12 20.5c-2.2-2.3-3.3-5.1-3.3-8.5S9.8 5.8 12 3.5Z"/></svg></span><span>Domains</span></a>
+<a href="/invoices.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span>Invoices</span></a>
+<a href="/add-fund.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h15a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h12"/><path d="M17 13h4"/><circle cx="17" cy="13" r=".7"/></svg></span><span>Add Fund</span></a>
+<a href="/notifications.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></span><span>Notifications</span></a>
+<a href="/tickets.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v4a2 2 0 0 0 0 4v4H4v-4a2 2 0 0 0 0-4V6Z"/><path d="M12 8v2M12 14v2"/></svg></span><span>Tickets</span></a>
+<a href="/profile.html"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6"/></svg></span><span>Profile</span></a>
+<a href="/"><span class="nav-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5"/><path d="M13 8l4 4-4 4M8 12h9"/></svg></span><span>Logout</span></a>
 </nav>
 <div class="upgrade-card"><div class="upgrade-icon">👑</div><div><strong>Upgrade to Pro</strong><small>Get more clicks, more domains and advanced features.</small></div><a href="/subscription.html">View Plans&nbsp; →</a></div>
 <div class="site-sidebar-bottom">
@@ -133,7 +138,7 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
 <main class="site-content"><section id="overview" class="control-section wrap section-anchor">
 <div class="overview-top"><div class="control-head"><div><div class="welcome-pill">👋 Welcome Back</div><h2>Shrtigo <span>Control Center</span></h2><p>Everything you need to create, manage and monitor your short links.</p></div></div><div class="welcome-banner"><div class="welcome-crown">👑</div><div><h3>Welcome to Shrtigo</h3><p>Short links. Big possibilities. Manage your links, domains,<br>payments and more — all in one place.</p></div><i></i></div></div>
 <div class="control-grid">
-<article class="control-card"><div class="icon">📊</div><div class="card-arrow">›</div><h3>Analytics</h3><p>View click activity, visitors and link performance from your private dashboard.</p><a class="control-btn" href="/panel-analytics.html">Open Analytics</a><div class="card-graphic chart"></div></article>
+<article class="control-card"><div class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg></div><div class="card-arrow">›</div><h3>Analytics</h3><p>View click activity, visitors and link performance from your private dashboard.</p><a class="control-btn" href="/panel-analytics.html">Open Analytics</a><div class="card-graphic chart"></div></article>
 <article class="control-card"><div class="icon">↗</div><div class="card-arrow">›</div><h3>Links Management</h3><p>Manage your saved links, destinations and analytics links in one place.</p><a class="control-btn" href="/links.html">Manage Links</a><div class="card-graphic link"></div></article>
 <article id="domains" class="control-card section-anchor"><div class="icon">◎</div><div class="card-arrow">›</div><h3>Custom Domains</h3><p>Connect and manage supported custom domains for branded short URLs.</p><a class="control-btn" href="/domains.html">Manage Domains</a><div class="card-graphic globe"></div></article>
 <article id="invoices" class="control-card section-anchor"><div class="icon">▤</div><div class="card-arrow">›</div><h3>Invoices</h3><p>Keep your plan and payment records organized from your account panel.</p><a class="control-btn" href="/invoices.html">Open Invoices</a><div class="card-graphic doc"></div></article>
