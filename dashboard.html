@@ -430,7 +430,32 @@ body.panel-view .content{display:none!important}
   show(initial,false);
 })();
 </script><script src="/panel-shell.js?v=20260925"></script>
-</body>
+
+<style id="shrtigo-dashboard-final-size-fix">
+/* Compact dashboard hero */
+body.panel-shell .hero-row h1{font-size:30px!important;letter-spacing:-1px!important}
+body.panel-shell .hero-row .subtitle{font-size:11px!important;margin-top:6px!important;line-height:1.45!important}
+body.panel-shell .hero-row{margin-bottom:20px!important}
+
+/* Fix Latest Links: the link item contains a .main element, so don't inherit the page .main sidebar margin */
+body.panel-shell .links .link>.main{
+  margin-left:0!important;
+  min-height:0!important;
+  width:auto!important;
+  flex:1 1 auto!important;
+  padding:0!important;
+}
+body.panel-shell .links .link{
+  min-height:0!important;
+  height:auto!important;
+  align-items:center!important;
+}
+body.panel-shell .links .dest{max-width:min(650px,70vw)!important}
+@media(max-width:760px){
+  body.panel-shell .hero-row h1{font-size:27px!important}
+  body.panel-shell .hero-row .subtitle{font-size:10px!important}
+}
+</style></body>
 </html><style id="shrtigo-dashboard-polish">
 body.panel-shell .content{max-width:1180px!important}
 body.panel-shell .hero-row h1{color:#f5f8ff!important}.panel-shell .subtitle{color:#91a7ce!important}
