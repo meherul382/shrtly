@@ -111,7 +111,7 @@ const planToRequest={
 const domainCatalog=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
 const domainLimits={welcome:1,starter:2,growth:3,pro:4,business:5,enterprise:6,weekly:9,'half-month':9,monthly:9,quarterly:9};
 const unlimitedPlans=new Set(['weekly','half-month','monthly','quarterly']);
-const premiumComPlans=new Set(['pro','business','enterprise','weekly','half-month','monthly','quarterly']);
+const premiumComPlans=new Set(['welcome','starter','growth','pro','business','enterprise','weekly','half-month','monthly','quarterly']);
 let pendingPlan=null,pendingDomains=[];
 const requestedPlan=new URLSearchParams(location.search).get('plan');
 if(requestedPlan){
@@ -124,11 +124,11 @@ function openDomainSelector(key){
  pendingPlan=key;
  const limit=domainLimits[key]||1;
  const unlimited=unlimitedPlans.has(key);
- const allowedCatalog=premiumComPlans.has(key)?domainCatalog.slice():domainCatalog.filter(d=>d!=='shrtigo.com');
- const defaultCatalog=key==='pro'?[...allowedCatalog.filter(d=>d==='shrtigo.com'),...allowedCatalog.filter(d=>d!=='shrtigo.com')]:allowedCatalog;
+ const allowedCatalog=domainCatalog.slice();
+ const defaultCatalog=allowedCatalog;
  pendingDomains=unlimited?allowedCatalog.slice():defaultCatalog.slice(0,Math.min(limit,defaultCatalog.length));
  document.getElementById('domainPlanName').textContent=planLabels[key]||key;
- domainOptions.innerHTML=domainCatalog.map(d=>{const allowed=premiumComPlans.has(key)||d!=='shrtigo.com';const note=d==='shrtigo.com'?(allowed?'Premium domain — Pro Pack and higher':'Available from Pro Pack and higher plans'):(d==='shrtigo.xyz'?'Primary Shrtigo domain':'Branded domain');return `<label class="domain-option ${pendingDomains.includes(d)?'selected':''} ${allowed?'':'disabled'}"><input type="checkbox" value="${d}" ${pendingDomains.includes(d)?'checked':''} ${unlimited||!allowed?'disabled':''}><div><b>${d}</b><small>${note}</small></div></label>`;}).join('');
+ domainOptions.innerHTML=domainCatalog.map(d=>{const allowed=true;const note=d==='shrtigo.xyz'?'Primary Shrtigo domain':(d==='shrtigo.com'?'Shrtigo .com domain':'Branded domain');return `<label class="domain-option ${pendingDomains.includes(d)?'selected':''} ${allowed?'':'disabled'}"><input type="checkbox" value="${d}" ${pendingDomains.includes(d)?'checked':''} ${unlimited||!allowed?'disabled':''}><div><b>${d}</b><small>${note}</small></div></label>`;}).join('');
  document.getElementById('domainCount').textContent=unlimited?'ALL / ALL':pendingDomains.length+' / '+limit;
  document.getElementById('domainWarning').classList.remove('show');
  domainOptions.querySelectorAll('input').forEach(input=>input.addEventListener('change',()=>{if(unlimited)return; if(input.checked){if(pendingDomains.length>=limit){input.checked=false;document.getElementById('domainWarning').textContent='This plan allows up to '+limit+' domains.';document.getElementById('domainWarning').classList.add('show');return}pendingDomains.push(input.value)}else pendingDomains=pendingDomains.filter(x=>x!==input.value);input.closest('.domain-option').classList.toggle('selected',input.checked);document.getElementById('domainCount').textContent=pendingDomains.length+' / '+limit;}));
