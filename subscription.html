@@ -70,6 +70,9 @@ async function loadActiveSubscription(){
  try{
   const {data:{session}}=await client.auth.getSession();
   if(!session){message.textContent='Log in to view your subscription status.';panel.classList.add('show');return}
+  const {data:welcomeRows}=await client.from('subscriptions').select('id').eq('user_id',session.user.id).eq('plan','welcome').limit(1);
+  const welcomeBtn=document.getElementById('welcomeClaimBtn');
+  if(welcomeRows&&welcomeRows.length&&welcomeBtn){welcomeBtn.disabled=true;welcomeBtn.textContent='✓ Welcome Gift Already Claimed';welcomeBtn.style.opacity='.7';}
   const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);
   if(error)throw error;
   if(!data||!data.length){message.textContent='No active subscription found. Claim your 500-click Welcome Gift below or submit a payment request.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
