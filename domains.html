@@ -55,6 +55,7 @@ radial-gradient(800px 500px at 50% 100%,rgba(0,56,170,.24),transparent 65%),
 @media(max-width:850px){.domain-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.content{width:calc(100% - 26px)}.domain-grid{grid-template-columns:1fr}.head h1{font-size:31px}}
 </style>
+<link rel="stylesheet" href="/panel-shell.css">
 </head>
 <body>
 <aside class="side">
@@ -173,5 +174,6 @@ $('logout').onclick=e=>{e.preventDefault();logout()};$('logoutTop').onclick=logo
 (async()=>{try{session=await auth();if(session)await load()}catch(e){$('status').className='status err';$('status').textContent=e.message}})();
 </script>
 <script src="/panel-status.js" defer></script>
+<script src="/panel-shell.js"></script>
 </body>
 </html>
