@@ -84,10 +84,10 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     pro: 4,
     business: 5,
     enterprise: 6,
-    weekly: 7,
+    weekly: 9,
     half_month: 9,
-    monthly: 1,
-    quarterly: 1,
+    monthly: 9,
+    quarterly: 9,
     three_day: 1
   };
   try {
@@ -98,6 +98,7 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     const rows = sub.ok ? await sub.json() : [];
     const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
     const maxDomains = Math.max(1, Math.min(9, Number(limits[plan] || 1)));
+    const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
 
     const settings = await supabaseFetch(
       `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
@@ -124,15 +125,18 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
-    selectedDomains = selectedDomains.slice(0, maxDomains);
+    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
+    else {
+      if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
+      selectedDomains = selectedDomains.slice(0, maxDomains);
+    }
 
     if (!selectedDomains.includes(selectedDomain)) {
       return {
         allowed: false,
         maxDomains,
         selectedDomains,
-        error: `This domain is not selected for your current ${plan} plan. Open Domains and select up to ${maxDomains} domain${maxDomains === 1 ? '' : 's'}.`
+        error: unlimited ? 'All Shrtigo domains are included with your unlimited plan.' : `This domain is not selected for your current ${plan} plan. Open Domains and select up to ${maxDomains} domain${maxDomains === 1 ? '' : 's'}.`
       };
     }
 
