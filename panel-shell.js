@@ -2,15 +2,16 @@
 const profileWrap=top.querySelector('.shell-profile-wrap'),profileBtn=top.querySelector('.shell-profile'),profileMenu=top.querySelector('#shellProfileMenu');profileBtn?.addEventListener('click',e=>{e.stopPropagation();const open=profileMenu.classList.toggle('open');profileBtn.setAttribute('aria-expanded',String(open))});document.addEventListener('click',()=>{profileMenu?.classList.remove('open');profileBtn?.setAttribute('aria-expanded','false')});top.querySelector('#shellLogoutMenu')?.addEventListener('click',async()=>{try{if(sb)await sb.auth.signOut()}catch{}location.href='/central-login.html'});top.querySelector('.shell-menu')?.addEventListener('click',()=>document.body.classList.toggle('shell-nav-open'));
 const existingMain=document.querySelector('main.main');if(existingMain)existingMain.classList.add('shell-main');
 if(active==='overview'){const s=document.getElementById('shellSearch');if(s)s.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=s.value.trim().toLowerCase();if(!q)return;location.href='/links.html?search='+encodeURIComponent(q)}})}
-const sb=window.supabase?.createClient?.('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');if(sb)sb.auth.getUser().then(async ({data})=>{const u=data?.user;if(!u)return;if(String(u.email||'').toLowerCase()==='meherulhassan62@gmail.com'){const tools=document.getElementById('adminProfileTools');if(tools)tools.hidden=false;}const name=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';document.getElementById('shellUserName').textContent=name;
-const planNames={three_day:'3 Days','3-days':'3 Days',weekly:'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift'};
-try{
- const {data:subs}=await sb.from('subscriptions').select('plan,status,ends_at').eq('user_id',u.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);
- const sub=subs?.[0];
- const plan=sub? (planNames[sub.plan]||sub.plan) : 'Free Plan';
- document.getElementById('shellUserPlan').textContent=plan;
- const time=document.querySelector('.shell-time');
- if(time){time.innerHTML='<span>TIME LEFT</span><strong>'+(sub?.ends_at?new Date(sub.ends_at).getTime()>Date.now()?'Active':'Expired':'—')+'</strong><small>'+plan+'</small>';}
-}catch{}
-}).catch(()=>{});
+async function initShritgoShellAuth(){
+  let attempts=0;while(!window.supabase?.createClient&&attempts<20){await new Promise(r=>setTimeout(r,150));attempts++;}
+  if(!window.supabase?.createClient)return;
+  const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');
+  const {data:{session}}=await sb.auth.getSession();const u=session?.user;if(!u)return;
+  document.getElementById('shellUserName').textContent=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';
+  try{const ar=await fetch('https://qbijrkdlaguwlvriaiky.supabase.co/rest/v1/rpc/shrtigo_is_admin',{method:'POST',headers:{apikey:'sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ',Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}'});const t=document.getElementById('adminProfileTools');if(t)t.hidden=!(ar.ok&&(await ar.json())===true)}catch{}
+  const planNames={weekly:'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift',three_day:'3 Days'};
+  try{const {data:s}=await sb.from('subscriptions').select('plan,status,ends_at').eq('user_id',u.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);document.getElementById('shellUserPlan').textContent=s?.[0]?(planNames[s[0].plan]||s[0].plan):'Free Plan'}catch{}
+  document.getElementById('shellLogoutMenu')?.addEventListener('click',async()=>{try{await sb.auth.signOut()}catch{}location.href='/central-login.html'});
+}
+initShritgoShellAuth().catch(()=>{});
 document.getElementById('shellTheme')?.addEventListener('click',()=>document.documentElement.classList.toggle('shell-dim'));document.querySelector('[data-shell-nav="logout"]')?.addEventListener('click',async e=>{e.preventDefault();try{if(sb)await sb.auth.signOut()}catch{}location.href='/central-login.html'});})();
