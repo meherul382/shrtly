@@ -65,6 +65,9 @@ module.exports = async (req, res) => {
     });
 
     if (insertResponse.ok) {
+      if (couponData.code) {
+        await fetch(SUPABASE_URL + '/rest/v1/rpc/shrtigo_increment_coupon_usage', { method:'POST', headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({p_code:couponData.code}) }).catch(()=>{});
+      }
       if (plan === 'welcome') {
         await fetch(SUPABASE_URL + '/rest/v1/user_domain_settings?on_conflict=user_id', {
           method: 'POST',
