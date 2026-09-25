@@ -26,6 +26,17 @@ module.exports = async (req, res) => {
     const plan = planMap[String(body.plan || '').trim().toLowerCase()];
     const payment_method = methodMap[String(body.payment_method || '').trim().toLowerCase()];
     const transaction_id = String(body.transaction_id || '').trim();
+    const supportedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
+    const domainLimits = { welcome:1, starter:2, growth:3, pro:4, business:5, enterprise:6, weekly:7, half_month:9, monthly:9, quarterly:9 };
+    const unlimitedPlans = new Set(['weekly','half_month','monthly','quarterly']);
+    let selected_domains = Array.isArray(body.selected_domains) ? [...new Set(body.selected_domains.map(String).map(x=>x.trim()).filter(Boolean))] : [];
+    if (unlimitedPlans.has(plan)) selected_domains = supportedDomains.slice();
+    else {
+      const limit = domainLimits[plan] || 1;
+      if (!selected_domains.length) return json(res, 400, { error: 'Please select your domains before submitting the plan.' });
+      if (selected_domains.some(d=>!supportedDomains.includes(d))) return json(res, 400, { error: 'One or more selected domains are not supported.' });
+      if (selected_domains.length > limit) return json(res, 400, { error: `This plan allows up to ${limit} domain${limit===1?'':'s'}.` });
+    }
 
     if (!plan) return json(res, 400, { error: 'Please select a valid subscription plan.' });
     if (!payment_method) return json(res, 400, { error: 'Please select a valid payment method.' });
@@ -41,10 +52,10 @@ module.exports = async (req, res) => {
     const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
       method: 'POST',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0 } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id })
+      body: JSON.stringify(plan === 'welcome' ? { user_id: user.id, plan, status: 'active', started_at: new Date().toISOString(), ends_at: new Date(Date.now()+30*24*60*60*1000).toISOString(), payment_method: null, transaction_id: null, click_limit: 500, clicks_used: 0, selected_domains } : { user_id: user.id, plan, status: 'pending', payment_method, transaction_id, selected_domains })
     });
 
-    if (insertResponse.ok) return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.' });
+    if (insertResponse.ok) return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.', selected_domains });
 
     const raw = await insertResponse.text();
     let details = raw;
