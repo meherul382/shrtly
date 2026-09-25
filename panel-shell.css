@@ -42,3 +42,8 @@ body.panel-shell .shell-only-search{display:flex}
 body.panel-shell:not(.overview-shell) .shell-search{display:none!important}
 @media(max-width:900px){body.panel-shell .site-sidebar{width:230px!important}body.panel-shell .shell-topbar,body.panel-shell .main{margin-left:230px!important}body.panel-shell .shell-search{width:320px!important}}
 @media(max-width:700px){body.panel-shell .site-sidebar{width:76px!important;padding:12px 8px!important}body.panel-shell .side-brand{justify-content:center!important}body.panel-shell .side-brand b,body.panel-shell .side-brand em,body.panel-shell .site-nav a>span:last-child,body.panel-shell .upgrade-card{display:none!important}body.panel-shell .site-nav a{justify-content:center!important;padding:10px!important}body.panel-shell .shell-topbar,body.panel-shell .main{margin-left:76px!important}body.panel-shell .shell-profile-copy{display:none!important}.shell-profile{min-width:46px!important}.shell-search{width:calc(100vw - 220px)!important}}
+
+/* Subscription page alignment */
+body.panel-shell .top{display:none!important}
+body.panel-shell .hero,body.panel-shell .active-panel,body.panel-shell .plans,body.panel-shell .pay,body.panel-shell .request,body.panel-shell .blocked-note,body.panel-shell #domainSelectorModal{margin-left:270px!important;margin-right:20px!important}
+@media(max-width:700px){body.panel-shell .hero,body.panel-shell .active-panel,body.panel-shell .plans,body.panel-shell .pay,body.panel-shell .request,body.panel-shell .blocked-note,body.panel-shell #domainSelectorModal{margin-left:76px!important;margin-right:10px!important}}
