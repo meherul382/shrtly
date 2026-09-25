@@ -8,7 +8,7 @@ async function initShritgoShellAuth(){
   const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');
   const {data:{session}}=await sb.auth.getSession();const u=session?.user;if(!u)return;
   document.getElementById('shellUserName').textContent=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';
-  try{const ar=await fetch('https://qbijrkdlaguwlvriaiky.supabase.co/rest/v1/rpc/shrtigo_is_admin',{method:'POST',headers:{apikey:'sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ',Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:'{}'});const t=document.getElementById('adminProfileTools');if(t)t.hidden=!(ar.ok&&(await ar.json())===true)}catch{}
+  const tools=document.getElementById('adminProfileTools');if(tools)tools.hidden=String(u.email||'').toLowerCase()!=='meherulhassan62@gmail.com';
   const planNames={weekly:'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift',three_day:'3 Days'};
   try{const {data:s}=await sb.from('subscriptions').select('plan,status,ends_at').eq('user_id',u.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);document.getElementById('shellUserPlan').textContent=s?.[0]?(planNames[s[0].plan]||s[0].plan):'Free Plan'}catch{}
   document.getElementById('shellLogoutMenu')?.addEventListener('click',async()=>{try{await sb.auth.signOut()}catch{}location.href='/central-login.html'});
