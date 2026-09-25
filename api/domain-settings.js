@@ -30,9 +30,8 @@ const PLAN_DOMAIN_LIMITS = {
 };
 
 // shrtigo.com is a premium domain available only from Pro Pack upward.
-const PREMIUM_COM_DOMAIN_PLANS = new Set(['pro','business','enterprise','weekly','half_month','monthly','quarterly']);
 function domainsForPlan(plan) {
-  return PREMIUM_COM_DOMAIN_PLANS.has(plan) ? SUPPORTED_DOMAINS : SUPPORTED_DOMAINS.filter(d => d !== 'shrtigo.com');
+  return SUPPORTED_DOMAINS;
 }
 
 function json(res, status, body) {
@@ -145,7 +144,6 @@ module.exports = async (req, res) => {
       const cleaned = [...new Set((saved?.selectedDomains || [])
         .filter(d => SUPPORTED_DOMAINS.includes(String(d).toLowerCase()))
         .map(d => String(d).toLowerCase()))];
-      if (!cleaned.length && plan === 'pro') cleaned.push('shrtigo.com');
 
       return json(res, 200, {
         ok: true,
