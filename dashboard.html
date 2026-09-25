@@ -332,11 +332,18 @@ body.panel-view .content{display:none!important}
 
   function injectFrameShell(doc){
     try{
+      const css=doc.createElement('link');
+      css.rel='stylesheet';
+      css.href='/panel-shell.css?v=20260925-premium';
+      (doc.head||doc.documentElement).appendChild(css);
+      doc.documentElement.classList.add('shrtigo-embedded');
+      if(doc.body) doc.body.classList.add('panel-shell');
       const style=doc.createElement('style');
       style.id='shrtigo-embedded-shell';
       style.textContent=`
         /* Embedded page: parent dashboard owns the sidebar + topbar. */
-        html,body{min-height:100%!important;background:#030817!important}
+        html,body{min-height:100%!important;background:#030817!important;color:#eef5ff!important}
+        body.panel-shell{padding:0!important}
         .sidebar,.side,.panel-side{display:none!important}
         .topbar,.top{display:none!important}
         .main,.wrap{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
