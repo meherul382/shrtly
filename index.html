@@ -42,12 +42,12 @@ body{background:radial-gradient(circle at 12% 0%,rgba(37,110,255,.20),transparen
 header.site-content{background:rgba(4,12,30,.86)!important;border-bottom:1px solid #1b4381!important;backdrop-filter:blur(18px)!important;box-shadow:0 8px 30px rgba(0,0,0,.18)!important}
 header.site-content .nav{height:78px!important;padding:0 34px!important;max-width:none!important}
 header.site-content>.nav>.brand{display:none}
-.ov-tools{margin-left:auto;display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-end}
+.ov-tools{margin-left:auto;display:flex;align-items:center;gap:10px;width:100%;justify-content:flex-end}.ov-menu{font-size:20px!important}
 .ov-search{height:44px;width:min(510px,45vw);border:1px solid #2857a3!important;border-radius:13px!important;background:#071a38!important;color:#eaf2ff!important;padding:0 15px 0 42px!important;outline:none;font-size:13px!important;box-shadow:inset 0 1px rgba(255,255,255,.04)}
 .ov-search::placeholder{color:#7894c0}.ov-search-wrap{position:relative}.ov-search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#78aaff;font-size:18px}
 .ov-tool{width:44px;height:44px;border:1px solid #2857a3!important;border-radius:13px!important;background:#091b3b!important;color:#dce9ff!important;display:grid;place-items:center;cursor:pointer;font-size:17px!important}
 .ov-tool:hover{border-color:#6597ff!important;box-shadow:0 0 18px rgba(52,110,255,.25)}
-.ov-profile{height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #315da7!important;border-radius:14px!important;background:linear-gradient(135deg,#0b2450,#18265b)!important;color:#fff!important;font-size:12px;font-weight:900}
+header.site-content .sh-profile,header.site-content #shProfile,header.site-content .navlinks,header.site-content>.wrap>.brand{display:none!important}.ov-profile{height:46px;display:flex;align-items:center;gap:10px;padding:0 14px;border:1px solid #315da7!important;border-radius:14px!important;background:linear-gradient(135deg,#0b2450,#18265b)!important;color:#fff!important;font-size:12px;font-weight:900}
 .ov-avatar{width:31px;height:31px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3e83ff,#8e35ff);font-weight:950}
 .control-section{padding:48px 0 65px!important}
 .control-head h2{font-size:40px!important;letter-spacing:-1.8px!important;background:linear-gradient(90deg,#fff,#5ab5ff 45%,#b64cff);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -62,7 +62,7 @@ header.site-content>.nav>.brand{display:none}
 .control-card h3{font-size:18px!important;color:#fff!important;margin:12px 0 7px!important}.control-card p{color:#a7b9dc!important}.control-card .control-btn{background:linear-gradient(135deg,var(--cc),var(--cg))!important;color:#fff!important;border:1px solid rgba(255,255,255,.18)!important;box-shadow:0 0 16px color-mix(in srgb,var(--cc) 28%,transparent)!important}
 .control-card:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(0,0,0,.3),0 0 25px color-mix(in srgb,var(--cc) 23%,transparent)!important}
 .ov-light body{background:#f4f7ff!important;color:#172033!important}.ov-light header.site-content{background:rgba(244,247,255,.92)!important;border-color:#d5deee!important}.ov-light .ov-search,.ov-light .ov-tool{background:#fff!important;color:#172033!important;border-color:#c4d1e7!important}.ov-light .ov-profile{background:#fff!important;color:#172033!important}.ov-light .control-card{background:linear-gradient(145deg,#fff,#eef4ff)!important;color:#172033!important}.ov-light .control-card h3{color:#172033!important}.ov-light .control-card p{color:#60708a!important}.ov-light .site-sidebar{background:#fff!important;border-color:#dbe4f1!important}.ov-light .site-nav a{color:#60708a!important}.ov-light .site-nav a.active{color:#fff!important}.ov-light .site-sidebar-bottom{border-color:#dbe4f1!important}.ov-light .site-profile{color:#60708a!important}
-@media(max-width:800px){.site-sidebar{width:72px!important}.site-content{margin-left:72px!important}header.site-content .nav{padding:0 12px!important}.ov-search{width:100%}.ov-search-wrap{flex:1}.ov-profile{padding:0 9px}.ov-profile span:last-child{display:none}}
+.ov-sidebar-collapsed .site-sidebar{width:72px!important}.ov-sidebar-collapsed .site-content{margin-left:72px!important}@media(max-width:800px){.site-sidebar{width:72px!important}.site-content{margin-left:72px!important}header.site-content .nav{padding:0 12px!important}.ov-search{width:100%}.ov-search-wrap{flex:1}.ov-profile{padding:0 9px}.ov-profile span:last-child{display:none}}
 </style>
 <script src="/home-polish.js" defer></script></head>
 <body>
@@ -86,7 +86,7 @@ header.site-content>.nav>.brand{display:none}
 <a class="site-profile" href="#plan-status"><span class="nav-icon">◷</span><span>Plan / Time Left</span></a>
 </div>
 </aside>
-<header class="site-content"><div class="wrap nav"><div class="ov-tools"><div class="ov-search-wrap"><span class="ov-search-icon">⌕</span><input id="ovSearch" class="ov-search" placeholder="Search links, domains, invoices..." aria-label="Search"></div><button id="ovTheme" class="ov-tool" title="Dark mode">☾</button><a class="ov-tool" href="/notifications.html" title="Notifications">♧</a><a class="ov-profile" href="/profile.html"><span class="ov-avatar">S</span><span>Profile</span></a></div></div></header>
+<header class="site-content"><div class="wrap nav"><div class="ov-tools"><button id="ovMenu" class="ov-tool ov-menu" title="Menu">☰</button><div class="ov-search-wrap"><span class="ov-search-icon">⌕</span><input id="ovSearch" class="ov-search" placeholder="Search links, domains, invoices..." aria-label="Search"></div><button id="ovTheme" class="ov-tool" title="Dark mode">☾</button><a class="ov-tool" href="/notifications.html" title="Notifications">♧</a><a class="ov-profile" href="/profile.html"><span class="ov-avatar">S</span><span>Profile</span></a></div></div></header>
 <main class="site-content"><section id="overview" class="control-section wrap section-anchor">
 <div class="control-head"><div><h2>Shrtigo Control Center</h2><p>Everything you need to create, manage and monitor your short links.</p></div></div>
 <div class="control-grid">
@@ -121,5 +121,5 @@ header.site-content>.nav>.brand{display:none}
  }catch(e){box.innerHTML='<div class="analytics-table"><div class="analytics-empty">'+String(e.message||'Could not load analytics')+'</div></div>'}
 })();
 </script>
-<script src="/profile.js"></script><script src="/panel-status.js" defer></script><script>(function(){const b=document.getElementById("ovTheme"),s=document.getElementById("ovSearch");if(localStorage.getItem("shrtigo-theme")==="light"){document.body.classList.add("ov-light");}b.onclick=function(){document.body.classList.toggle("ov-light");localStorage.setItem("shrtigo-theme",document.body.classList.contains("ov-light")?"light":"dark");b.textContent=document.body.classList.contains("ov-light")?"☀":"☾"};s.addEventListener("keydown",function(e){if(e.key==="Enter"&&s.value.trim())location.href="/links.html?search="+encodeURIComponent(s.value.trim())});})();</script></body>
+<script src="/profile.js"></script><script src="/panel-status.js" defer></script><script>(function(){const b=document.getElementById("ovTheme"),s=document.getElementById("ovSearch"),m=document.getElementById("ovMenu");if(localStorage.getItem("shrtigo-theme")==="light"){document.body.classList.add("ov-light");}m.onclick=function(){document.body.classList.toggle("ov-sidebar-collapsed");};b.onclick=function(){document.body.classList.toggle("ov-light");localStorage.setItem("shrtigo-theme",document.body.classList.contains("ov-light")?"light":"dark");b.textContent=document.body.classList.contains("ov-light")?"☀":"☾"};s.addEventListener("keydown",function(e){if(e.key==="Enter"&&s.value.trim())location.href="/links.html?search="+encodeURIComponent(s.value.trim())});})();</script></body>
 </html>
