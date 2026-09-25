@@ -483,3 +483,31 @@ body.panel-shell .domain-dialog{
  body.panel-shell .stats .stat{min-height:105px!important;padding:15px!important}
  body.panel-shell .analytics-chart{min-height:210px!important}
 }
+
+/* Embedded pages: use the same horizontal scale as Overview */
+body.panel-shell.panel-view .content,
+body.panel-shell.panel-view main .content,
+body.panel-shell.panel-view .wrap{
+ width:calc(100% - 48px)!important;
+ max-width:none!important;
+ margin-left:auto!important;
+ margin-right:auto!important;
+}
+body.panel-shell.panel-view .head,
+body.panel-shell.panel-view .box,
+body.panel-shell.panel-view .panel,
+body.panel-shell.panel-view .table,
+body.panel-shell.panel-view .plans,
+body.panel-shell.panel-view .domain-grid,
+body.panel-shell.panel-view .payment-grid,
+body.panel-shell.panel-view .request,
+body.panel-shell.panel-view .active-panel{
+ max-width:none!important;
+}
+@media(max-width:700px){
+ body.panel-shell.panel-view .content,
+ body.panel-shell.panel-view main .content,
+ body.panel-shell.panel-view .wrap{
+  width:calc(100% - 20px)!important;
+ }
+}
