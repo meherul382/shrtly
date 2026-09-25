@@ -189,23 +189,33 @@ footer{color:#61789f}
 @media(max-width:1050px){.sidebar{width:245px}.main{margin-left:245px}.content{width:calc(100% - 48px)}}
 @media(max-width:760px){.sidebar{width:70px}.main{margin-left:70px}}
 </style>
-<link rel="stylesheet" href="/panel-theme.css"><script src="/panel-ui.js" defer></script></head>
+<link rel="stylesheet" href="/panel-theme.css"><script src="/panel-ui.js" defer></script><style id="unified-panel-shell">
+.panel-frame-wrap{display:none;position:relative;width:100%;min-height:calc(100vh - 78px);background:transparent}
+.panel-frame{display:block;width:100%;height:calc(100vh - 78px);min-height:760px;border:0;background:transparent}
+body.panel-view .dashboard-overview{display:none!important}
+body.panel-view .panel-frame-wrap{display:block}
+body.panel-view .content{display:none!important}
+@media(max-width:800px){
+ .panel-frame-wrap{min-height:calc(100vh - 70px)}
+ .panel-frame{height:calc(100vh - 70px);min-height:760px}
+}
+</style></head>
 <body class="booting">
 <div class="shell">
 <aside class="sidebar">
 <a class="brand" href="/"><span class="brandMark">S</span><span>Shrtigo</span></a>
 <nav class="side-nav">
-<a class="side-link active" href="/dashboard.html"><span class="ico">⌂</span><span>Overview</span></a>
-<a class="side-link" href="/create-link.html"><span class="ico">＋</span><span>Create Link</span></a>
-<a class="side-link" href="/panel-analytics.html"><span class="ico">⌁</span><span>Analytics</span></a>
-<a class="side-link" href="/links.html"><span class="ico">↗</span><span>Links</span></a>
-<a class="side-link" href="/subscription.html"><span class="ico">▣</span><span>Plans</span></a>
-<a class="side-link" href="/domains.html"><span class="ico">◎</span><span>Domains</span></a>
-<a class="side-link" href="/invoices.html"><span class="ico">▤</span><span>Invoices</span></a>
-<a class="side-link" href="/add-fund.html"><span class="ico">＋</span><span>Add Fund</span></a>
-<a class="side-link" href="/notifications.html"><span class="ico">♧</span><span>Notifications</span></a>
-<a class="side-link" href="/tickets.html"><span class="ico">▱</span><span>Tickets</span></a>
-<a class="side-link" href="/profile.html"><span class="ico">♙</span><span>Profile</span></a>
+<a class="side-link active" href="/dashboard.html" data-panel="overview"><span class="ico">⌂</span><span>Overview</span></a>
+<a class="side-link" href="/create-link.html" data-panel="create-link"><span class="ico">＋</span><span>Create Link</span></a>
+<a class="side-link" href="/panel-analytics.html" data-panel="analytics"><span class="ico">⌁</span><span>Analytics</span></a>
+<a class="side-link" href="/links.html" data-panel="links"><span class="ico">↗</span><span>Links</span></a>
+<a class="side-link" href="/subscription.html" data-panel="subscription"><span class="ico">▣</span><span>Plans</span></a>
+<a class="side-link" href="/domains.html" data-panel="domains"><span class="ico">◎</span><span>Domains</span></a>
+<a class="side-link" href="/invoices.html" data-panel="invoices"><span class="ico">▤</span><span>Invoices</span></a>
+<a class="side-link" href="/add-fund.html" data-panel="add-fund"><span class="ico">＋</span><span>Add Fund</span></a>
+<a class="side-link" href="/notifications.html" data-panel="notifications"><span class="ico">♧</span><span>Notifications</span></a>
+<a class="side-link" href="/tickets.html" data-panel="tickets"><span class="ico">▱</span><span>Tickets</span></a>
+<a class="side-link" href="/profile.html" data-panel="profile"><span class="ico">♙</span><span>Profile</span></a>
 <a id="sideLogout" class="side-link" href="#logout"><span class="ico">↪</span><span>Logout</span></a>
 </nav>
 <div class="side-bottom">Secure account<br><strong>24/7 cloud ready</strong></div>
@@ -213,18 +223,18 @@ footer{color:#61789f}
 <div class="main">
 <header class="topbar">
 <div class="wallet">Wallet: <b id="walletAmount">৳0.00 BDT</b></div>
-<a class="top-btn" href="/add-fund.html">Add Fund</a>
-<a class="top-btn primary" href="/create-link.html">Create Link</a>
+<a class="top-btn" href="/add-fund.html" data-panel="add-fund">Add Fund</a>
+<a class="top-btn primary" href="/create-link.html" data-panel="create-link">Create Link</a>
 <div id="profile" class="profile">
 <button id="profileTrigger" class="avatar-btn" type="button" aria-expanded="false"><span id="avatar">U</span></button>
 <div id="profileMenu" class="profileMenu hidden">
 <div class="menuIdentity"><span id="menuAvatar" class="menuAvatar">U</span><div><div id="menuName" class="menuIdentityName">User</div><div id="menuEmail" class="menuIdentityEmail">account</div></div></div>
 <div class="menuDivider"></div>
-<a class="menuItem" href="/profile.html">♙ &nbsp; Profile</a>
+<a class="menuItem" href="/profile.html" data-panel="profile">♙ &nbsp; Profile</a>
 <button id="logout" class="menuItem logoutItem" type="button">↪ &nbsp; Log out</button>
 </div></div>
 </header>
-<main class="content">
+<main class="content dashboard-overview">
 <section class="hero-row">
 <div><div class="eyebrow">Shrtigo Control Panel</div><h1 id="heroTitle">Dashboard</h1><p id="heroDesc" class="subtitle">Premium link management, billing and click analytics.</p></div>
 </section>
@@ -253,10 +263,10 @@ footer{color:#61789f}
 <section class="panel">
 <div class="panel-head"><div><h2>Quick Actions</h2><small>Manage your account</small></div></div>
 <div class="quick">
-<a href="/create-link.html"><span class="qicon">＋</span>Create Link</a>
-<a href="/subscription.html"><span class="qicon">⚡</span>Buy Plan</a>
-<a href="/add-fund.html"><span class="qicon">৳</span>Add Fund</a>
-<a href="/panel-analytics.html"><span class="qicon">⌁</span>Analytics</a>
+<a href="/create-link.html" data-panel="create-link"><span class="qicon">＋</span>Create Link</a>
+<a href="/subscription.html" data-panel="subscription"><span class="qicon">⚡</span>Buy Plan</a>
+<a href="/add-fund.html" data-panel="add-fund"><span class="qicon">৳</span>Add Fund</a>
+<a href="/panel-analytics.html" data-panel="analytics"><span class="qicon">⌁</span>Analytics</a>
 </div>
 </section>
 </div>
@@ -272,16 +282,123 @@ footer{color:#61789f}
 </div>
 
 <section class="panel links-panel">
-<div class="panel-head"><div><h2>Latest 10 Links</h2><small>Recently created links for your account</small></div><a class="top-btn" href="/links.html">View All</a></div>
+<div class="panel-head"><div><h2>Latest 10 Links</h2><small>Recently created links for your account</small></div><a class="top-btn" href="/links.html" data-panel="links">View All</a></div>
 <div id="links" class="links"></div>
 <div id="empty" class="empty">No links found for this account yet.</div>
 <div class="notice">🔒 Only links owned by your signed-in account are shown here. Analytics history is retained server-side for up to 90 days.</div>
 </section>
 </section>
+<div id="panelFrameWrap" class="panel-frame-wrap" aria-live="polite">
+  <iframe id="panelFrame" class="panel-frame" title="Shrtigo panel content"></iframe>
+</div>
 <footer>© <span id="year"></span> Shrtigo · <a href="/privacy.html">Privacy</a></footer>
 </main>
 </div>
 </div>
 <script>const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);const $=id=>document.getElementById(id);const profile=$("profile"),profileTrigger=$("profileTrigger"),profileMenu=$("profileMenu");let period='today',signup=false,loading=true,customRange=false;$("year").textContent=new Date().getFullYear();function applyTheme(){const dark=localStorage.getItem('shrtigo-theme')!=='light';document.body.classList.toggle('dark',dark)}applyTheme();const legacyThemeToggle=$("themeToggle");if(legacyThemeToggle){legacyThemeToggle.onclick=()=>{const dark=!document.body.classList.contains("dark");document.body.classList.toggle("dark",dark);localStorage.setItem("shrtigo-theme",dark?"dark":"light")};}function pad(n){return String(n).padStart(2,'0')}function dateValue(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}function setDefaultDates(days){const end=new Date(),start=new Date(end);start.setDate(start.getDate()-days);$("fromDate").value=dateValue(start);$("toDate").value=dateValue(end)}getDisplayName;function getDisplayName(user){return user?.user_metadata?.full_name||user?.user_metadata?.name||user?.email?.split('@')[0]||'User'}function getAvatarUrl(user){return user?.user_metadata?.avatar_url||user?.user_metadata?.picture||''}function initials(name){return (name||'U').trim().split(/\s+/).slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('')||'U'}function setAvatar(el,url,letters){el.innerHTML='';if(url){const img=document.createElement('img');img.src=url;img.alt='Profile';img.referrerPolicy='no-referrer';img.onerror=()=>{el.textContent=letters};el.appendChild(img)}else{el.textContent=letters}}function setupProfile(user){const name=getDisplayName(user),email=user?.email||'Google account',url=getAvatarUrl(user),letters=initials(name);$("menuName").textContent=name;$("menuEmail").textContent=email;setAvatar($("avatar"),url,letters);setAvatar($("menuAvatar"),url,letters);profile.classList.remove('hidden')}function closeProfileMenu(){profileMenu.classList.add('hidden');profileTrigger.setAttribute('aria-expanded','false')}profileTrigger.onclick=()=>{const open=!profileMenu.classList.contains('hidden');if(open)closeProfileMenu();else{profileMenu.classList.remove('hidden');profileTrigger.setAttribute('aria-expanded','true')}};document.addEventListener('click',e=>{if(!profile.contains(e.target))closeProfileMenu()});async function syncSession(session){if(!session)return false;try{const r=await fetch('/api/auth/session',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({access_token:session.access_token})});return r.ok}catch{return false}}function showLogin(){location.replace('/central-login.html?next=%2Fdashboard.html')}function showApp(user){loading=false;$("login").classList.add('hidden');$("app").classList.remove('hidden');$("heroTitle").textContent='Your traffic.';$("heroDesc").textContent='Manage your Shrtigo links and analytics from one private dashboard.';setupProfile(user);document.body.classList.remove('booting')}async function load(){const {data:{session}}=await sb.auth.getSession();if(!session){showLogin();return}const synced=await syncSession(session);if(!synced){showLogin();return}showApp(session.user);let q='/api/dashboard?';if(customRange){q+='from='+encodeURIComponent($("fromDate").value)+'&to='+encodeURIComponent($("toDate").value)}else{q+='period='+encodeURIComponent(period)}const r=await fetch(q,{headers:{Authorization:'Bearer '+session.access_token}});const d=await r.json();if(!r.ok){$("loginMsg").textContent=d.error||'Could not load dashboard.';return}$("active").textContent=d.summary.active;$("clicks").textContent=d.summary.clicks;$("visitors").textContent=d.summary.uniqueVisitors;const list=d.links||[];$("links").innerHTML='';$("empty").style.display=list.length?'none':'block';list.forEach(x=>{const el=document.createElement('div');el.className='link';el.innerHTML='<div class="main"><div class="code"></div><div class="dest"></div></div><div class="actions"></div>';el.querySelector('.code').textContent=(x.domain||'shrtigo.xyz')+'/'+x.code;el.querySelector('.dest').textContent=x.url;const actions=el.querySelector('.actions');if(x.analytics){const b=document.createElement('button');b.className='analytics';b.textContent='📊 Analytics';b.onclick=()=>location.href='/analytics.html?code='+encodeURIComponent(x.code);actions.appendChild(b)}const del=document.createElement('button');del.className='delete';del.textContent='Delete';del.onclick=async()=>{if(!confirm('Delete this link and its analytics data?'))return;const rr=await fetch('/api/dashboard-delete',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({code:x.code})});const dd=await rr.json();if(!rr.ok){alert(dd.error||'Could not delete the link.');return}load()};actions.appendChild(del);$("links").appendChild(el)})}async function googleAuth(){const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://shrtigo.xyz/dashboard.html'}});if(error)$("loginMsg").textContent=error.message}$("google").onclick=googleAuth;$("switchBtn").onclick=()=>{signup=!signup;showLogin();$("formTitle").textContent=signup?'Create your account':'Log in to your account';$("formDesc").textContent=signup?'Create an account to save and manage your Shrtigo links.':'Enter your credentials to access your dashboard.';$("emailBtn").textContent=signup?'Create Account':'Log In';$("switchText").textContent=signup?'Already have an account?':"Don't have an account?";$("switchBtn").textContent=signup?'Log in instead':'Create one for free';$("forgot").style.display=signup?'none':'block';$("loginMsg").textContent=''};$("emailBtn").onclick=async()=>{const email=$("emailInput").value.trim(),password=$("passwordInput").value;if(!email||!password){$("loginMsg").textContent='Please enter your email and password.';return}$("loginMsg").textContent=signup?'Creating account…':'Signing in…';if(signup){const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:'https://shrtigo.xyz/dashboard.html'}});if(error){$("loginMsg").textContent=error.message;return}if(data.session){await load()}else{location.href='/email-confirmation.html?email='+encodeURIComponent(email)}}else{const {error}=await sb.auth.signInWithPassword({email,password});if(error){$("loginMsg").textContent=error.message;return}await load()}};$("forgot").querySelector('button').onclick=async()=>{const email=$("emailInput").value.trim();if(!email){$("loginMsg").textContent='Enter your email address first.';return}const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:'https://shrtigo.xyz/dashboard.html'});$("loginMsg").textContent=error?error.message:'Password reset email sent.'};async function doLogout(){closeProfileMenu();await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.replace('/')}$("logout").onclick=doLogout;$("sideLogout").onclick=e=>{e.preventDefault();doLogout()};document.querySelectorAll('[data-period]').forEach(b=>b.onclick=()=>{period=b.dataset.period;customRange=false;setDefaultDates(period==='today'?0:Number(period));document.querySelectorAll('[data-period]').forEach(x=>x.classList.remove('active'));b.classList.add('active');$("rangeHint").textContent=period==='today'?'Today':'Last '+period+' days';load()});$("applyDates").onclick=()=>{const from=$("fromDate").value,to=$("toDate").value;if(!from||!to){alert('Please select both start and end dates.');return}if(to<from){alert('End date must be on or after start date.');return}customRange=true;document.querySelectorAll('[data-period]').forEach(x=>x.classList.remove('active'));$("rangeHint").textContent=from+' → '+to;load()};sb.auth.onAuthStateChange((_e,session)=>{if(session&&!loading)load()});load();setInterval(()=>{if(!document.hidden)load()},10000);</script>
-<script src="/panel-status.js" defer></script></body>
+<script src="/panel-status.js" defer></script><script id="unified-panel-controller">
+(function(){
+  const routes={
+    overview:'/dashboard.html',
+    'create-link':'/create-link.html',
+    analytics:'/panel-analytics.html',
+    links:'/links.html',
+    subscription:'/subscription.html',
+    domains:'/domains.html',
+    invoices:'/invoices.html',
+    'add-fund':'/add-fund.html',
+    notifications:'/notifications.html',
+    tickets:'/tickets.html',
+    profile:'/profile.html'
+  };
+  const frame=document.getElementById('panelFrame');
+  const frameWrap=document.getElementById('panelFrameWrap');
+  const overview=document.querySelector('.dashboard-overview');
+  const nav=document.querySelectorAll('[data-panel]');
+  let current='overview';
+
+  function setActive(key){
+    nav.forEach(a=>a.classList.toggle('active',a.dataset.panel===key));
+  }
+
+  function injectFrameShell(doc){
+    try{
+      const style=doc.createElement('style');
+      style.id='shrtigo-embedded-shell';
+      style.textContent=`
+        /* Embedded page: parent dashboard owns the sidebar + topbar. */
+        html,body{min-height:100%!important;background:#030817!important}
+        .sidebar,.side,.panel-side{display:none!important}
+        .topbar,.top{display:none!important}
+        .main,.wrap{margin-left:0!important;margin-right:0!important;width:100%!important;max-width:none!important;padding-left:0!important;padding-right:0!important}
+        .content{width:min(1180px,calc(100% - 56px))!important;margin:0 auto!important;padding:38px 0 55px!important}
+        .hero,.head{max-width:1180px!important}
+        footer{display:none!important}
+        @media(max-width:800px){.content{width:calc(100% - 28px)!important;padding-top:25px!important}}
+      `;
+      (doc.head||doc.documentElement).appendChild(style);
+
+      doc.addEventListener('click',function(e){
+        const a=e.target.closest && e.target.closest('a[href]');
+        if(!a)return;
+        const url=new URL(a.href,location.origin);
+        if(url.origin!==location.origin)return;
+        let key=null;
+        for(const k in routes){ if(url.pathname===routes[k]){key=k;break;} }
+        if(key){
+          e.preventDefault();
+          e.stopPropagation();
+          if(key==='overview') show('overview',false);
+          else show(key,true);
+        }
+      },true);
+    }catch(err){}
+  }
+
+  frame.addEventListener('load',function(){
+    injectFrameShell(frame.contentDocument);
+    try{frame.contentWindow.scrollTo(0,0)}catch(e){}
+  });
+
+  function show(key,push){
+    key=routes[key]?key:'overview';
+    current=key;
+    setActive(key);
+    if(key==='overview'){
+      document.body.classList.remove('panel-view');
+      frame.src='about:blank';
+      if(push) history.pushState({panel:key},'', '/dashboard.html');
+      return;
+    }
+    document.body.classList.add('panel-view');
+    frame.src=routes[key]+'?embedded=1';
+    if(push) history.pushState({panel:key},'', '/dashboard.html?panel='+encodeURIComponent(key));
+  }
+
+  nav.forEach(a=>a.addEventListener('click',function(e){
+    const key=a.dataset.panel;
+    if(!key)return;
+    e.preventDefault();
+    show(key,true);
+  }));
+
+  // Topbar buttons and profile links should use the same single-page shell.
+  document.querySelectorAll('.topbar a[href], .profileMenu a[href]').forEach(a=>{
+    const url=new URL(a.href,location.origin);
+    let key=null;
+    for(const k in routes){if(url.pathname===routes[k]){key=k;break;}}
+    if(key){
+      a.addEventListener('click',function(e){e.preventDefault();show(key,true)});
+    }
+  });
+
+  window.addEventListener('popstate',function(){
+    const key=new URLSearchParams(location.search).get('panel')||'overview';
+    show(key,false);
+  });
+
+  const initial=new URLSearchParams(location.search).get('panel')||'overview';
+  show(initial,false);
+})();
+</script></body>
 </html>
