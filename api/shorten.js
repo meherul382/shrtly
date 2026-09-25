@@ -159,7 +159,7 @@ async function getEntitlement(supabaseUrl, serviceKey, userId) {
     const rows = await r.json();
     const plan = String(rows?.[0]?.plan || '').toLowerCase();
     if (plan === 'three_day') return { limit: 50 };
-    if (plan === 'weekly' || plan === 'monthly') return { limit: 1000000000 };
+    if (['weekly','half_month','monthly','quarterly'].includes(plan)) return { limit: 1000000000 };
     return { limit: 1 };
   } catch { return { limit: 1 }; }
 }
