@@ -307,3 +307,179 @@ background:linear-gradient(135deg,#1459c9,#6129e8,#c51cff)!important;border-colo
 body.panel-shell.panel-view .main,
 body.panel-shell.panel-view .content,
 body.panel-shell.panel-view .site-content{background:transparent!important}
+
+
+/* ===== PAGE CONTENT POLISH — match Overview quality ===== */
+body.panel-shell .main>.content,
+body.panel-shell .content{
+  max-width:1180px!important;
+}
+body.panel-shell .main>.content>*,
+body.panel-shell .content>*{
+  width:100%;
+}
+body.panel-shell .main>.content .head,
+body.panel-shell .content .head{
+  margin-bottom:26px!important;
+  padding-bottom:4px!important;
+}
+body.panel-shell .main>.content .head h1,
+body.panel-shell .content .head h1{
+  font-size:32px!important;
+  letter-spacing:-.8px!important;
+}
+body.panel-shell .main>.content .head p,
+body.panel-shell .content .head p{
+  max-width:720px!important;
+  font-size:13px!important;
+}
+
+/* Better section rhythm */
+body.panel-shell .section,
+body.panel-shell .plans,
+body.panel-shell .payment,
+body.panel-shell .request,
+body.panel-shell .box,
+body.panel-shell .panel{
+  margin-top:18px!important;
+}
+body.panel-shell .section:first-child,
+body.panel-shell .plans:first-child,
+body.panel-shell .box:first-child,
+body.panel-shell .panel:first-child{margin-top:0!important}
+
+/* My Links */
+body.panel-shell .history,
+body.panel-shell .links,
+body.panel-shell #links{
+  display:grid!important;
+  gap:10px!important;
+}
+body.panel-shell .history .item,
+body.panel-shell .links .link{
+  min-height:68px!important;
+  padding:15px 17px!important;
+  border-radius:13px!important;
+}
+body.panel-shell .history .item:hover,
+body.panel-shell .links .link:hover{
+  border-color:#326cc1!important;
+  transform:translateY(-1px)!important;
+}
+
+/* Analytics */
+body.panel-shell .cards,
+body.panel-shell .stats{
+  gap:14px!important;
+}
+body.panel-shell .cards .card,
+body.panel-shell .stats .stat{
+  min-height:120px!important;
+  padding:19px!important;
+}
+body.panel-shell .analytics-chart{
+  min-height:260px!important;
+}
+body.panel-shell .table{
+  border-radius:14px!important;
+}
+
+/* Plans */
+body.panel-shell .plans{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+}
+body.panel-shell .plan{
+  min-height:225px!important;
+  padding:20px!important;
+}
+body.panel-shell .plan h2{
+  font-size:17px!important;
+}
+body.panel-shell .price{
+  font-size:29px!important;
+  margin-top:5px!important;
+}
+body.panel-shell .plan-actions{
+  margin-top:auto!important;
+}
+body.panel-shell .plan-actions .buy{
+  min-height:42px!important;
+}
+
+/* Domains */
+body.panel-shell .domain-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:16px!important;
+}
+body.panel-shell .domain-option,
+body.panel-shell .domain-card{
+  min-height:92px!important;
+  padding:18px!important;
+  border-radius:14px!important;
+}
+
+/* Invoices / Add Fund / Notifications / Tickets / Profile */
+body.panel-shell .panel,
+body.panel-shell .box{
+  min-height:90px!important;
+}
+body.panel-shell .panel-head{
+  padding-bottom:15px!important;
+  margin-bottom:0!important;
+}
+body.panel-shell .payment-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+body.panel-shell .payment-card{
+  min-height:150px!important;
+}
+body.panel-shell .notification,
+body.panel-shell .notification-item,
+body.panel-shell .ticket,
+body.panel-shell .ticket-item{
+  border:1px solid #1d4f94!important;
+  background:linear-gradient(145deg,#081b3b,#050d20)!important;
+  color:#eef5ff!important;
+  border-radius:14px!important;
+  padding:17px!important;
+}
+body.panel-shell .profile-grid{
+  display:grid!important;
+  grid-template-columns:1.1fr .9fr!important;
+  gap:18px!important;
+}
+
+/* Modal */
+body.panel-shell #domainSelectorModal{
+  background:rgba(2,8,22,.82)!important;
+  backdrop-filter:blur(12px)!important;
+}
+body.panel-shell .domain-dialog{
+  background:linear-gradient(145deg,#0b2147,#080f2b)!important;
+  border:1px solid #4d76ce!important;
+  box-shadow:0 25px 80px rgba(0,0,0,.55)!important;
+  color:#fff!important;
+}
+
+/* Mobile keeps same visual language */
+@media(max-width:900px){
+ body.panel-shell .plans{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.panel-shell .domain-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.panel-shell .payment-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.panel-shell .profile-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:700px){
+ body.panel-shell .main>.content,
+ body.panel-shell .content{width:calc(100% - 24px)!important;padding:24px 0 44px!important}
+ body.panel-shell .main>.content .head h1,
+ body.panel-shell .content .head h1{font-size:24px!important}
+ body.panel-shell .plans,
+ body.panel-shell .domain-grid,
+ body.panel-shell .payment-grid{grid-template-columns:1fr!important}
+ body.panel-shell .plan{min-height:205px!important}
+ body.panel-shell .cards,
+ body.panel-shell .stats{grid-template-columns:1fr 1fr!important}
+ body.panel-shell .cards .card,
+ body.panel-shell .stats .stat{min-height:105px!important;padding:15px!important}
+ body.panel-shell .analytics-chart{min-height:210px!important}
+}
