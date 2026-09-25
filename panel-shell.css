@@ -122,3 +122,188 @@ body.panel-shell .bottom{color:#8fa6ce!important}
  body.panel-shell .content{width:calc(100% - 28px)!important;padding-top:28px!important}
  body.panel-shell .main>.head h1,body.panel-shell .content>.head h1,body.panel-shell main>.head h1{font-size:23px!important}
 }
+
+
+/* ===== SHRTIGO GLOBAL PREMIUM DESIGN v2026 ===== */
+html,body{background:#030817!important;color:#eef5ff!important}
+body.panel-shell,body.panel-shell *{scrollbar-color:#285ca5 #050d1d}
+body.panel-shell{min-height:100vh!important;background:
+radial-gradient(circle at 15% -10%,rgba(38,103,255,.20),transparent 32%),
+radial-gradient(circle at 90% 0%,rgba(179,24,255,.16),transparent 30%),
+#030817!important}
+body.panel-shell .main,
+body.panel-shell .content,
+body.panel-shell main,
+body.panel-shell .wrap,
+body.panel-shell .layout{background:transparent!important;color:#eef5ff!important}
+
+/* Never let legacy light page shells leak through */
+body.panel-shell .sidebar,
+body.panel-shell .side{background:#050d1d!important;color:#a9bde0!important;border-color:#173d75!important}
+body.panel-shell .topbar,
+body.panel-shell .top{background:#050d1d!important;color:#eef5ff!important;border-color:#173d75!important}
+body.panel-shell .brand,
+body.panel-shell .brand a{color:#fff!important}
+body.panel-shell .brandMark,
+body.panel-shell .mark{background:linear-gradient(135deg,#4e8cff,#8d38ff)!important;color:#fff!important}
+
+/* Legacy page navigation is removed by panel-shell.js */
+body.panel-shell .sidebar,
+body.panel-shell .side{display:none!important}
+
+/* Main page content */
+body.panel-shell .content{width:min(1180px,calc(100% - 56px))!important;padding:34px 0 60px!important}
+body.panel-shell .hero,
+body.panel-shell .head{color:#eef5ff!important}
+body.panel-shell h1,body.panel-shell h2,body.panel-shell h3,body.panel-shell h4,
+body.panel-shell strong,.panel-shell b{color:#f5f8ff!important}
+body.panel-shell p,body.panel-shell small,.panel-shell .muted{color:#91a7ce!important}
+
+/* Universal cards */
+body.panel-shell .panel,
+body.panel-shell .box,
+body.panel-shell .card,
+body.panel-shell .summary,
+body.panel-shell .request,
+body.panel-shell .payment-card,
+body.panel-shell .active-panel,
+body.panel-shell .plan,
+body.panel-shell .domain-card,
+body.panel-shell .invoice-card,
+body.panel-shell .ticket-card,
+body.panel-shell .notification-card,
+body.panel-shell .profile-card{
+background:linear-gradient(145deg,rgba(8,25,57,.96),rgba(4,12,29,.98))!important;
+border:1px solid #1d4f94!important;
+color:#eef5ff!important;
+box-shadow:0 16px 45px rgba(0,0,0,.22),0 0 25px rgba(30,100,220,.08)!important;
+border-radius:16px!important
+}
+body.panel-shell .panel:hover,
+body.panel-shell .box:hover,
+body.panel-shell .card:hover{border-color:#326cc1!important}
+
+/* Universal controls */
+body.panel-shell input,
+body.panel-shell textarea,
+body.panel-shell select{
+background:#06162f!important;color:#eef5ff!important;border:1px solid #28599f!important
+}
+body.panel-shell input::placeholder,
+body.panel-shell textarea::placeholder{color:#627da8!important}
+body.panel-shell button,
+body.panel-shell .btn,
+body.panel-shell .buy,
+body.panel-shell .save,
+body.panel-shell .create{
+background:linear-gradient(100deg,#1677ff,#6b35f5 55%,#d31cff)!important;
+color:#fff!important;border:1px solid #6294ff!important;border-radius:11px!important;
+box-shadow:0 9px 24px rgba(73,65,245,.20)!important
+}
+
+/* Tables / rows */
+body.panel-shell .table,
+body.panel-shell .table-wrap,
+body.panel-shell .history,
+body.panel-shell .list{background:transparent!important;color:#eef5ff!important}
+body.panel-shell .row,
+body.panel-shell .item,
+body.panel-shell .history .item{
+background:rgba(6,20,43,.72)!important;color:#eaf2ff!important;border-color:#1b437d!important
+}
+body.panel-shell .row.th,
+body.panel-shell .cols,
+body.panel-shell .table-head{
+background:linear-gradient(90deg,rgba(20,57,110,.58),rgba(25,31,75,.42))!important;color:#bcd0ef!important;border-color:#245493!important
+}
+
+/* Plans */
+body.panel-shell .plans{gap:16px!important}
+body.panel-shell .plan{
+background:linear-gradient(145deg,#091b3c,#090f2c)!important;
+border:1px solid #234f91!important;min-height:210px!important
+}
+body.panel-shell .plan.selected,
+body.panel-shell .plan:hover{border-color:#7b6cff!important;box-shadow:0 0 28px rgba(89,75,255,.18)!important}
+body.panel-shell .price{color:#fff!important}
+body.panel-shell .meta{color:#91a7ce!important}
+body.panel-shell .planIcon{background:linear-gradient(135deg,#1d70ff,#922df0)!important;color:#fff!important}
+
+/* Analytics */
+body.panel-shell .analytics-chart,
+body.panel-shell .chart,
+body.panel-shell .analytics-card{
+background:linear-gradient(180deg,#0b1c3b,#060e22)!important;border-color:#1d4f94!important
+}
+body.panel-shell .stats .stat,
+body.panel-shell .stat{
+background:linear-gradient(145deg,#0a2147,#0b1230)!important;border-color:#234f91!important;color:#fff!important
+}
+
+/* Domains */
+body.panel-shell .domain-grid{gap:15px!important}
+body.panel-shell .domain-option,
+body.panel-shell .domain-card{
+background:linear-gradient(145deg,#0b2147,#09122d)!important;color:#eaf3ff!important;border-color:#24599e!important
+}
+body.panel-shell .domain-option.selected,
+body.panel-shell .domain-card.selected{
+background:linear-gradient(135deg,#1459c9,#6129e8,#c51cff)!important;border-color:#8bb5ff!important;color:#fff!important
+}
+
+/* Mobile = same premium visual language, not a separate old theme */
+@media(max-width:700px){
+ body.panel-shell .site-sidebar{
+   width:78px!important;padding:12px 8px!important
+ }
+ body.panel-shell .side-brand{
+   height:58px!important;padding:4px 0 12px!important;justify-content:center!important
+ }
+ body.panel-shell .side-brand b,
+ body.panel-shell .side-brand em{display:none!important}
+ body.panel-shell .side-brand>span{width:40px!important;height:40px!important}
+ body.panel-shell .site-nav{gap:7px!important}
+ body.panel-shell .site-nav a{
+   min-height:48px!important;width:60px!important;margin:auto!important;
+   justify-content:center!important;padding:10px 5px!important
+ }
+ body.panel-shell .site-nav a>span:last-child{display:none!important}
+ body.panel-shell .site-nav .nav-icon{width:27px!important;height:27px!important}
+ body.panel-shell .site-nav svg{width:22px!important;height:22px!important}
+ body.panel-shell .upgrade-card{display:none!important}
+ body.panel-shell .shell-time{display:none!important}
+ body.panel-shell .shell-topbar,
+ body.panel-shell .main{margin-left:78px!important}
+ body.panel-shell .shell-topbar{
+   height:68px!important;padding:0 10px!important
+ }
+ body.panel-shell .shell-menu{display:none!important}
+ body.panel-shell .shell-search{display:flex!important;flex:1!important;width:auto!important;height:42px!important}
+ body.panel-shell:not(.overview-shell) .shell-search{display:flex!important}
+ body.panel-shell .shell-action{width:42px!important;height:42px!important}
+ body.panel-shell .shell-profile{
+   min-width:42px!important;width:42px!important;padding:4px!important
+ }
+ body.panel-shell .shell-profile-copy,.shell-chevron{display:none!important}
+ body.panel-shell .content{
+   width:calc(100% - 24px)!important;padding:24px 0 42px!important
+ }
+ body.panel-shell .main>.head h1,
+ body.panel-shell .content>.head h1,
+ body.panel-shell main>.head h1{font-size:24px!important}
+ body.panel-shell .cards,
+ body.panel-shell .stats,
+ body.panel-shell .plans,
+ body.panel-shell .dashboard-grid,
+ body.panel-shell .account-grid{grid-template-columns:1fr!important}
+ body.panel-shell .panel,
+ body.panel-shell .box,
+ body.panel-shell .card,
+ body.panel-shell .plan{border-radius:14px!important;padding:16px!important}
+ body.panel-shell .table{overflow-x:auto!important}
+}
+
+/* Ensure dashboard/embedded content is also dark */
+body.panel-shell.panel-view .main,
+body.panel-shell.panel-view .content,
+body.panel-shell.panel-view .site-content{background:transparent!important}
