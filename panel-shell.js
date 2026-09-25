@@ -2,5 +2,15 @@
 const top=document.createElement('header');top.className='shell-topbar';top.innerHTML='<button class="shell-menu" type="button" aria-label="Menu">☰</button><div class="shell-search"><span>⌕</span><input id="shellSearch" type="search" placeholder="Search links, domains, invoices..."></div><a class="shell-action" href="/notifications.html" aria-label="Notifications">♧<b>3</b></a><button class="shell-action" id="shellTheme" type="button" aria-label="Dark mode">☾</button><span id="logoutTop" hidden></span><a class="shell-profile" href="/profile.html"><span class="shell-avatar">S</span><span class="shell-profile-copy"><b id="shellUserName">User</b><small id="shellUserPlan">Free Plan</small></span><strong class="shell-chevron">⌄</strong></a>';document.querySelectorAll('.shell-topbar').forEach(e=>e.remove());document.body.insertBefore(top,document.body.children[1]||null);
 const existingMain=document.querySelector('main.main');if(existingMain)existingMain.classList.add('shell-main');
 if(active==='overview'){const s=document.getElementById('shellSearch');if(s)s.addEventListener('keydown',e=>{if(e.key==='Enter'){const q=s.value.trim().toLowerCase();if(!q)return;location.href='/links.html?search='+encodeURIComponent(q)}})}
-const sb=window.supabase?.createClient?.('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');if(sb)sb.auth.getUser().then(({data})=>{const u=data?.user;if(!u)return;const name=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';document.getElementById('shellUserName').textContent=name;document.getElementById('shellUserPlan').textContent='Free Plan';}).catch(()=>{});
+const sb=window.supabase?.createClient?.('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');if(sb)sb.auth.getUser().then(({data})=>{const u=data?.user;if(!u)return;const name=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';document.getElementById('shellUserName').textContent=name;
+const planNames={three_day:'3 Days','3-days':'3 Days',weekly:'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift'};
+try{
+ const {data:subs}=await sb.from('subscriptions').select('plan,status,ends_at').eq('user_id',u.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);
+ const sub=subs?.[0];
+ const plan=sub? (planNames[sub.plan]||sub.plan) : 'Free Plan';
+ document.getElementById('shellUserPlan').textContent=plan;
+ const time=document.querySelector('.shell-time');
+ if(time){time.innerHTML='<span>TIME LEFT</span><strong>'+(sub?.ends_at?new Date(sub.ends_at).getTime()>Date.now()?'Active':'Expired':'—')+'</strong><small>'+plan+'</small>';}
+}catch{}
+}).catch(()=>{});
 document.getElementById('shellTheme')?.addEventListener('click',()=>document.documentElement.classList.toggle('shell-dim'));document.querySelector('[data-shell-nav="logout"]')?.addEventListener('click',async e=>{e.preventDefault();try{if(sb)await sb.auth.signOut()}catch{}location.href='/central-login.html'});})();
