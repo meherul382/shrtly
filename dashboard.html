@@ -207,7 +207,8 @@ body.panel-view .content{display:none!important}
 .side-link{transform:none!important}
 .side-link:hover{transform:none!important}
 .side-link.active{transform:none!important}
-</style></head>
+</style><link rel="stylesheet" href="/panel-shell.css">
+</head>
 <body class="booting">
 <div class="shell">
 <aside class="sidebar">
@@ -408,5 +409,6 @@ body.panel-view .content{display:none!important}
   const initial=new URLSearchParams(location.search).get('panel')||'overview';
   show(initial,false);
 })();
-</script></body>
+</script><script src="/panel-shell.js"></script>
+</body>
 </html>
