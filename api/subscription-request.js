@@ -26,18 +26,15 @@ module.exports = async (req, res) => {
     const plan = planMap[String(body.plan || '').trim().toLowerCase()];
     const payment_method = methodMap[String(body.payment_method || '').trim().toLowerCase()];
     const transaction_id = String(body.transaction_id || '').trim();
-    const supportedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
+    const supportedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
     const domainLimits = { welcome:1, starter:2, growth:3, pro:4, business:5, enterprise:6, weekly:7, half_month:9, monthly:9, quarterly:9 };
     const unlimitedPlans = new Set(['weekly','half_month','monthly','quarterly']);
-    const premiumComPlans = new Set(['pro','business','enterprise','weekly','half_month','monthly','quarterly']);
     let selected_domains = Array.isArray(body.selected_domains) ? [...new Set(body.selected_domains.map(String).map(x=>x.trim()).filter(Boolean))] : [];
-    if (unlimitedPlans.has(plan)) {
-      selected_domains = supportedDomains.slice();
-    } else {
+    if (unlimitedPlans.has(plan)) selected_domains = supportedDomains.slice();
+    else {
       const limit = domainLimits[plan] || 1;
       if (!selected_domains.length) return json(res, 400, { error: 'Please select your domains before submitting the plan.' });
       if (selected_domains.some(d=>!supportedDomains.includes(d))) return json(res, 400, { error: 'One or more selected domains are not supported.' });
-      if (selected_domains.includes('shrtigo.com') && !premiumComPlans.has(plan)) return json(res, 400, { error: 'shrtigo.com is available from Pro Pack and higher plans only.' });
       if (selected_domains.length > limit) return json(res, 400, { error: `This plan allows up to ${limit} domain${limit===1?'':'s'}.` });
     }
 

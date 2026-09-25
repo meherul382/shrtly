@@ -125,7 +125,8 @@ function openDomainSelector(key){
  const limit=domainLimits[key]||1;
  const unlimited=unlimitedPlans.has(key);
  const allowedCatalog=premiumComPlans.has(key)?domainCatalog.slice():domainCatalog.filter(d=>d!=='shrtigo.com');
- pendingDomains=unlimited?allowedCatalog.slice():allowedCatalog.slice(0,Math.min(limit,allowedCatalog.length));
+ const defaultCatalog=key==='pro'?[...allowedCatalog.filter(d=>d==='shrtigo.com'),...allowedCatalog.filter(d=>d!=='shrtigo.com')]:allowedCatalog;
+ pendingDomains=unlimited?allowedCatalog.slice():defaultCatalog.slice(0,Math.min(limit,defaultCatalog.length));
  document.getElementById('domainPlanName').textContent=planLabels[key]||key;
  domainOptions.innerHTML=domainCatalog.map(d=>{const allowed=premiumComPlans.has(key)||d!=='shrtigo.com';const note=d==='shrtigo.com'?(allowed?'Premium domain — Pro Pack and higher':'Available from Pro Pack and higher plans'):(d==='shrtigo.xyz'?'Primary Shrtigo domain':'Branded domain');return `<label class="domain-option ${pendingDomains.includes(d)?'selected':''} ${allowed?'':'disabled'}"><input type="checkbox" value="${d}" ${pendingDomains.includes(d)?'checked':''} ${unlimited||!allowed?'disabled':''}><div><b>${d}</b><small>${note}</small></div></label>`;}).join('');
  document.getElementById('domainCount').textContent=unlimited?'ALL / ALL':pendingDomains.length+' / '+limit;

@@ -143,6 +143,7 @@ module.exports = async (req, res) => {
       const cleaned = [...new Set((saved?.selectedDomains || [])
         .filter(d => SUPPORTED_DOMAINS.includes(String(d).toLowerCase()))
         .map(d => String(d).toLowerCase()))];
+      if (!cleaned.length && plan === 'pro') cleaned.push('shrtigo.com');
 
       return json(res, 200, {
         ok: true,
