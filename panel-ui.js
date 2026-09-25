@@ -4,10 +4,10 @@ function init(){
  document.documentElement.dataset.shrtigoUiReady='1';
  var main=document.querySelector('.main,.site-content')||document.body;
  var existing=main.querySelector('.topbar');
- if(existing){existing.classList.add('shrtigo-enhanced-topbar');addControls(existing);}
+ if(existing){existing.classList.add('shrtigo-enhanced-topbar');existing.querySelectorAll('.wallet,.top-btn').forEach(function(x){x.style.display='none';});addControls(existing);}
  else{
   var oldTop=main.querySelector(':scope > .top');
-  if(oldTop){oldTop.classList.add('shrtigo-enhanced-topbar');addControls(oldTop);}
+  if(oldTop){oldTop.classList.add('shrtigo-enhanced-topbar');oldTop.querySelectorAll('.brand,.back').forEach(function(x){x.style.display='none';});addControls(oldTop);}
   else{var bar=document.createElement('div');bar.className='shrtigo-global-topbar';bar.innerHTML=topMarkup();main.insertBefore(bar,main.firstChild);wire(bar);}
  }
  if(localStorage.getItem('shrtigo-theme')==='light')document.body.classList.add('shrtigo-light');
