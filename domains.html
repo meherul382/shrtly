@@ -173,5 +173,5 @@ $('logout').onclick=e=>{e.preventDefault();logout()};$('logoutTop').onclick=logo
 (async()=>{try{session=await auth();if(session)await load()}catch(e){$('status').className='status err';$('status').textContent=e.message}})();
 </script>
 <script src="/panel-status.js" defer></script>
-</body>
+<script src="/panel-ui.js" defer></script></body>
 </html>
