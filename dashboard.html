@@ -199,24 +199,32 @@ body.panel-view .content{display:none!important}
  .panel-frame-wrap{min-height:calc(100vh - 70px)}
  .panel-frame{height:calc(100vh - 70px);min-height:760px}
 }
+</style><style id="sidebar-icon-final">
+.side-link .ico{width:24px!important;height:24px!important;display:grid!important;place-items:center!important;flex:0 0 24px!important;font-size:0!important;color:#a9c6ff!important}
+.side-link .ico svg{width:22px!important;height:22px!important;display:block!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.side-link.active .ico{color:#fff!important}
+.side-link:focus,.side-link:focus-visible{outline:none!important}
+.side-link{transform:none!important}
+.side-link:hover{transform:none!important}
+.side-link.active{transform:none!important}
 </style></head>
 <body class="booting">
 <div class="shell">
 <aside class="sidebar">
 <a class="brand" href="/"><span class="brandMark">S</span><span>Shrtigo</span></a>
 <nav class="side-nav">
-<a class="side-link active" href="/dashboard.html" data-panel="overview"><span class="ico">⌂</span><span>Overview</span></a>
-<a class="side-link" href="/create-link.html" data-panel="create-link"><span class="ico">＋</span><span>Create Link</span></a>
-<a class="side-link" href="/panel-analytics.html" data-panel="analytics"><span class="ico">⌁</span><span>Analytics</span></a>
-<a class="side-link" href="/links.html" data-panel="links"><span class="ico">↗</span><span>Links</span></a>
-<a class="side-link" href="/subscription.html" data-panel="subscription"><span class="ico">▣</span><span>Plans</span></a>
-<a class="side-link" href="/domains.html" data-panel="domains"><span class="ico">◎</span><span>Domains</span></a>
-<a class="side-link" href="/invoices.html" data-panel="invoices"><span class="ico">▤</span><span>Invoices</span></a>
-<a class="side-link" href="/add-fund.html" data-panel="add-fund"><span class="ico">＋</span><span>Add Fund</span></a>
-<a class="side-link" href="/notifications.html" data-panel="notifications"><span class="ico">♧</span><span>Notifications</span></a>
-<a class="side-link" href="/tickets.html" data-panel="tickets"><span class="ico">▱</span><span>Tickets</span></a>
-<a class="side-link" href="/profile.html" data-panel="profile"><span class="ico">♙</span><span>Profile</span></a>
-<a id="sideLogout" class="side-link" href="#logout"><span class="ico">↪</span><span>Logout</span></a>
+<a class="side-link active" href="/dashboard.html" data-panel="overview"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-9Z"/><path d="M9 21v-6h6v6"/></svg></span><span>Overview</span></a>
+<a class="side-link" href="/create-link.html" data-panel="create-link"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.36 0l2.14-2.14a4.5 4.5 0 0 0-6.36-6.36L11 6.14"/><path d="M14 10.5a4.5 4.5 0 0 0-6.36 0L5.5 12.64a4.5 4.5 0 0 0 6.36 6.36L13 17.86"/></svg></span><span>Create Link</span></a>
+<a class="side-link" href="/panel-analytics.html" data-panel="analytics"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5"/><path d="M4 19h17"/><path d="m7 15 4-4 3 2 5-6"/></svg></span><span>Analytics</span></a>
+<a class="side-link" href="/links.html" data-panel="links"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5a4.5 4.5 0 0 0 6.36 0l2.14-2.14a4.5 4.5 0 0 0-6.36-6.36L11 6.14"/><path d="M14 10.5a4.5 4.5 0 0 0-6.36 0L5.5 12.64a4.5 4.5 0 0 0 6.36 6.36L13 17.86"/></svg></span><span>Links</span></a>
+<a class="side-link" href="/subscription.html" data-panel="subscription"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg></span><span>Plans</span></a>
+<a class="side-link" href="/domains.html" data-panel="domains"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></span><span>Domains</span></a>
+<a class="side-link" href="/invoices.html" data-panel="invoices"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span>Invoices</span></a>
+<a class="side-link" href="/add-fund.html" data-panel="add-fund"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M7 6V4h10v2M12 10v6M9 13h6"/></svg></span><span>Add Fund</span></a>
+<a class="side-link" href="/notifications.html" data-panel="notifications"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg></span><span>Notifications</span></a>
+<a class="side-link" href="/tickets.html" data-panel="tickets"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="M8 10h8M8 14h5"/></svg></span><span>Tickets</span></a>
+<a class="side-link" href="/profile.html" data-panel="profile"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4 3.5-6 8-6s7.2 2 8 6"/></svg></span><span>Profile</span></a>
+<a id="sideLogout" class="side-link" href="#logout"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 5H5v14h5"/><path d="M13 8l4 4-4 4M7 12h10"/></svg></span><span>Logout</span></a>
 </nav>
 <div class="side-bottom">Secure account<br><strong>24/7 cloud ready</strong></div>
 </aside>
