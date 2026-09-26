@@ -1,5 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qbijrkdlaguwlvriaiky.supabase.co';
 const SERVICE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '').trim();
+const PUBLIC_KEY = String(process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || 'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ').trim();
 
 const SUPPORTED_DOMAINS = [
   'shrtigo.xyz',
@@ -111,7 +112,7 @@ async function seedSelection(userId, max) {
 
 module.exports = async (req, res) => {
   if (!['GET', 'POST'].includes(req.method)) return json(res, 405, { error: 'Method not allowed' });
-  if (!SERVICE_KEY) return json(res, 500, { error: 'Shrtigo backend is not configured.' });
+  if (!SERVICE_KEY && req.method === 'POST') return json(res, 500, { error: 'Shrtigo backend is not configured.' });
 
   const token = readBearer(req);
   const userId = await getUserId(token);
@@ -125,6 +126,14 @@ module.exports = async (req, res) => {
     const unlimited = ['weekly', 'half_month', 'monthly', 'quarterly'].includes(plan);
 
     if (req.method === 'GET') {
+      try {
+        const rpc = await fetch(SUPABASE_URL + '/rest/v1/rpc/shrtigo_user_domain_settings', {
+          method: 'POST',
+          headers: { apikey: PUBLIC_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        if (rpc.ok) return json(res, 200, await rpc.json());
+      } catch (rpcError) { console.error('Domain settings RPC error:', rpcError); }
       if (unlimited) {
         return json(res, 200, {
           ok: true,
