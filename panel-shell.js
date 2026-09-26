@@ -5,7 +5,7 @@ if(active==='overview'){const s=document.getElementById('shellSearch');if(s)s.ad
 async function initShritgoShellAuth(){
   let attempts=0;while(!window.supabase?.createClient&&attempts<20){await new Promise(r=>setTimeout(r,150));attempts++;}
   if(!window.supabase?.createClient)return;
-  const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ');
+  const sb=window.supabase.createClient('https://qbijrkdlaguwlvriaiky.supabase.co','sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ');
   const {data:{session}}=await sb.auth.getSession();const u=session?.user;if(!u)return;
   document.getElementById('shellUserName').textContent=u.user_metadata?.full_name||u.user_metadata?.name||u.email?.split('@')[0]||'User';
   async function refreshNotificationBadge(){
