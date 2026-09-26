@@ -3,9 +3,13 @@ export default async function handler(req,res){
   if(!code)return res.status(400).send('Missing short code');
 
   try{
-    const supabaseUrl=String(process.env.SUPABASE_URL||'').trim().replace(/\/$/,'');
-    const serviceKey=String(process.env.SUPABASE_SERVICE_ROLE_KEY||'').trim();
-    if(!supabaseUrl||!serviceKey)return res.status(500).send('Backend is not configured.');
+    const supabaseUrl=String(process.env.SUPABASE_URL||'https://qbijrkdlaguwlvriaiky.supabase.co').trim().replace(/\/$/,'');
+    const serviceKey=String(
+      process.env.SUPABASE_SERVICE_ROLE_KEY||
+      process.env.SUPABASE_ANON_KEY||
+      process.env.SUPABASE_PUBLISHABLE_KEY||
+      'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ'
+    ).trim();
 
     // Resolve the short link and consume its click entitlement in one
     // atomic database call. This removes the old two-request lookup +
