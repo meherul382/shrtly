@@ -66,8 +66,30 @@ async function loadDomainOptions(s){
   }
  }catch(e){
   console.error('Domain settings:',e);
+  try{
+    const q=await sb.from('user_domain_settings').select('selected_domains').eq('user_id',s.user.id).maybeSingle();
+    const selected=Array.isArray(q.data?.selected_domains)?q.data.selected_domains:[];
+    const select=document.getElementById('domain');
+    select.innerHTML='';
+    if(selected.length){
+      selected.forEach(domain=>{
+        const option=document.createElement('option');
+        option.value=domain;
+        option.textContent=domain;
+        select.appendChild(option);
+      });
+      select.value=selected[0];
+      select.title='Only your plan-selected domains are available here.';
+    }else{
+      select.innerHTML='<option value="" selected disabled>No selected domain</option>';
+      select.title='Open Domains and select your plan domain first.';
+    }
+  }catch(fallbackError){
+    console.error('Domain fallback:',fallbackError);
+    const select=document.getElementById('domain');
+    select.innerHTML='<option value="" selected disabled>Could not load plan domains</option>';
+  }
  }
-}
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
 const historyKey='shrtigo-history:'+s.user.id;
 const history=JSON.parse(localStorage.getItem(historyKey)||'[]');
