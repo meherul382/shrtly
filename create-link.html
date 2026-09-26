@@ -34,37 +34,42 @@ const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_p
 async function loadDomainOptions(s){
  const select=document.getElementById('domain');
  const allDomains=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
- const setOptions=(selected,unlimited=false)=>{
-   selected=[...(Array.isArray(selected)?selected:[])];
+ const render=(data)=>{
+   const selected=Array.isArray(data?.selectedDomains)?data.selectedDomains.filter(d=>allDomains.includes(d)):[];
+   const unlimited=!!data?.unlimited;
+   const usable=unlimited?allDomains:selected;
    select.innerHTML='';
-   const usable=unlimited ? allDomains : selected.filter(d=>allDomains.includes(d));
    allDomains.forEach(domain=>{
-     const enabled=unlimited || usable.includes(domain);
-     const option=document.createElement('option');
-     option.value=domain;
-     option.textContent=enabled ? domain : domain+' (Upgrade Plan)';
-     option.disabled=!enabled;
-     select.appendChild(option);
+     const enabled=unlimited||usable.includes(domain);
+     const o=document.createElement('option');
+     o.value=domain;
+     o.textContent=enabled?domain:domain+' (Upgrade Plan)';
+     o.disabled=!enabled;
+     select.appendChild(o);
    });
    if(usable.length) select.value=usable[0];
-   else select.value='';
  };
+ const key='shrtigo-domain-selection:'+s.user.id;
+ try{
+   const cached=JSON.parse(localStorage.getItem(key)||'null');
+   if(cached) render(cached);
+ }catch(e){}
  try{
    const {data,error}=await sb.rpc('shrtigo_user_domain_settings');
    if(error) throw error;
-   setOptions(data?.selectedDomains,data?.unlimited);
+   render(data);
+   try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}
    return;
- }catch(e){ console.warn('Domain RPC failed:',e); }
+ }catch(e){console.warn('Domain RPC failed:',e)}
  try{
    const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
    const d=await r.json();
    if(!r.ok) throw Error(d.error||'API error');
-   setOptions(d.selectedDomains,d.unlimited);
+   render(d);
+   try{localStorage.setItem(key,JSON.stringify(d))}catch(e){}
    return;
- }catch(e){ console.warn('Domain API failed:',e); }
- select.innerHTML='<option value="shrtigo.xyz">shrtigo.xyz</option><option value="shrtigo.com">shrtigo.com</option>';
- select.value='shrtigo.xyz';
- select.title='Domain service is temporarily unavailable; the server will validate the selected domain when creating the link.';
+ }catch(e){console.warn('Domain API failed:',e)}
+ if(!select.options.length) select.innerHTML='<option value="shrtigo.xyz">shrtigo.xyz</option>';
 }
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
 const historyKey='shrtigo-history:'+s.user.id;
