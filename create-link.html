@@ -53,9 +53,10 @@ async function loadDomainOptions(s){
  }
 }
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
-const history=JSON.parse(localStorage.getItem('shrtigo-history')||'[]');
+const historyKey='shrtigo-history:'+s.user.id;
+const history=JSON.parse(localStorage.getItem(historyKey)||'[]');
 history.unshift({short:d.shortUrl,long:url,domain:domain,image:imageFile?imageFile.name:''});
-localStorage.setItem('shrtigo-history',JSON.stringify(history.slice(0,100)));
+localStorage.setItem(historyKey,JSON.stringify(history.slice(0,100)));
 document.getElementById('short').href=d.shortUrl;document.getElementById('short').textContent=d.shortUrl;document.getElementById('result').classList.add('show')}
 document.getElementById('create').onclick=create;document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('short').textContent);async function boot(){const s=await session();if(s)await loadDomainOptions(s)}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}document.getElementById('logout').onclick=e=>{e.preventDefault();logout()};document.getElementById('logoutTop').onclick=logout;boot();
 
