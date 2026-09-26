@@ -58,6 +58,16 @@ module.exports = async (req, res) => {
     if (typeof body === 'string') body = JSON.parse(body || '{}');
     const message = String(body.message || '').trim();
     if (!message || message.length > 2000) return json(res, 400, { error: 'Message must be between 1 and 2000 characters.' });
+    if (actor.isAdmin && body.broadcast === true) {
+      const broadcastResponse = await supabaseFetch('/rest/v1/rpc/shrtigo_admin_broadcast_support', {
+        method: 'POST',
+        body: JSON.stringify({ p_admin_email: actor.email, p_message: message })
+      });
+      const broadcastData = await broadcastResponse.json();
+      if (!broadcastResponse.ok) return json(res, 500, { error: broadcastData?.message || broadcastData?.hint || 'Could not broadcast support message.' });
+      return json(res, 201, { broadcast: true, sent_count: Number(broadcastData) || 0 });
+    }
+
     const targetUser = actor.isAdmin ? String(body.user_id || '').trim() : actor.id;
     const senderRole = actor.isAdmin ? 'admin' : 'user';
     if (!targetUser) return json(res, 400, { error: 'Select a user before replying.' });
