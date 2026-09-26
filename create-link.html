@@ -40,28 +40,29 @@ async function loadDomainOptions(s){
   select.innerHTML='';
   const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
   const unlimited=!!d.unlimited;
-  const domains=unlimited ? selected : selected;
+  const allDomains=[...(d.supportedDomains||d.availableDomains||[])];
   select.innerHTML='';
-  if(!domains.length){
+  if(!selected.length && !unlimited){
     const option=document.createElement('option');
     option.value='';
     option.textContent='Select a domain from Domains first';
     option.disabled=true;
     option.selected=true;
     select.appendChild(option);
-    select.title='No domain is selected for this plan. Open Domains and select your allowed domain(s).';
   }else{
-    domains.forEach(domain=>{
+    allDomains.forEach(domain=>{
+      const isSelected=selected.includes(domain);
       const option=document.createElement('option');
       option.value=domain;
-      option.textContent=domain;
+      option.textContent=isSelected||unlimited ? domain : domain+' (Upgrade Plan)';
+      option.disabled=!isSelected&&!unlimited;
       select.appendChild(option);
     });
-    if(domains.includes(current))select.value=current;
-    else select.value=domains[0];
+    if(unlimited) select.value=allDomains.includes(current)?current:(selected[0]||allDomains[0]||'');
+    else select.value=selected.includes(current)?current:(selected[0]||'');
     select.title=unlimited
       ? 'All Shrtigo domains are included in your unlimited plan.'
-      : 'Only the domain(s) selected for your current plan are available here.';
+      : 'Selected domains are available. Other domains require a plan change.';
   }
  }catch(e){
   console.error('Domain settings:',e);
