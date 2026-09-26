@@ -14,12 +14,13 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 </style><link rel="stylesheet" href="/panel-theme.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="stylesheet" href="/panel-shell.css?v=20260925">
 </head><body><aside class="sidebar"><a class="brand" href="/"><span class="mark">S</span><span>Shrtigo</span></a><nav class="nav"><a href="/"><i>⌂</i><span>Overview</span></a><a href="/create-link.html"><i>＋</i><span>Create Link</span></a><a href="/panel-analytics.html"><i>⌁</i><span>Analytics</span></a><a class="active" href="/links.html"><i>↗</i><span>Links</span></a><a href="/subscription.html"><i>▣</i><span>Plans</span></a><a href="/domains.html"><i>◎</i><span>Domains</span></a><a href="/invoices.html"><i>▤</i><span>Invoices</span></a><a href="/add-fund.html"><i>＋</i><span>Add Fund</span></a><a href="/notifications.html"><i>♧</i><span>Notifications</span></a><a href="/tickets.html"><i>▱</i><span>Tickets</span></a><a href="/profile.html"><i>♙</i><span>Profile</span></a><a id="logoutLink" href="/"><i>↪</i><span>Logout</span></a></nav><div class="side-bottom">Secure account<br><strong>24/7 cloud ready</strong></div></aside><main class="main"><header class="topbar"><span class="wallet">Wallet: ৳0.00 BDT</span><a class="logout" href="/add-fund.html">Add Fund</a><a class="create" href="/create-link.html">＋ Create Link</a></header><div class="content"><header class="head"><div><h1>My Links</h1><p>Recently created short links are stored locally in your browser for convenience. This history is specific to the device and browser you use.</p></div></header><div id="searchResultNote" class="search-result-note" style="display:none"></div><section class="panel"><div id="selectBar" class="selectbar" style="display:none"><label class="check"><input id="selectAll" type="checkbox"> Select all</label><button type="button" id="deleteSelected" class="danger">Delete selected</button></div><div id="historyList" class="history"></div><p id="empty" class="empty">No links yet on this device.</p><div class="notice">Your local link history is specific to this browser and device.</div></section><div class="back"><a href="/">← Back to Dashboard</a></div></div></main><script>
 const $=id=>document.getElementById(id);
-const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjFjdWl1g_cNdjogHJ';
+const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let serverLinks=[];
-try{serverLinks=JSON.parse(sessionStorage.getItem('shrtigo-links-cache')||'[]')}catch{}
-function localLoad(){try{return JSON.parse(localStorage.getItem('shrtigo-history')||'[]')}catch{return[]}}
-function localSave(v){localStorage.setItem('shrtigo-history',JSON.stringify(v))}
+let serverLinks=[],currentUserId='';
+function historyKey(){return currentUserId?'shrtigo-history:'+currentUserId:'shrtigo-history:guest'}
+function cacheKey(){return currentUserId?'shrtigo-links-cache:'+currentUserId:'shrtigo-links-cache:guest'}
+function localLoad(){try{return JSON.parse(localStorage.getItem(historyKey())||'[]')}catch{return[]}}
+function localSave(v){localStorage.setItem(historyKey(),JSON.stringify(v))}
 function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function shortFor(x){return x.short||('https://'+(x.domain||'shrtigo.xyz')+'/'+encodeURIComponent(x.code||''))}
 function getMerged(){const local=localLoad();return [...serverLinks.map(x=>({...x,source:'server'})),...local.filter(l=>!serverLinks.some(s=>shortFor(s)===l.short)).map(x=>({...x,source:'local'}))]}
@@ -38,9 +39,13 @@ function renderHistory(){
  document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{const i=Number(b.dataset.delete),local=localLoad();const mergedNow=getFiltered();const item=mergedNow[i];if(!confirm('Delete this short link?'))return;if(item?.source==='server'){const s=(await sb.auth.getSession()).data.session;if(s){const rr=await fetch('/api/dashboard-delete',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({code:item.code})});const d=await rr.json().catch(()=>({}));if(!rr.ok){alert(d.error||'Could not delete link.');return}}}else localSave(local.filter(x=>x.short!==item.short));await loadServer()});
 }
 async function loadServer(){
- renderHistory();
  const s=(await sb.auth.getSession()).data.session;
- if(s){try{const r=await fetch('/api/dashboard?period=90',{headers:{Authorization:'Bearer '+s.access_token}});if(r.ok){const d=await r.json();serverLinks=d.links||[];sessionStorage.setItem('shrtigo-links-cache',JSON.stringify(serverLinks));}}catch(e){console.warn('Links refresh failed',e)}}
+ currentUserId=s?.user?.id||'';
+ serverLinks=[];
+ if(!s){renderHistory();return}
+ try{serverLinks=JSON.parse(sessionStorage.getItem(cacheKey())||'[]')}catch{serverLinks=[]}
+ renderHistory();
+ try{const r=await fetch('/api/dashboard?period=90',{headers:{Authorization:'Bearer '+s.access_token}});if(r.ok){const d=await r.json();serverLinks=d.links||[];sessionStorage.setItem(cacheKey(),JSON.stringify(serverLinks));}}catch(e){console.warn('Links refresh failed',e)}
  renderHistory();
 }
 $('selectAll').onchange=()=>document.querySelectorAll('.rowcheck').forEach(c=>c.checked=$('selectAll').checked);
