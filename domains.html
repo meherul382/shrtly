@@ -78,7 +78,7 @@ radial-gradient(800px 500px at 50% 100%,rgba(0,56,170,.24),transparent 65%),
 <p>You can choose any domains you want, up to your plan's allowance. Your choice is saved to your Shrtigo account.</p>
 <div id="domainGrid" class="domain-grid"></div>
 <div class="actions"><button id="save" class="save" disabled>Save Domain Selection</button><div id="status" class="status"></div></div>
-<div class="hint">💡 Example: Starter = 2 domains, Growth = 3, Pro = 4, Business = 5, Enterprise = 6, Weekly Unlimited = 7. Half-Month Unlimited can use all available Shrtigo domains.</div>
+<div class="hint">💡 Choose up to your plan limit. You can change your selected domains anytime while the same plan is active. Unlimited plans use all available domains automatically.</div>
 </section>
 </div>
 </main>
@@ -98,13 +98,13 @@ function render(data){
  maxDomains=Number(data.maxDomains||1);
  selected=[...(data.selectedDomains||[])];
  const unlimited=!!data.unlimited;
- const locked=!!data.locked && !unlimited;
+ const locked=false;
  $('plan').textContent=labelPlan(data.plan);
  $('planText').textContent=unlimited
    ? 'All available Shrtigo domains are included with this unlimited plan.'
    : locked
      ? 'Selection locked for this active plan.'
-     : 'Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+' and save once.';
+     : 'Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+' and save. You can change it anytime.';
  $('count').textContent=unlimited ? 'ALL' : selected.length+' / '+maxDomains;
  $('countText').textContent=unlimited ? 'All domains included' : 'Selected domains';
 
@@ -124,10 +124,10 @@ function render(data){
  save.style.display='inline-block';
  if(locked){
    status.className='status ok';
-   status.textContent='🔒 Your domain selection is locked. Change your plan to select different domains.';
+   status.textContent='';
  } else {
    status.className='status';
-   status.textContent='Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+', then save. You cannot change this selection while the same plan is active.';
+   status.textContent='Select up to '+maxDomains+' domain'+(maxDomains===1?'':'s')+'. You can change your selection anytime.';
  }
 
  (data.availableDomains||[]).forEach(domain=>{
@@ -166,7 +166,7 @@ $('save').onclick=async()=>{
    const r=await fetch('/api/domain-settings',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({selectedDomains:selected})});
    const d=await r.json();if(!r.ok)throw new Error(d.error||'Could not save domain selection.');
    $('status').className='status ok';$('status').textContent='✓ '+d.message;
-   render({...d,locked:true});
+   render({...d,locked:false});
  }catch(e){$('status').className='status err';$('status').textContent=e.message;$('save').disabled=false}
 };
 async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}
