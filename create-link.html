@@ -33,17 +33,16 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function session(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='/central-login.html?next=%2Fcreate-link.html';return null}return session}
 async function loadDomainOptions(s){
  try{
-  const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not load domain settings.');
+  const {data:d,error}=await sb.rpc('shrtigo_user_domain_settings');
+  if(error)throw error;
   const select=document.getElementById('domain');
   const current=select.value;
   select.innerHTML='';
-  const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
-  const unlimited=!!d.unlimited;
+  const selected=Array.isArray(d?.selectedDomains)?d.selectedDomains:[];
+  const unlimited=!!d?.unlimited;
   const domains=unlimited
-    ? selected
-    : (d.locked ? selected : []);
-  select.innerHTML='';
+    ? (Array.isArray(d?.availableDomains)?d.availableDomains:selected)
+    : selected;
   if(!domains.length){
     const option=document.createElement('option');
     option.value='';
@@ -66,16 +65,16 @@ async function loadDomainOptions(s){
       : 'Only the domain(s) selected for your current plan are available here.';
   }
  }catch(e){
-  console.error('Domain settings:',e);
+  console.error('Domain settings RPC:',e);
   const select=document.getElementById('domain');
   select.innerHTML='';
   const option=document.createElement('option');
   option.value='';
-  option.textContent='Could not load your selected domains';
+  option.textContent='Could not load selected domain';
   option.disabled=true;
   option.selected=true;
   select.appendChild(option);
-  select.title='Open Domains and try again. Your plan-selected domains could not be loaded.';
+  select.title='Open Domains and check your saved domain selection.';
  }
 }
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
