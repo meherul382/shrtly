@@ -29,47 +29,45 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 <a href="/profile.html"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 21c.8-4 3.1-6 7-6s6.2 2 7 6"/></svg></span><span>Profile</span></a>
 <a id="logout" href="/"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 5H5v14h5"/><path d="m13 8 4 4-4 4M8 12h9"/></svg></span><span>Logout</span></a>
 </nav><div class="upgrade-card"><div class="upgrade-icon">👑</div><div><strong>Upgrade to Pro</strong><small>Get more clicks, more domains and advanced features.</small></div><a href="/subscription.html">View Plans&nbsp; →</a></div>
-<div class="site-sidebar-bottom"><a class="site-profile" href="#plan-status"><span class="nav-icon">◷</span><span>Plan / Time Left</span></a></div></aside><header class="site-content"><div class="topbar"><div class="ov-tools"><button id="ovMenu" class="ov-tool ov-menu" title="Menu">☰</button><a class="ov-tool ov-notify" href="/notifications.html" title="Notifications"><span>♧</span><b>3</b></a><button id="ovTheme" class="ov-tool" title="Dark mode">☾</button><a class="ov-profile" href="/profile.html"><span class="ov-avatar">S</span><span class="ov-profile-copy"><b id="pageUserName">User</b><small id="pageUserPlan">Free Plan</small></span><strong class="ov-chevron">⌄</strong></a></div></div></header><main class="main"><div class="content"><header class="head"><div><h1>Create Short Link</h1><p>Premium link management, billing and click analytics.</p></div></header><section class="box"><div class="field"><label>Destination URL</label><input id="url" type="url" placeholder="https://example.com/long-url"></div><div class="grid"><div class="field"><label>Custom Alias (optional)</label><input id="alias" placeholder="offer"></div><div class="field"><label>Domain</label><select id="domain"><option value="" selected disabled>Loading your plan domains…</option></select><div class="hint">Only domains selected for your current plan are shown here.</div></div></div><div class="field"><label>Upload Image <span style="font-weight:600;color:#8a93a3">(optional)</span></label><input id="image" type="file" accept="image/*" style="padding:10px"><div id="imagePreview" class="hint"></div></div><button class="create" id="create">＋ Create Link</button><div class="status" id="status"></div><div class="result" id="result"><div>Short URL</div><a id="short" target="_blank" rel="noopener"></a><br><button class="copy" id="copy">Copy Short Link</button></div></section></div></main><script>
+<div class="site-sidebar-bottom"><a class="site-profile" href="#plan-status"><span class="nav-icon">◷</span><span>Plan / Time Left</span></a></div></aside><header class="site-content"><div class="topbar"><div class="ov-tools"><button id="ovMenu" class="ov-tool ov-menu" title="Menu">☰</button><a class="ov-tool ov-notify" href="/notifications.html" title="Notifications"><span>♧</span><b>3</b></a><button id="ovTheme" class="ov-tool" title="Dark mode">☾</button><a class="ov-profile" href="/profile.html"><span class="ov-avatar">S</span><span class="ov-profile-copy"><b id="pageUserName">User</b><small id="pageUserPlan">Free Plan</small></span><strong class="ov-chevron">⌄</strong></a></div></div></header><main class="main"><div class="content"><header class="head"><div><h1>Create Short Link</h1><p>Premium link management, billing and click analytics.</p></div></header><section class="box"><div class="field"><label>Destination URL</label><input id="url" type="url" placeholder="https://example.com/long-url"></div><div class="grid"><div class="field"><label>Custom Alias (optional)</label><input id="alias" placeholder="offer"></div><div class="field"><label>Domain</label><select id="domain"><option>shrtigo.xyz</option><option>shrtigo.shop</option><option>shrtigo.online</option><option>shrtigo.site</option><option>shrtigopro.site</option><option>shrtigo.world</option><option>shrtigo.store</option><option>shrtigourl.site</option><option>shrtigo.website</option><option>shrtigo.com</option></select><div class="hint">Only domains selected for your current plan are shown here.</div></div></div><div class="field"><label>Upload Image <span style="font-weight:600;color:#8a93a3">(optional)</span></label><input id="image" type="file" accept="image/*" style="padding:10px"><div id="imagePreview" class="hint"></div></div><button class="create" id="create">＋ Create Link</button><div class="status" id="status"></div><div class="result" id="result"><div>Short URL</div><a id="short" target="_blank" rel="noopener"></a><br><button class="copy" id="copy">Copy Short Link</button></div></section></div></main><script>
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function session(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='/central-login.html?next=%2Fcreate-link.html';return null}return session}
 async function loadDomainOptions(s){
- const select=document.getElementById('domain');
- const allDomains=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
- const render=(data)=>{
-   const selected=Array.isArray(data?.selectedDomains)?data.selectedDomains.filter(d=>allDomains.includes(d)):[];
-   const unlimited=!!data?.unlimited;
-   const usable=unlimited?allDomains:selected;
-   select.innerHTML='';
-   allDomains.forEach(domain=>{
-     const enabled=unlimited||usable.includes(domain);
-     const o=document.createElement('option');
-     o.value=domain;
-     o.textContent=enabled?domain:domain+' (Upgrade Plan)';
-     o.disabled=!enabled;
-     select.appendChild(o);
-   });
-   if(usable.length) select.value=usable[0];
- };
- const key='shrtigo-domain-selection:'+s.user.id;
  try{
-   const cached=JSON.parse(localStorage.getItem(key)||'null');
-   if(cached) render(cached);
- }catch(e){}
- try{
-   const {data,error}=await sb.rpc('shrtigo_user_domain_settings');
-   if(error) throw error;
-   render(data);
-   try{localStorage.setItem(key,JSON.stringify(data))}catch(e){}
-   return;
- }catch(e){console.warn('Domain RPC failed:',e)}
- try{
-   const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-   const d=await r.json();
-   if(!r.ok) throw Error(d.error||'API error');
-   render(d);
-   try{localStorage.setItem(key,JSON.stringify(d))}catch(e){}
-   return;
- }catch(e){console.warn('Domain API failed:',e)}
- if(!select.options.length) select.innerHTML='<option value="shrtigo.xyz">shrtigo.xyz</option>';
+  const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
+  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not load domain settings.');
+  const select=document.getElementById('domain');
+  const current=select.value;
+  select.innerHTML='';
+  const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
+  const unlimited=!!d.unlimited;
+  const domains=unlimited
+    ? selected
+    : (d.locked ? selected : []);
+  select.innerHTML='';
+  if(!domains.length){
+    const option=document.createElement('option');
+    option.value='';
+    option.textContent='Select a domain from Domains first';
+    option.disabled=true;
+    option.selected=true;
+    select.appendChild(option);
+    select.title='No domain is selected for this plan. Open Domains and select your allowed domain(s).';
+  }else{
+    domains.forEach(domain=>{
+      const option=document.createElement('option');
+      option.value=domain;
+      option.textContent=domain;
+      select.appendChild(option);
+    });
+    if(domains.includes(current))select.value=current;
+    else select.value=domains[0];
+    select.title=unlimited
+      ? 'All Shrtigo domains are included in your unlimited plan.'
+      : 'Only the domain(s) selected for your current plan are available here.';
+  }
+ }catch(e){
+  console.error('Domain settings:',e);
+ }
 }
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
 const historyKey='shrtigo-history:'+s.user.id;
@@ -83,5 +81,5 @@ document.getElementById('image')?.addEventListener('change',e=>{const f=e.target
 <style>
 .side{width:270px!important}.main{margin-left:270px!important}.topbar{height:78px!important;justify-content:flex-start!important;padding:0 28px!important}.page-tools{width:100%;display:flex;align-items:center;gap:10px}.page-tool{width:46px;height:46px;border:1px solid #28549a!important;background:#071a38!important;color:#f5f8ff!important;border-radius:12px!important;position:relative}.page-tool b{position:absolute;right:-3px;top:-5px;background:#ff2d63;color:#fff;border-radius:99px;padding:2px 6px;font-size:9px}.page-search{width:480px;height:46px;display:flex;align-items:center;gap:9px;padding:0 14px;border:1px solid #28549a;border-radius:12px;background:#06162f}.page-search span{color:#63a4ff}.page-search input{border:0!important;background:transparent!important;box-shadow:none!important;height:40px!important;flex:1;color:#fff!important}.page-profile{margin-left:auto;height:46px;min-width:185px;display:flex;align-items:center;gap:10px;padding:5px 12px;border:1px solid #3655a5;border-radius:14px;background:linear-gradient(135deg,#071b3d,#14235b);color:#fff;text-decoration:none}.page-profile>span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#3e7eff,#7738ff);font-weight:900}.page-profile strong{display:flex;flex-direction:column;line-height:1.05}.page-profile strong b{font-size:12px}.page-profile small{font-size:9px;color:#a9bde4}.page-profile i{margin-left:auto;font-style:normal}.nav i{font-style:normal}.side .nav a{min-height:42px}
 </style>
-<script>(async()=>{try{const s=(await sb.auth.getSession()).data.session;if(!s)return;const u=s.user||{},m=u.user_metadata||{},n=m.full_name||m.name||m.display_name||(u.email||'').split('@')[0]||'User';let p='Free Plan';const q=await sb.from('subscriptions').select('plan').eq('user_id',u.id).eq('status','active').order('ends_at',{ascending:false}).limit(1);if(q.data?.[0]){const names={welcome:'Welcome Gift',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',weekly:'Weekly Unlimited',half_month:'Half-Month Unlimited',monthly:'Monthly Unlimited',quarterly:'Quarterly Unlimited',three_day:'3 Days'};p=names[q.data[0].plan]||q.data[0].plan||p}document.getElementById('pageUserName').textContent=n;document.getElementById('pageUserPlan').textContent=p;document.getElementById('pageSearch').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='/links.html?search='+encodeURIComponent(e.target.value.trim())});document.getElementById('pageTheme').onclick=()=>document.body.classList.toggle('ov-light')}catch(e){}})();</script><script src="/panel-shell.js?v=20260929"></script>
+<script>(async()=>{try{const s=(await sb.auth.getSession()).data.session;if(!s)return;const u=s.user||{},m=u.user_metadata||{},n=m.full_name||m.name||m.display_name||(u.email||'').split('@')[0]||'User';let p='Free Plan';const q=await sb.from('subscriptions').select('plan').eq('user_id',u.id).eq('status','active').order('ends_at',{ascending:false}).limit(1);if(q.data?.[0]){const names={welcome:'Welcome Gift',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',weekly:'Weekly Unlimited',half_month:'Half-Month Unlimited',monthly:'Monthly Unlimited',quarterly:'Quarterly Unlimited',three_day:'3 Days'};p=names[q.data[0].plan]||q.data[0].plan||p}document.getElementById('pageUserName').textContent=n;document.getElementById('pageUserPlan').textContent=p;document.getElementById('pageSearch').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())location.href='/links.html?search='+encodeURIComponent(e.target.value.trim())});document.getElementById('pageTheme').onclick=()=>document.body.classList.toggle('ov-light')}catch(e){}})();</script><script src="/panel-shell.js?v=20260927"></script>
 </body></html>
