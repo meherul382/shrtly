@@ -80,6 +80,7 @@ module.exports = async (req, res) => {
 
     const raw = await insertResponse.text();
     if (plan === 'welcome' && (insertResponse.status === 409 || raw.includes('subscriptions_one_welcome_per_user_idx'))) return json(res, 409, { error: 'Welcome Gift has already been claimed for this account.' });
+    if (insertResponse.status === 409 && raw.includes('subscriptions_one_coupon_per_user_idx')) return json(res, 409, { error: 'This account has already used a coupon code. Only one coupon use is allowed per account.' });
     let details = raw;
     try { details = JSON.parse(raw); } catch (_) {}
     console.error('Supabase subscription insert failed:', insertResponse.status, details);
