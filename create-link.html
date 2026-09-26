@@ -33,46 +33,18 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function session(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='/central-login.html?next=%2Fcreate-link.html';return null}return session}
 async function loadDomainOptions(s){
  try{
-  const {data:subs,error:subError}=await sb.from('subscriptions')
-    .select('plan,status,ends_at')
-    .eq('user_id',s.user.id)
-    .eq('status','active')
-    .order('ends_at',{ascending:false})
-    .limit(1);
-  if(subError)throw subError;
-  const plan=String(subs?.[0]?.plan||'welcome').toLowerCase();
-  const unlimited=['weekly','half_month','monthly','quarterly'].includes(plan);
-  const allDomains=['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
-
-  if(unlimited){
-    fillDomains(allDomains,true);
-    return;
-  }
-
-  const {data:settings,error:settingsError}=await sb.from('user_domain_settings')
-    .select('selected_domains,selection_plan')
-    .eq('user_id',s.user.id)
-    .limit(1);
-  if(settingsError)throw settingsError;
-
-  const row=settings?.[0]||{};
-  const selectionPlan=String(row.selection_plan||'').toLowerCase();
-  const selected=selectionPlan===plan && Array.isArray(row.selected_domains)
-    ? [...new Set(row.selected_domains.map(d=>String(d).toLowerCase()).filter(d=>allDomains.includes(d)))]
-    : [];
-
-  fillDomains(selected,false);
+  const r=await fetch('/api/domain-settings',{
+    headers:{Authorization:'Bearer '+s.access_token},
+    cache:'no-store'
+  });
+  const d=await r.json();
+  if(!r.ok)throw new Error(d.error||'Could not load domain settings.');
+  const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
+  const unlimited=!!d.unlimited;
+  fillDomains(unlimited ? (Array.isArray(d.availableDomains)?d.availableDomains:selected) : selected,unlimited);
  }catch(e){
   console.error('Domain settings:',e);
-  const select=document.getElementById('domain');
-  select.innerHTML='';
-  const option=document.createElement('option');
-  option.value='';
-  option.textContent='Select a domain from Domains first';
-  option.disabled=true;
-  option.selected=true;
-  select.appendChild(option);
-  select.title='Open Domains and save your domain selection for the current plan.';
+  fillDomains([],false);
  }
 }
 
