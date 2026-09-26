@@ -51,11 +51,30 @@ module.exports = async (req, res) => {
       const response = await supabaseFetch(`/rest/v1/support_messages?select=*&user_id=eq.${encodeURIComponent(actor.id)}&order=created_at.asc&limit=500`);
       const data = await response.json();
       if (!response.ok) return json(res, 500, { error: data?.message || 'Could not load support messages.' });
-      return json(res, 200, { messages: Array.isArray(data) ? data : [] });
+      const unreadResponse = await supabaseFetch(`/rest/v1/support_messages?select=id&user_id=eq.${encodeURIComponent(actor.id)}&sender_role=eq.admin&read_at=is.null&limit=1000`);
+      const unreadData = await unreadResponse.json();
+      return json(res, 200, {
+        messages: Array.isArray(data) ? data : [],
+        unread_count: unreadResponse.ok && Array.isArray(unreadData) ? unreadData.length : 0
+      });
     }
 
     let body = req.body || {};
     if (typeof body === 'string') body = JSON.parse(body || '{}');
+
+    if (!actor.isAdmin && body.mark_read === true) {
+      const markResponse = await supabaseFetch(`/rest/v1/support_messages?user_id=eq.${encodeURIComponent(actor.id)}&sender_role=eq.admin&read_at=is.null`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify({ read_at: new Date().toISOString() })
+      });
+      if (!markResponse.ok) {
+        const markData = await markResponse.json().catch(() => ({}));
+        return json(res, 500, { error: markData?.message || 'Could not mark support messages as read.' });
+      }
+      return json(res, 200, { marked_read: true });
+    }
+
     const message = String(body.message || '').trim();
     if (!message || message.length > 2000) return json(res, 400, { error: 'Message must be between 1 and 2000 characters.' });
     if (actor.isAdmin && body.broadcast === true) {
