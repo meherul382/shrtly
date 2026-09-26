@@ -150,13 +150,13 @@ module.exports = async (req, res) => {
         plan,
         maxDomains,
         unlimited: false,
-        locked: cleaned.length > 0,
+        locked: cleaned.length > 0 && saved?.selectionPlan === plan,
         selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
         availableDomains,
         supportedDomains: SUPPORTED_DOMAINS,
         comAllowed: availableDomains.includes('shrtigo.com'),
-        message: cleaned.length > 0
+        message: cleaned.length > 0 && saved?.selectionPlan === plan
           ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
           : 'Select your domains and save once. The selection will then be locked for this plan.'
       });
@@ -212,7 +212,7 @@ module.exports = async (req, res) => {
 
     return json(res, 200, {
       ok: true,
-      message: `${cleaned.length} domain${cleaned.length === 1 ? '' : 's'} selected successfully for your ${plan} plan. You can change the selection anytime.`,
+      message: `${cleaned.length} domain${cleaned.length === 1 ? '' : 's'} selected successfully for your ${plan} plan. The selection is now locked until your plan changes.`,
       plan,
       maxDomains,
       selectedDomains: cleaned,
