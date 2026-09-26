@@ -150,13 +150,15 @@ module.exports = async (req, res) => {
         plan,
         maxDomains,
         unlimited: false,
-        locked: false,
+        locked: cleaned.length > 0,
         selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
         availableDomains,
         supportedDomains: SUPPORTED_DOMAINS,
         comAllowed: availableDomains.includes('shrtigo.com'),
-        message: 'Select your domains and save. You can change the selection again while this plan remains active.'
+        message: cleaned.length > 0
+          ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
+          : 'Select your domains and save once. The selection will then be locked for this plan.'
       });
     }
 
@@ -170,6 +172,15 @@ module.exports = async (req, res) => {
         locked: true,
         selectedDomains: SUPPORTED_DOMAINS,
         availableDomains: SUPPORTED_DOMAINS
+      });
+    }
+
+    const saved = await getSavedSelection(userId);
+    if (saved && saved.selectionPlan === plan && Array.isArray(saved.selectedDomains) && saved.selectedDomains.length > 0) {
+      return json(res, 409, {
+        error: 'Your domain selection is locked for this active plan. Change your plan to select different domains.',
+        locked: true,
+        selectedDomains: saved.selectedDomains
       });
     }
 
