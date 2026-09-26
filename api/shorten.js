@@ -101,20 +101,22 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
 
     const settings = await supabaseFetch(
-      `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
+      `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains,selection_plan&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
       serviceKey
     );
     let selectedDomains = [];
+    let selectionPlan = '';
     if (settings.ok) {
       const saved = await settings.json();
-      selectedDomains = Array.isArray(saved?.[0]?.selected_domains)
+      selectionPlan = String(saved?.[0]?.selection_plan || '').toLowerCase();
+      selectedDomains = selectionPlan === plan && Array.isArray(saved?.[0]?.selected_domains)
         ? [...new Set(saved[0].selected_domains.map(d => String(d).toLowerCase()).filter(Boolean))]
         : [];
     }
 
-    // Preserve domains an existing account has already used when the new
-    // selection row has not been created yet.
-    if (!selectedDomains.length) {
+    // Preserve domains an existing account has already used only when this
+    // account has no saved selection yet. Never reuse an old-plan selection.
+    if (!selectedDomains.length && !selectionPlan) {
       const used = await supabaseFetch(
         `${supabaseUrl}/rest/v1/links?select=domain&user_id=eq.${encodeURIComponent(userId)}&deleted_at=is.null&domain=not.is.null`,
         serviceKey
