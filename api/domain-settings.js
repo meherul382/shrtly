@@ -150,7 +150,7 @@ module.exports = async (req, res) => {
         plan,
         maxDomains,
         unlimited: false,
-        locked: !!saved,
+        locked: !!saved && saved.selectionPlan === plan && cleaned.length > 0,
         selectionPlan: saved?.selectionPlan || null,
         selectedDomains: cleaned.slice(0, maxDomains),
         availableDomains,
@@ -176,7 +176,7 @@ module.exports = async (req, res) => {
     }
 
     const saved = await getSavedSelection(userId);
-    if (saved && saved.selectionPlan === plan) {
+    if (saved && saved.selectionPlan === plan && Array.isArray(saved.selectedDomains) && saved.selectedDomains.length > 0) {
       return json(res, 409, {
         error: 'Your domain selection is locked for this active plan. Change your plan to select different domains.',
         locked: true,
