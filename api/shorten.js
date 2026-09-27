@@ -97,8 +97,8 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     );
     const rows = sub.ok ? await sub.json() : [];
     const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
-    const maxDomains = Math.max(1, Math.min(9, Number(limits[plan] || 1)));
     const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
+    const maxDomains = unlimited ? 10 : Math.max(1, Math.min(9, Number(limits[plan] || 1)));
 
     const settings = await supabaseFetch(
       `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains,selection_plan&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
