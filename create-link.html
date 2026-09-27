@@ -41,8 +41,8 @@ async function loadDomainOptions(s){
   const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
   const unlimited=!!d.unlimited;
   const domains=unlimited
-    ? selected
-    : (d.locked ? selected : []);
+    ? (Array.isArray(d.availableDomains) && d.availableDomains.length ? d.availableDomains : selected)
+    : selected;
   select.innerHTML='';
   if(!domains.length){
     const option=document.createElement('option');
