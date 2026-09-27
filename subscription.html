@@ -192,10 +192,9 @@ async function loadActiveSubscription(){
    const aPaid=String(a?.plan||'').toLowerCase()!=='welcome';
    const bPaid=String(b?.plan||'').toLowerCase()!=='welcome';
    if(aPaid!==bPaid)return aPaid?-1:1;
-   return new Date(b?.ends_at||0)-new Date(a?.ends_at||0);
+   return new Date(b?.started_at||b?.ends_at||0)-new Date(a?.started_at||a?.ends_at||0);
   });
   const activeSub=activeRows[0];
-  activeRows.sort((a,b)=>new Date(b?.started_at||b?.ends_at||0)-new Date(a?.started_at||a?.ends_at||0));
   if(!activeSub){message.textContent='No active subscription found. Claim your 500-click Welcome Gift below or submit a payment request.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
   const sub=activeSub;
   hasActiveSubscription=true;
