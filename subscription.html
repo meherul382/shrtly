@@ -185,10 +185,18 @@ async function loadActiveSubscription(){
   const {data:welcomeRows}=await client.from('subscriptions').select('id').eq('user_id',session.user.id).eq('plan','welcome').limit(1);
   const welcomeBtn=document.getElementById('welcomeClaimBtn');
   if(welcomeRows&&welcomeRows.length&&welcomeBtn){welcomeBtn.disabled=true;welcomeBtn.textContent='✓ Welcome Gift Already Claimed';welcomeBtn.style.opacity='.7';}
-  const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false}).limit(1);
+  const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false});
   if(error)throw error;
-  if(!data||!data.length){message.textContent='No active subscription found. Claim your 500-click Welcome Gift below or submit a payment request.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
-  const sub=data[0];
+  const activeRows=Array.isArray(data)?data:[];
+  activeRows.sort((a,b)=>{
+   const aPaid=String(a?.plan||'').toLowerCase()!=='welcome';
+   const bPaid=String(b?.plan||'').toLowerCase()!=='welcome';
+   if(aPaid!==bPaid)return aPaid?-1:1;
+   return new Date(b?.ends_at||0)-new Date(a?.ends_at||0);
+  });
+  const activeSub=activeRows[0];
+  if(!activeSub){message.textContent='No active subscription found. Claim your 500-click Welcome Gift below or submit a payment request.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
+  const sub=activeSub;
   hasActiveSubscription=true;
   const planNames={'three_day':'3 Days','3-days':'3 Days','weekly':'Weekly Unlimited','monthly':'Monthly Unlimited','starter':'Starter Pack','growth':'Growth Pack','pro':'Pro Pack','business':'Business Pack','enterprise':'Enterprise Pack','half_month':'Half-Month Unlimited','quarterly':'Quarterly Unlimited','welcome':'Welcome Gift'};
   document.getElementById('activePlan').textContent=planNames[sub.plan]||sub.plan;
