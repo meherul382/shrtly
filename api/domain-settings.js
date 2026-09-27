@@ -23,14 +23,12 @@ const PLAN_DOMAIN_LIMITS = {
   business: 5,
   enterprise: 6,
   weekly: 7,
-  half_month: SUPPORTED_DOMAINS.length,
-  // Plans not specified in the requested domain ladder keep the safe default.
-  monthly: SUPPORTED_DOMAINS.length,
-  quarterly: SUPPORTED_DOMAINS.length,
+  half_month: 9,
+  monthly: 9,
+  quarterly: 9,
   three_day: 1
 };
 
-// All supported Shrtigo domains are available on every plan.
 function domainsForPlan(plan) {
   return SUPPORTED_DOMAINS;
 }
@@ -123,7 +121,7 @@ module.exports = async (req, res) => {
     const maxDomains = domainLimit(plan);
     const availableDomains = domainsForPlan(plan);
 
-    const unlimited = ['weekly', 'half_month', 'monthly', 'quarterly'].includes(plan);
+    const unlimited = false;
 
     if (req.method === 'GET') {
       try {
@@ -134,21 +132,6 @@ module.exports = async (req, res) => {
         });
         if (rpc.ok) return json(res, 200, await rpc.json());
       } catch (rpcError) { console.error('Domain settings RPC error:', rpcError); }
-      if (unlimited) {
-        return json(res, 200, {
-          ok: true,
-          plan,
-          maxDomains: SUPPORTED_DOMAINS.length,
-          unlimited: true,
-          locked: true,
-          selectedDomains: availableDomains,
-          availableDomains,
-        supportedDomains: SUPPORTED_DOMAINS,
-        comAllowed: availableDomains.includes('shrtigo.com'),
-          message: 'Unlimited plan includes all Shrtigo domains. No domain selection is required.'
-        });
-      }
-
       const saved = await getSavedSelection(userId);
       const cleaned = [...new Set((saved?.selectedDomains || [])
         .filter(d => SUPPORTED_DOMAINS.includes(String(d).toLowerCase()))
@@ -177,9 +160,9 @@ module.exports = async (req, res) => {
         message: 'All Shrtigo domains are included with your unlimited plan. No domain selection is required.',
         plan,
         maxDomains: SUPPORTED_DOMAINS.length,
-        unlimited: true,
-        locked: true,
-        selectedDomains: SUPPORTED_DOMAINS,
+        unlimited: false,
+        locked: false,
+        selectedDomains: [],
         availableDomains: SUPPORTED_DOMAINS
       });
     }
