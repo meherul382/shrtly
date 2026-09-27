@@ -40,9 +40,7 @@ async function loadDomainOptions(s){
   select.innerHTML='';
   const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
   const unlimited=!!d.unlimited;
-  const domains=unlimited
-    ? (Array.isArray(d.availableDomains) && d.availableDomains.length ? d.availableDomains : selected)
-    : selected;
+  const domains=selected;
   select.innerHTML='';
   if(!domains.length){
     const option=document.createElement('option');
@@ -61,9 +59,7 @@ async function loadDomainOptions(s){
     });
     if(domains.includes(current))select.value=current;
     else select.value=domains[0];
-    select.title=unlimited
-      ? 'All Shrtigo domains are included in your unlimited plan.'
-      : 'Only the domain(s) selected for your current plan are available here.';
+    select.title='Only the domain(s) selected for your current plan are available here.';
   }
  }catch(e){
   console.error('Domain settings:',e);
