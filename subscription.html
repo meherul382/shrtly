@@ -185,7 +185,7 @@ async function loadActiveSubscription(){
   const {data:welcomeRows}=await client.from('subscriptions').select('id').eq('user_id',session.user.id).eq('plan','welcome').limit(1);
   const welcomeBtn=document.getElementById('welcomeClaimBtn');
   if(welcomeRows&&welcomeRows.length&&welcomeBtn){welcomeBtn.disabled=true;welcomeBtn.textContent='✓ Welcome Gift Already Claimed';welcomeBtn.style.opacity='.7';}
-  const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString()).order('ends_at',{ascending:false});
+  const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString());
   if(error)throw error;
   const activeRows=Array.isArray(data)?data:[];
   activeRows.sort((a,b)=>{
@@ -195,6 +195,7 @@ async function loadActiveSubscription(){
    return new Date(b?.ends_at||0)-new Date(a?.ends_at||0);
   });
   const activeSub=activeRows[0];
+  activeRows.sort((a,b)=>new Date(b?.started_at||b?.ends_at||0)-new Date(a?.started_at||a?.ends_at||0));
   if(!activeSub){message.textContent='No active subscription found. Claim your 500-click Welcome Gift below or submit a payment request.';panel.classList.add('show');document.getElementById('activePlan').textContent='None';document.getElementById('activeStatus').textContent='Not active';document.getElementById('activeEnds').textContent='—';return}
   const sub=activeSub;
   hasActiveSubscription=true;
