@@ -127,7 +127,14 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
+    if (!selectedDomains.length) {
+      return {
+        allowed: false,
+        maxDomains,
+        selectedDomains: [],
+        error: `No domain is selected for your current ${plan} plan. Open Domains and select your allowed domain${maxDomains === 1 ? '' : 's'} first.`
+      };
+    }
     selectedDomains = selectedDomains.slice(0, maxDomains);
 
     if (!selectedDomains.includes(selectedDomain)) {
