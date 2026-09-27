@@ -68,10 +68,16 @@ async function dbFetch(path, options = {}) {
 }
 
 async function getActivePlan(userId) {
-  const r = await dbFetch(`subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=plan.asc&ends_at.desc&limit=1`);
-  if (!r.ok) return 'welcome';
-  const rows = await r.json();
-  return String(rows?.[0]?.plan || 'welcome').toLowerCase();
+  const base = `subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}`;
+  const paid = await dbFetch(`${base}&plan=not.eq.welcome&order=ends_at.desc&limit=1`);
+  if (paid.ok) {
+    const paidRows = await paid.json();
+    if (paidRows?.[0]?.plan) return String(paidRows[0].plan).toLowerCase();
+  }
+  const gift = await dbFetch(`${base}&plan=eq.welcome&order=ends_at.desc&limit=1`);
+  if (!gift.ok) return 'welcome';
+  const giftRows = await gift.json();
+  return String(giftRows?.[0]?.plan || 'welcome').toLowerCase();
 }
 
 function domainLimit(plan) {
