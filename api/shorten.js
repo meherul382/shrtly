@@ -22,39 +22,58 @@ export default async function handler(req, res) {
 
     // Enforce the domain allowance of the user's active subscription.
     // Users can only create new links on domains they selected in the Domains panel.
-    if (userId) {
-      const domainAccess = await getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain);
-      if (!domainAccess.allowed) {
-        return res.status(403).json({
-          error: domainAccess.error,
-          domainLimit: domainAccess.maxDomains,
-          selectedDomains: domainAccess.selectedDomains
-        });
-      }
+    const [domainAccess, entitlement] = await Promise.all([
+      userId ? getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) : Promise.resolve({ allowed: true }),
+      getEntitlement(supabaseUrl, serviceKey, userId)
+    ]);
+    if (!domainAccess.allowed) {
+      return res.status(403).json({
+        error: domainAccess.error,
+        domainLimit: domainAccess.maxDomains,
+        selectedDomains: domainAccess.selectedDomains
+      });
     }
 
-    const entitlement = await getEntitlement(supabaseUrl, serviceKey, userId);
-    const used = await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
+    // Unlimited plans do not need a full link-count query on every creation.
+    const used = entitlement.limit >= 1000000000
+      ? 0
+      : await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
     if (used >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
 
     const clean = cleanAlias(alias);
     let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
-    if (alias) {
-      const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
-      if (!exists.ok) return res.status(500).json({ error: 'Supabase database check failed.' });
-      if ((await exists.json()).length) return res.status(409).json({ error: 'That custom alias is already in use.' });
-    }
-
     let imageUrl = null;
-    if (image) {
-      const parsed = parseDataUrl(image);
-      if (!parsed) return res.status(400).json({ error: 'Invalid image upload.' });
-      if (parsed.buffer.length > 3 * 1024 * 1024) return res.status(400).json({ error: 'Image must be 3 MB or smaller.' });
-      const path = `interstitial/${code}-${Date.now()}.${extension(parsed.mime)}`;
-      const upload = await fetch(`${supabaseUrl}/storage/v1/object/short-images/${path}`, { method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' }, body: parsed.buffer });
-      if (!upload.ok) return res.status(500).json({ error: `Image upload failed (${upload.status}).` });
-      imageUrl = `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
+    const aliasCheck = alias
+      ? (async () => {
+          const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
+          if (!exists.ok) throw new Error('Supabase database check failed.');
+          if ((await exists.json()).length) {
+            const err = new Error('That custom alias is already in use.');
+            err.code = 'ALIAS_TAKEN';
+            throw err;
+          }
+        })()
+      : Promise.resolve();
+
+    const imageUpload = image
+      ? (async () => {
+          const parsed = parseDataUrl(image);
+          if (!parsed) throw new Error('Invalid image upload.');
+          if (parsed.buffer.length > 3 * 1024 * 1024) throw new Error('Image must be 3 MB or smaller.');
+          const path = `interstitial/${code}-${Date.now()}.${extension(parsed.mime)}`;
+          const upload = await fetch(`${supabaseUrl}/storage/v1/object/short-images/${path}`, { method: 'POST', headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, 'Content-Type': parsed.mime, 'x-upsert': 'true' }, body: parsed.buffer });
+          if (!upload.ok) throw new Error(`Image upload failed (${upload.status}).`);
+          return `${supabaseUrl}/storage/v1/object/public/short-images/${path}`;
+        })()
+      : Promise.resolve(null);
+
+    try {
+      const [, uploadedImageUrl] = await Promise.all([aliasCheck, imageUpload]);
+      imageUrl = uploadedImageUrl;
+    } catch (e) {
+      if (e?.code === 'ALIAS_TAKEN') return res.status(409).json({ error: e.message });
+      return res.status(400).json({ error: e.message || 'Could not prepare the short link.' });
     }
 
     const payload = { code, url, domain: selectedDomain, image_url: imageUrl, youtube_url: youtubeUrl || null, clicks: 0, link_mode: mode, owner_token: ownerToken, user_id: userId || null };
