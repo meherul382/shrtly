@@ -84,7 +84,7 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     pro: 4,
     business: 5,
     enterprise: 6,
-    weekly: 9,
+    weekly: 7,
     half_month: 9,
     monthly: 9,
     quarterly: 9,
