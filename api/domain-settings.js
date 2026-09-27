@@ -68,7 +68,7 @@ async function dbFetch(path, options = {}) {
 }
 
 async function getActivePlan(userId) {
-  const r = await dbFetch(`subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=1`);
+  const r = await dbFetch(`subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=plan.asc&ends_at.desc&limit=1`);
   if (!r.ok) return 'welcome';
   const rows = await r.json();
   return String(rows?.[0]?.plan || 'welcome').toLowerCase();
