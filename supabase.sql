@@ -122,3 +122,88 @@ grant execute on function public.shrtigo_resolve_and_consume(text) to service_ro
 
 -- Domain selection is locked to the active plan until the user changes plans.
 alter table if exists public.user_domain_settings add column if not exists selection_plan text;
+
+
+-- Support chat access uses the logged-in user's JWT instead of a Vercel service-role secret.
+-- This keeps the service-role key out of Vercel for the Support Inbox.
+
+create table if not exists public.support_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  sender_role text not null check (sender_role in ('user', 'admin')),
+  message text not null check (char_length(trim(message)) between 1 and 2000),
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+
+alter table public.support_messages enable row level security;
+
+drop policy if exists "support_messages_select_own_or_admin" on public.support_messages;
+drop policy if exists "support_messages_insert_own_or_admin" on public.support_messages;
+drop policy if exists "support_messages_update_own_admin_messages" on public.support_messages;
+
+create policy "support_messages_select_own_or_admin"
+on public.support_messages
+for select
+to authenticated
+using (
+  user_id = auth.uid()
+  or lower(coalesce(auth.jwt()->>'email','')) = 'meherulhassan62@gmail.com'
+);
+
+create policy "support_messages_insert_own_or_admin"
+on public.support_messages
+for insert
+to authenticated
+with check (
+  (user_id = auth.uid() and sender_role = 'user')
+  or (
+    lower(coalesce(auth.jwt()->>'email','')) = 'meherulhassan62@gmail.com'
+    and sender_role = 'admin'
+  )
+);
+
+create policy "support_messages_update_own_admin_messages"
+on public.support_messages
+for update
+to authenticated
+using (
+  user_id = auth.uid() and sender_role = 'admin'
+)
+with check (
+  user_id = auth.uid() and sender_role = 'admin'
+);
+
+create or replace function public.shrtigo_admin_broadcast_support(p_admin_email text, p_message text)
+returns integer
+language plpgsql
+security definer
+set search_path to ''
+as $function$
+declare
+  inserted_count integer;
+  caller_email text;
+begin
+  caller_email := lower(trim(coalesce(auth.jwt()->>'email','')));
+
+  if caller_email <> 'meherulhassan62@gmail.com'
+     or lower(trim(coalesce(p_admin_email, ''))) <> 'meherulhassan62@gmail.com' then
+    raise exception 'Not authorized';
+  end if;
+
+  if char_length(trim(coalesce(p_message, ''))) < 1 or char_length(p_message) > 2000 then
+    raise exception 'Message must be between 1 and 2000 characters.';
+  end if;
+
+  insert into public.support_messages (user_id, sender_role, message)
+  select u.id, 'admin', trim(p_message)
+  from auth.users u
+  where lower(coalesce(u.email, '')) <> 'meherulhassan62@gmail.com';
+
+  get diagnostics inserted_count = row_count;
+  return inserted_count;
+end;
+$function$;
+
+revoke all on function public.shrtigo_admin_broadcast_support(text, text) from public;
+grant execute on function public.shrtigo_admin_broadcast_support(text, text) to authenticated;
