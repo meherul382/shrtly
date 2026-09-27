@@ -111,13 +111,13 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
   };
   try {
     const sub = await supabaseFetch(
-      `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=not.eq.welcome&order=ends_at.desc&limit=1`,
+      `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at,started_at&user_id=${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=not.eq.welcome&order=started_at.desc&limit=1`,
       serviceKey
     );
     let rows = sub.ok ? await sub.json() : [];
     if (!rows?.length) {
       const gift = await supabaseFetch(
-        `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=eq.welcome&order=ends_at.desc&limit=1`,
+        `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=eq.welcome&order=started_at.desc&limit=1`,
         serviceKey
       );
       rows = gift.ok ? await gift.json() : [];
