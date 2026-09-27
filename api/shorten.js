@@ -160,9 +160,17 @@ async function getEntitlement(supabaseUrl, serviceKey, userId) {
     if (!r.ok) return { limit: 1 };
     const rows = await r.json();
     const plan = String(rows?.[0]?.plan || '').toLowerCase();
-    if (plan === 'three_day') return { limit: 50 };
+    const clickLimits = {
+      welcome: 500,
+      starter: 10000,
+      growth: 50000,
+      pro: 100000,
+      business: 250000,
+      enterprise: 500000,
+      three_day: 50
+    };
     if (['weekly','half_month','monthly','quarterly'].includes(plan)) return { limit: 1000000000 };
-    return { limit: 1 };
+    return { limit: Number(clickLimits[plan] || 1) };
   } catch { return { limit: 1 }; }
 }
 
