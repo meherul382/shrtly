@@ -111,10 +111,17 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
   };
   try {
     const sub = await supabaseFetch(
-      `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=1`,
+      `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=not.eq.welcome&order=ends_at.desc&limit=1`,
       serviceKey
     );
-    const rows = sub.ok ? await sub.json() : [];
+    let rows = sub.ok ? await sub.json() : [];
+    if (!rows?.length) {
+      const gift = await supabaseFetch(
+        `${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=eq.welcome&order=ends_at.desc&limit=1`,
+        serviceKey
+      );
+      rows = gift.ok ? await gift.json() : [];
+    }
     const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
     const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
     const maxDomains = unlimited ? 10 : Math.max(1, Math.min(9, Number(limits[plan] || 1)));
@@ -181,9 +188,12 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
 async function getEntitlement(supabaseUrl, serviceKey, userId) {
   if (!userId) return { limit: 1 };
   try {
-    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=ends_at.desc&limit=1`, serviceKey);
-    if (!r.ok) return { limit: 1 };
-    const rows = await r.json();
+    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=not.eq.welcome&order=ends_at.desc&limit=1`, serviceKey);
+    let rows = r.ok ? await r.json() : [];
+    if (!rows?.length) {
+      const gift = await supabaseFetch(`${supabaseUrl}/rest/v1/subscriptions?select=plan,status,ends_at&user_id=eq.${encodeURIComponent(userId)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&plan=eq.welcome&order=ends_at.desc&limit=1`, serviceKey);
+      rows = gift.ok ? await gift.json() : [];
+    }
     const plan = String(rows?.[0]?.plan || '').toLowerCase();
     const clickLimits = {
       welcome: 500,
