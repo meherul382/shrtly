@@ -121,7 +121,7 @@ module.exports = async (req, res) => {
     const maxDomains = domainLimit(plan);
     const availableDomains = domainsForPlan(plan);
 
-    const unlimited = false;
+    const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
 
     if (req.method === 'GET') {
       try {
@@ -160,9 +160,9 @@ module.exports = async (req, res) => {
         message: 'All Shrtigo domains are included with your unlimited plan. No domain selection is required.',
         plan,
         maxDomains: SUPPORTED_DOMAINS.length,
-        unlimited: false,
-        locked: false,
-        selectedDomains: [],
+        unlimited: true,
+        locked: true,
+        selectedDomains: SUPPORTED_DOMAINS,
         availableDomains: SUPPORTED_DOMAINS
       });
     }
