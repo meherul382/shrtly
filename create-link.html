@@ -92,7 +92,7 @@ const history=JSON.parse(localStorage.getItem(historyKey)||'[]');
 history.unshift({short:d.shortUrl,long:url,domain:domain,image:imageFile?imageFile.name:''});
 localStorage.setItem(historyKey,JSON.stringify(history.slice(0,100)));
 document.getElementById('short').href=d.shortUrl;document.getElementById('short').textContent=d.shortUrl;document.getElementById('result').classList.add('show')}
-document.getElementById('create').onclick=create;document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('short').textContent);async function boot(){const s=await session();if(s)await loadDomainOptions(s)}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}document.getElementById('logout').onclick=e=>{e.preventDefault();logout()};document.getElementById('logoutTop').onclick=logout;boot();
+document.getElementById('create').onclick=create;document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('short').textContent);async function boot(){const s=await session();if(s)await loadDomainOptions(s)}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}const logoutLink=document.getElementById('logout');if(logoutLink)logoutLink.onclick=e=>{e.preventDefault();logout()};boot();
 
 document.getElementById('image')?.addEventListener('change',e=>{const f=e.target.files?.[0],p=document.getElementById('imagePreview');if(!f){p.innerHTML='';return}const u=URL.createObjectURL(f);p.innerHTML='<span>Selected: '+f.name+'</span><img src="'+u+'" alt="Preview">'});</script><script src="/panel-status.js" defer></script>
 <style>
