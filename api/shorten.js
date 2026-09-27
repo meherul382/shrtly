@@ -98,7 +98,7 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
     const rows = sub.ok ? await sub.json() : [];
     const plan = String(rows?.[0]?.plan || 'welcome').toLowerCase();
     const maxDomains = Math.max(1, Math.min(9, Number(limits[plan] || 1)));
-    const unlimited = ['weekly','half_month','monthly','quarterly'].includes(plan);
+    const unlimited = false;
 
     const settings = await supabaseFetch(
       `${supabaseUrl}/rest/v1/user_domain_settings?select=selected_domains,selection_plan&user_id=eq.${encodeURIComponent(userId)}&limit=1`,
@@ -127,11 +127,8 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
-    else {
-      if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
-      selectedDomains = selectedDomains.slice(0, maxDomains);
-    }
+    if (!selectedDomains.length) selectedDomains = ['shrtigo.xyz'];
+    selectedDomains = selectedDomains.slice(0, maxDomains);
 
     if (!selectedDomains.includes(selectedDomain)) {
       return {
