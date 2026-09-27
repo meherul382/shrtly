@@ -202,10 +202,15 @@ async function getEntitlement(supabaseUrl, serviceKey, userId) {
 async function countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken) {
   const filter = userId ? `user_id=eq.${encodeURIComponent(userId)}` : `owner_token=eq.${encodeURIComponent(ownerToken)}`;
   try {
-    const r = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&${filter}&deleted_at=is.null`, serviceKey);
+    // Ask PostgREST for the exact count without downloading every link row.
+    const r = await fetch(`${supabaseUrl}/rest/v1/links?select=id&${filter}&deleted_at=is.null`, {
+      method: 'HEAD',
+      headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey, Prefer: 'count=exact' }
+    });
     if (!r.ok) return 0;
-    const rows = await r.json();
-    return Array.isArray(rows) ? rows.length : 0;
+    const range = r.headers.get('content-range') || '';
+    const match = range.match(/\/(\d+)$/);
+    return match ? Number(match[1]) : 0;
   } catch { return 0; }
 }
 
