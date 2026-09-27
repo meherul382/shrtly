@@ -33,36 +33,57 @@ body{background:radial-gradient(circle at 15% 0%,rgba(43,105,255,.16),transparen
 const SUPABASE_URL='https://qbijrkdlaguwlvriaiky.supabase.co',SUPABASE_KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);async function session(){const {data:{session}}=await sb.auth.getSession();if(!session){location.href='/central-login.html?next=%2Fcreate-link.html';return null}return session}
 async function loadDomainOptions(s){
  try{
-  const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
-  const d=await r.json();if(!r.ok)throw Error(d.error||'Could not load domain settings.');
+  let d=null;
+  // Read the user's saved domain selection directly from Supabase using
+  // the authenticated session. This avoids depending on the server-side
+  // domain-settings endpoint just to populate the dropdown.
+  const rpc=await fetch(SUPABASE_URL+'/rest/v1/rpc/shrtigo_user_domain_settings',{
+    method:'POST',
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:'Bearer '+s.access_token,
+      'Content-Type':'application/json'
+    },
+    body:'{}',
+    cache:'no-store'
+  });
+  if(rpc.ok){
+    d=await rpc.json();
+  }else{
+    const r=await fetch('/api/domain-settings',{headers:{Authorization:'Bearer '+s.access_token},cache:'no-store'});
+    d=await r.json();
+    if(!r.ok)throw Error(d.error||'Could not load domain settings.');
+  }
+
   const select=document.getElementById('domain');
-  const current=select.value;
   select.innerHTML='';
   const selected=Array.isArray(d.selectedDomains)?d.selectedDomains:[];
-  const unlimited=!!d.unlimited;
-  const domains=selected;
-  select.innerHTML='';
-  if(!domains.length){
+  if(!selected.length){
     const option=document.createElement('option');
     option.value='';
-    option.textContent='Select a domain from Domains first';
+    option.textContent='No selected domain';
     option.disabled=true;
     option.selected=true;
     select.appendChild(option);
-    select.title='No domain is selected for this plan. Open Domains and select your allowed domain(s).';
-  }else{
-    domains.forEach(domain=>{
-      const option=document.createElement('option');
-      option.value=domain;
-      option.textContent=domain;
-      select.appendChild(option);
-    });
-    if(domains.includes(current))select.value=current;
-    else select.value=domains[0];
-    select.title='Only the domain(s) selected for your current plan are available here.';
+    select.title='Select a domain from Domains first.';
+    document.getElementById('status').textContent='Please select a domain from Domains first.';
+    return;
   }
+
+  selected.forEach(domain=>{
+    const option=document.createElement('option');
+    option.value=domain;
+    option.textContent=domain;
+    select.appendChild(option);
+  });
+  select.value=selected[0];
+  select.title='Only your selected plan domains are available here.';
+  document.getElementById('status').textContent='';
  }catch(e){
   console.error('Domain settings:',e);
+  const select=document.getElementById('domain');
+  select.innerHTML='<option value="" disabled selected>Could not load selected domains</option>';
+  document.getElementById('status').textContent=e.message||'Could not load selected domains.';
  }
 }
 async function create(){const s=await session();if(!s)return;const url=document.getElementById('url').value.trim(),alias=document.getElementById('alias').value.trim(),domain=document.getElementById('domain').value,imageFile=document.getElementById('image')?.files?.[0];const st=document.getElementById('status');st.textContent='Creating…';let image=null;if(imageFile){image=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read image.'));reader.readAsDataURL(imageFile)});}const r=await fetch('/api/shorten',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},body:JSON.stringify({url,alias,domain,image})});const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));if(!r.ok){st.textContent=d.error||'Could not create link.';return}st.textContent='Link created successfully.';
