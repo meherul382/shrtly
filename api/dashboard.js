@@ -12,6 +12,16 @@ export default async function handler(req,res){
     const lr=await fetch(`${base}/rest/v1/links?select=code,url,domain,clicks,link_mode,created_at,user_id&user_id=eq.${encodeURIComponent(user.id)}&deleted_at=is.null&order=created_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
     if(!lr.ok)return res.status(500).json({error:'Could not load your links.'});
     const links=await lr.json();
+    const sr=await fetch(`${base}/rest/v1/subscriptions?select=plan,status,click_limit,clicks_used,ends_at,started_at&user_id=eq.${encodeURIComponent(user.id)}&status=eq.active&ends_at=gt.${encodeURIComponent(new Date().toISOString())}&order=started_at.desc`,{headers:{Authorization:`Bearer ${key}`,apikey:key}});
+    const subs=sr.ok?await sr.json():[];
+    subs.sort((a,b)=>{const aw=String(a?.plan||'').toLowerCase()==='welcome',bw=String(b?.plan||'').toLowerCase()==='welcome';if(aw!==bw)return aw?1:-1;return new Date(b?.started_at||0)-new Date(a?.started_at||0)});
+    const sub=subs[0]||null;
+    const subPlan=String(sub?.plan||'').toLowerCase();
+    const unlimited=['weekly','half_month','monthly','quarterly'].includes(subPlan);
+    const clickLimit=unlimited?null:Number(sub?.click_limit||({welcome:500,starter:10000,growth:50000,pro:100000,business:250000,enterprise:500000,three_day:50}[subPlan]||0));
+    const clicksUsed=Number(sub?.clicks_used||0);
+    const remainingClicks=unlimited?null:Math.max(0,clickLimit-clicksUsed);
+    const daysLeft=sub?.ends_at?Math.max(0,Math.ceil((new Date(sub.ends_at).getTime()-Date.now())/86400000)):0;
     const analytics=links.filter(x=>x.link_mode==='analytics').map(x=>x.code);
     let events=[];
     if(analytics.length){
@@ -47,7 +57,7 @@ export default async function handler(req,res){
     const todayTop=addDomain(byCode(events.filter(e=>{const t=new Date(e.visited_at);return t>=todayStart&&t<=end;})));
     const yesterdayTop=addDomain(byCode(events.filter(e=>{const t=new Date(e.visited_at);return t>=yesterdayStart&&t<=yesterdayEnd;})));
     const allTimeTop=links.filter(x=>x.link_mode==='analytics').sort((a,b)=>Number(b.clicks||0)-Number(a.clicks||0)).slice(0,10).map((x,i)=>({rank:i+1,code:x.code,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0)}));
-    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},topToday:todayTop,topYesterday:yesterdayTop,topAllTime:allTimeTop,links:links.map(x=>({code:x.code,url:x.url,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
+    return res.status(200).json({user:{id:user.id,email:user.email||''},period,from:isDate(from)?from:null,to:isDate(to)?to:null,summary:{active,clicks,uniqueVisitors:visitors},account:{plan:subPlan||'free',clickLimit,clicksUsed,remainingClicks,unlimited,endsAt:sub?.ends_at||null,daysLeft},topToday:todayTop,topYesterday:yesterdayTop,topAllTime:allTimeTop,links:links.map(x=>({code:x.code,url:x.url,domain:x.domain||'shrtigo.xyz',clicks:Number(x.clicks||0),linkMode:x.link_mode,createdAt:x.created_at,analytics:x.link_mode==='analytics'}))});
   }catch(e){console.error(e);return res.status(500).json({error:'Could not load dashboard.'})}
 }
 function isDate(v){return /^\d{4}-\d{2}-\d{2}$/.test(String(v||''))}
