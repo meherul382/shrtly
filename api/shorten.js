@@ -119,7 +119,7 @@ export default async function handler(req, res) {
 
     const limit = Number(preflight?.limit || 1);
     const used = Number(preflight?.used || 0);
-    if (limit < 1000000000 && used >= limit) {
+    if (!userId && limit < 1000000000 && used >= limit) {
       return res.status(402).json({
         error: 'Your link limit has been used. Please choose a subscription to create more links.',
         subscriptionRequired: true,
