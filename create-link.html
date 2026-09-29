@@ -180,7 +180,50 @@ async function create(){
   btn.textContent=originalText;
  }
 }
-document.getElementById('create').onclick=create;document.getElementById('copy').onclick=()=>navigator.clipboard.writeText(document.getElementById('short').textContent);async function boot(){const s=await session();if(s)await loadDomainOptions(s)}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}const logoutLink=document.getElementById('logout');if(logoutLink)logoutLink.onclick=e=>{e.preventDefault();logout()};boot();
+document.getElementById('create').onclick=create;
+const copyBtn=document.getElementById('copy');
+copyBtn.onclick=async()=>{
+ const text=document.getElementById('short').textContent.trim();
+ if(!text)return;
+ const original=copyBtn.textContent;
+ try{
+  if(navigator.clipboard&&window.isSecureContext){
+   await navigator.clipboard.writeText(text);
+  }else{
+   const ta=document.createElement('textarea');
+   ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';
+   document.body.appendChild(ta);ta.select();
+   const ok=document.execCommand('copy');ta.remove();
+   if(!ok)throw new Error('Copy failed');
+  }
+  copyBtn.textContent='✓ Copied!';
+  copyBtn.style.background='#16a34a';
+  copyBtn.style.color='#fff';
+  copyBtn.style.borderColor='#16a34a';
+  copyBtn.setAttribute('aria-label','Short link copied successfully');
+  setTimeout(()=>{
+   copyBtn.textContent=original;
+   copyBtn.style.background='';
+   copyBtn.style.color='';
+   copyBtn.style.borderColor='';
+   copyBtn.removeAttribute('aria-label');
+  },1800);
+ }catch(e){
+  copyBtn.textContent='✕ Copy failed';
+  copyBtn.style.background='#dc2626';
+  copyBtn.style.color='#fff';
+  copyBtn.style.borderColor='#dc2626';
+  copyBtn.setAttribute('aria-label','Could not copy short link');
+  setTimeout(()=>{
+   copyBtn.textContent=original;
+   copyBtn.style.background='';
+   copyBtn.style.color='';
+   copyBtn.style.borderColor='';
+   copyBtn.removeAttribute('aria-label');
+  },1800);
+ }
+};
+async function boot(){const s=await session();if(s)await loadDomainOptions(s)}async function logout(){await sb.auth.signOut();await fetch('/api/auth/session',{method:'DELETE'}).catch(()=>{});location.href='/'}const logoutLink=document.getElementById('logout');if(logoutLink)logoutLink.onclick=e=>{e.preventDefault();logout()};boot();
 
 document.getElementById('image')?.addEventListener('change',e=>{const f=e.target.files?.[0],p=document.getElementById('imagePreview');if(!f){p.innerHTML='';return}const u=URL.createObjectURL(f);p.innerHTML='<span>Selected: '+f.name+'</span><img src="'+u+'" alt="Preview">'});</script><script src="/panel-status.js" defer></script>
 <style>
