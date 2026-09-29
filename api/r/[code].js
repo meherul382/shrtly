@@ -1,6 +1,8 @@
 export default async function handler(req,res){
   const code=String(req.query?.code||'').trim();
+  const requestHost=String(req.headers['x-forwarded-host']||req.headers.host||'').split(',')[0].trim().split(':')[0].toLowerCase().replace(/^www\./,'');
   if(!code)return res.status(400).send('Missing short code');
+  if(!/^[a-z0-9_-]{3,24}$/i.test(code))return res.status(404).send('Short link not found');
 
   try{
     const supabaseUrl=String(process.env.SUPABASE_URL||'https://qbijrkdlaguwlvriaiky.supabase.co').trim().replace(/\/$/,'');
@@ -21,7 +23,7 @@ export default async function handler(req,res){
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_code:code})
+      body:JSON.stringify({p_code:code,p_domain:requestHost})
     });
     if(!response.ok)return res.status(500).send('Database error');
 
@@ -59,7 +61,8 @@ export default async function handler(req,res){
     res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
 
     const safeImage=link.image_url?escapeHtml(link.image_url):'';
-    const safeShortUrl=escapeHtml(`https://shrtigo.xyz/${encodeURIComponent(code)}`);
+    const resolvedDomain=String(result.domain||requestHost||'shrtigo.xyz').replace(/^https?:\/\//,'').replace(/\/+$/,'');
+    const safeShortUrl=escapeHtml(`https://${resolvedDomain}/${encodeURIComponent(code)}`);
     const image=link.image_url?`<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`:'';
     const video=videoId?`<div class="video"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&autoplay=1&mute=1" title="Shrtigo video preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`:'';
     const ogImage=link.image_url?`<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview"><meta property="og:image:type" content="image/jpeg">`:'';
