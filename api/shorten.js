@@ -80,6 +80,28 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Could not verify your Shrtigo plan. Please try again.' });
     }
     const preflight = await preflightResponse.json();
+    if (userId && !preflight?.unlimited) {
+      const sr = await supabaseFetch(
+        supabaseUrl + '/rest/v1/subscriptions?select=plan,click_limit,clicks_used&user_id=eq.' + encodeURIComponent(userId) + '&status=eq.active&ends_at=gt.' + encodeURIComponent(new Date().toISOString()) + '&order=started_at.desc&limit=1',
+        serviceKey
+      );
+      if (sr.ok) {
+        const rows = await sr.json();
+        const sub = rows?.[0];
+        const plan = String(sub?.plan || preflight?.plan || 'welcome').toLowerCase();
+        const clickLimit = Number(sub?.click_limit || ({welcome:500,starter:10000,growth:50000,pro:100000,business:250000,enterprise:500000,three_day:50}[plan] || preflight?.limit || 1));
+        const clicksUsed = Number(sub?.clicks_used || 0);
+        if (clicksUsed >= clickLimit) {
+          return res.status(402).json({
+            error: 'Your free clicks are finished. Please choose a subscription to create more links.',
+            subscriptionRequired: true,
+            subscriptionUrl: '/subscription',
+            used: clicksUsed,
+            limit: clickLimit
+          });
+        }
+      }
+    }
     const selectedDomains = Array.isArray(preflight?.selected_domains)
       ? preflight.selected_domains.map(d => String(d).toLowerCase())
       : [];
