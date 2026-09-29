@@ -6,6 +6,9 @@ export default async function handler(req,res){
 
   try{
     const supabaseUrl=String(process.env.SUPABASE_URL||'https://qbijrkdlaguwlvriaiky.supabase.co').trim().replace(/\/$/,'');
+    const cookieHeader=String(req.headers.cookie||'');
+    const visitorCookie=readCookie(cookieHeader,'shrtigo_visitor');
+    const visitorId=/^[a-zA-Z0-9_-]{16,80}$/.test(visitorCookie||'')?visitorCookie:cryptoRandomHex(16);
     const serviceKey=String(
       process.env.SUPABASE_SERVICE_ROLE_KEY||
       process.env.SUPABASE_ANON_KEY||
@@ -23,12 +26,13 @@ export default async function handler(req,res){
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_code:code,p_domain:requestHost})
+      body:JSON.stringify({p_code:code,p_domain:requestHost,p_visitor_id:visitorId})
     });
     if(!response.ok)return res.status(500).send('Database error');
 
     const result=await response.json();
     if(!result?.found)return res.status(404).send('Short link not found');
+    if(result.link_mode==='analytics')res.setHeader('Set-Cookie',`shrtigo_visitor=${visitorId}; Path=/; Max-Age=31536000; SameSite=Lax`);
 
     if(result.consumed===false){
       res.setHeader('Content-Type','text/html; charset=utf-8');
@@ -91,4 +95,6 @@ function getYouTubeId(value){
   return null;
 }
 
+function readCookie(header,name){for(const part of String(header||'').split(';')){const i=part.indexOf('=');if(i>=0&&part.slice(0,i).trim()===name)return decodeURIComponent(part.slice(i+1).trim())}return null}
+function cryptoRandomHex(bytes){let s='';const chars='0123456789abcdef';for(let i=0;i<bytes*2;i++)s+=chars[Math.floor(Math.random()*16)];return s}
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
