@@ -20,6 +20,51 @@ export default async function handler(req, res) {
 
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
 
+    // Fastest path for normal link creation: one authenticated user lookup
+    // + one atomic database RPC. This removes the separate preflight and insert
+    // round trips, so normal links can complete in roughly 1–2 seconds.
+    if (!image) {
+      const createResponse = await supabaseFetch(
+        `${supabaseUrl}/rest/v1/rpc/shrtigo_create_link`,
+        serviceKey,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            p_user_id: userId || null,
+            p_owner_token: ownerToken,
+            p_url: url,
+            p_alias: alias || null,
+            p_domain: selectedDomain,
+            p_image_url: null,
+            p_youtube_url: youtubeUrl || null,
+            p_link_mode: mode
+          })
+        }
+      );
+      if (!createResponse.ok) {
+        console.error('Create RPC failed:', createResponse.status);
+        return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
+      }
+      const created = await createResponse.json();
+      if (!created?.ok) {
+        const status = created?.limit_reached ? 402 : created?.alias_taken ? 409 : 403;
+        return res.status(status).json({
+          error: created.error || 'Could not create the short link.',
+          ...(created.limit_reached ? {
+            subscriptionRequired: true,
+            subscriptionUrl: '/subscription',
+            used: created.used,
+            limit: created.limit
+          } : {})
+        });
+      }
+      return respond(
+        res, req, created.code, null, youtubeUrl, mode,
+        created.domain || selectedDomain, ownerToken
+      );
+    }
+
     // Fast path: one database RPC replaces the old subscription + domain-settings
     // + link-count round trips. It keeps the same checks but returns them together.
     const preflightResponse = await supabaseFetch(
