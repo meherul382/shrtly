@@ -24,8 +24,8 @@ export default async function handler(req,res){
     const to=String(req.query?.to||'');
     let since,end;
     if(isDate(from)&&isDate(to)){
-      since=new Date(`${from}T00:00:00`);
-      end=new Date(`${to}T23:59:59.999`);
+      since=new Date(`${from}T00:00:00+06:00`);
+      end=new Date(`${to}T23:59:59.999+06:00`);
       if(end<since)return res.status(400).json({error:'End date must be on or after start date.'});
     }else if(period==='today'){
       since=startOfBangladeshDay(); end=new Date();
