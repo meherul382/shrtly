@@ -128,12 +128,26 @@ async function create(){
     p_link_mode:'advanced'
    });
    if(error){
-    console.error('Fast create RPC:',error);
-    st.textContent='Could not create the short link. Please try again.';
-    return;
+    console.warn('Fast create RPC unavailable, using API fallback:',error);
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),15000);
+    try{
+      const r=await fetch('/api/shorten',{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+        body:JSON.stringify({url,alias,domain,image:null}),
+        signal:controller.signal
+      });
+      d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));
+      if(!r.ok){st.textContent=d.error||'Could not create link.';return;}
+    }catch(e){
+      st.textContent=e?.name==='AbortError'?'The server took too long. Please try once more.':(e?.message||'Could not create link.');
+      return;
+    }finally{clearTimeout(timer);}
+   }else{
+    d=data;
+    if(!d?.ok){st.textContent=d?.error||'Could not create link.';return;}
    }
-   d=data;
-   if(!d?.ok){st.textContent=d?.error||'Could not create link.';return;}
   }else{
    const controller=new AbortController();
    const timer=setTimeout(()=>controller.abort(),15000);
