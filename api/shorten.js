@@ -64,9 +64,14 @@ export default async function handler(req, res) {
     }
 
     const clean = cleanAlias(alias);
-    // All domains use the same compact 4-character code format.
-    // A custom alias is still honored when supplied.
-    let code = clean || randomCode();
+    // Keep normal links compact (4 chars) while preserving the A-prefix
+    // required by the existing Analytics endpoint.
+    let code =
+      mode === 'simple'
+        ? randomCode()
+        : mode === 'analytics'
+          ? (clean ? `A${clean}` : `A${randomCode()}`)
+          : (clean || randomCode());
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
     let imageUrl = null;
     const aliasCheck = alias
