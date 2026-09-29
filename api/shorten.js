@@ -20,22 +20,48 @@ export default async function handler(req, res) {
 
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
 
-    // Run all independent preflight checks together so the short-link response is faster.
-    const [domainAccess, entitlement, used] = await Promise.all([
-      userId ? getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) : Promise.resolve({ allowed: true }),
-      getEntitlement(supabaseUrl, serviceKey, userId),
-      countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken)
-    ]);
-    if (!domainAccess.allowed) {
+    // Fast path: one database RPC replaces the old subscription + domain-settings
+    // + link-count round trips. It keeps the same checks but returns them together.
+    const preflightResponse = await supabaseFetch(
+      `${supabaseUrl}/rest/v1/rpc/shrtigo_preflight`,
+      serviceKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_user_id: userId || null, p_owner_token: ownerToken })
+      }
+    );
+    if (!preflightResponse.ok) {
+      console.error('Preflight failed:', preflightResponse.status);
+      return res.status(500).json({ error: 'Could not verify your Shrtigo plan. Please try again.' });
+    }
+    const preflight = await preflightResponse.json();
+    const selectedDomains = Array.isArray(preflight?.selected_domains)
+      ? preflight.selected_domains.map(d => String(d).toLowerCase())
+      : [];
+    if (userId && !selectedDomains.includes(selectedDomain)) {
+      const maxDomains = Number(preflight?.max_domains || 1);
+      const unlimited = Boolean(preflight?.unlimited);
       return res.status(403).json({
-        error: domainAccess.error,
-        domainLimit: domainAccess.maxDomains,
-        selectedDomains: domainAccess.selectedDomains
+        error: unlimited
+          ? 'All Shrtigo domains are included with your unlimited plan.'
+          : `This domain is not selected for your current ${String(preflight?.plan || 'welcome')} plan. Open Domains and select up to ${maxDomains} domain${maxDomains === 1 ? '' : 's'}.`,
+        domainLimit: maxDomains,
+        selectedDomains
       });
     }
 
-    const effectiveUsed = entitlement.limit >= 1000000000 ? 0 : used;
-    if (effectiveUsed >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
+    const limit = Number(preflight?.limit || 1);
+    const used = Number(preflight?.used || 0);
+    if (limit < 1000000000 && used >= limit) {
+      return res.status(402).json({
+        error: 'Your link limit has been used. Please choose a subscription to create more links.',
+        subscriptionRequired: true,
+        subscriptionUrl: '/subscription',
+        used,
+        limit
+      });
+    }
 
     const clean = cleanAlias(alias);
     // All domains use the same compact 4-character code format.
@@ -249,4 +275,11 @@ function randomCode() {
 }
 function extension(mime) { return ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[mime] || 'jpg'; }
 function parseDataUrl(value) { const m = String(value).match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/); if (!m) return null; return { mime: m[1], buffer: Buffer.from(m[2], 'base64') }; }
-async function supabaseFetch(url, key) { return fetch(url, { headers: { Authorization: `Bearer ${key}`, apikey: key } }); }
+async function supabaseFetch(url, key, options = {}) {
+  const headers = {
+    Authorization: `Bearer ${key}`,
+    apikey: key,
+    ...(options.headers || {})
+  };
+  return fetch(url, { ...options, headers });
+}
