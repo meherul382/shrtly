@@ -42,27 +42,26 @@ export default async function handler(req, res) {
           })
         }
       );
-      if (!createResponse.ok) {
-        console.error('Create RPC failed:', createResponse.status);
-        return res.status(500).json({ error: 'Could not create the short link. Please try again.' });
+      if (createResponse.ok) {
+        const created = await createResponse.json();
+        if (!created?.ok) {
+          const status = created?.limit_reached ? 402 : created?.alias_taken ? 409 : 403;
+          return res.status(status).json({
+            error: created.error || 'Could not create the short link.',
+            ...(created.limit_reached ? {
+              subscriptionRequired: true,
+              subscriptionUrl: '/subscription',
+              used: created.used,
+              limit: created.limit
+            } : {})
+          });
+        }
+        return respond(
+          res, req, created.code, null, youtubeUrl, mode,
+          created.domain || selectedDomain, ownerToken
+        );
       }
-      const created = await createResponse.json();
-      if (!created?.ok) {
-        const status = created?.limit_reached ? 402 : created?.alias_taken ? 409 : 403;
-        return res.status(status).json({
-          error: created.error || 'Could not create the short link.',
-          ...(created.limit_reached ? {
-            subscriptionRequired: true,
-            subscriptionUrl: '/subscription',
-            used: created.used,
-            limit: created.limit
-          } : {})
-        });
-      }
-      return respond(
-        res, req, created.code, null, youtubeUrl, mode,
-        created.domain || selectedDomain, ownerToken
-      );
+      console.error('Fast create RPC failed:', createResponse.status, (await createResponse.text().catch(() => '')).slice(0, 300));
     }
 
     // Fast path: one database RPC replaces the old subscription + domain-settings
