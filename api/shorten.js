@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     let imageUrl = null;
     const aliasCheck = alias
       ? (async () => {
-          const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&limit=1`, serviceKey);
+          const exists = await supabaseFetch(`${supabaseUrl}/rest/v1/links?select=id&code=eq.${encodeURIComponent(code)}&domain=eq.${encodeURIComponent(selectedDomain)}&limit=1`, serviceKey);
           if (!exists.ok) throw new Error('Supabase database check failed.');
           if ((await exists.json()).length) {
             const err = new Error('That custom alias is already in use.');
