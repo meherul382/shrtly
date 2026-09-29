@@ -113,19 +113,42 @@ async function create(){
     reader.readAsDataURL(imageFile);
    });
   }
-  const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),15000);
-  let r;
-  try{
-   r=await fetch('/api/shorten',{
-    method:'POST',
-    headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
-    body:JSON.stringify({url,alias,domain,image}),
-    signal:controller.signal
+  // Fast path: normal links are created directly through Supabase RPC.
+  // This removes the extra browser -> Vercel -> Auth -> Supabase round trips.
+  let d=null;
+  if(!image){
+   let validUrl=false;
+   try{const u=new URL(url);validUrl=u.protocol==='http:'||u.protocol==='https:';}catch{}
+   if(!validUrl){st.textContent='Please enter a valid http:// or https:// URL.';return;}
+   const {data,error}=await sb.rpc('shrtigo_create_link_fast',{
+    p_url:url,
+    p_alias:alias||null,
+    p_domain:domain,
+    p_youtube_url:null,
+    p_link_mode:'advanced'
    });
-  }finally{clearTimeout(timer);}
-  const d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));
-  if(!r.ok){st.textContent=d.error||'Could not create link.';return;}
+   if(error){
+    console.error('Fast create RPC:',error);
+    st.textContent='Could not create the short link. Please try again.';
+    return;
+   }
+   d=data;
+   if(!d?.ok){st.textContent=d?.error||'Could not create link.';return;}
+  }else{
+   const controller=new AbortController();
+   const timer=setTimeout(()=>controller.abort(),15000);
+   let r;
+   try{
+    r=await fetch('/api/shorten',{
+     method:'POST',
+     headers:{'Content-Type':'application/json',Authorization:'Bearer '+s.access_token},
+     body:JSON.stringify({url,alias,domain,image}),
+     signal:controller.signal
+    });
+   }finally{clearTimeout(timer);}
+   d=await r.json().catch(()=>({error:'Server returned an invalid response.'}));
+   if(!r.ok){st.textContent=d.error||'Could not create link.';return;}
+  }
   st.textContent='Link created successfully.';
   const historyKey='shrtigo-history:'+s.user.id;
   const history=JSON.parse(localStorage.getItem(historyKey)||'[]');
