@@ -20,11 +20,11 @@ export default async function handler(req, res) {
 
     const ownerToken = userId ? `user:${userId}` : crypto.createHash('sha256').update(`${getClientIp(req)}|${String(req.headers['user-agent'] || '')}`).digest('hex');
 
-    // Enforce the domain allowance of the user's active subscription.
-    // Users can only create new links on domains they selected in the Domains panel.
-    const [domainAccess, entitlement] = await Promise.all([
+    // Run all independent preflight checks together so the short-link response is faster.
+    const [domainAccess, entitlement, used] = await Promise.all([
       userId ? getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) : Promise.resolve({ allowed: true }),
-      getEntitlement(supabaseUrl, serviceKey, userId)
+      getEntitlement(supabaseUrl, serviceKey, userId),
+      countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken)
     ]);
     if (!domainAccess.allowed) {
       return res.status(403).json({
@@ -34,14 +34,13 @@ export default async function handler(req, res) {
       });
     }
 
-    // Unlimited plans do not need a full link-count query on every creation.
-    const used = entitlement.limit >= 1000000000
-      ? 0
-      : await countOwnerLinks(supabaseUrl, serviceKey, userId, ownerToken);
-    if (used >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
+    const effectiveUsed = entitlement.limit >= 1000000000 ? 0 : used;
+    if (effectiveUsed >= entitlement.limit) return res.status(402).json({ error: 'Your link limit has been used. Please choose a subscription to create more links.', subscriptionRequired: true, subscriptionUrl: '/subscription', used, limit: entitlement.limit });
 
     const clean = cleanAlias(alias);
-    let code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? (clean ? `A${clean}` : `A${randomCode()}`) : (clean || randomCode());
+    // All domains use the same compact 4-character code format.
+    // A custom alias is still honored when supplied.
+    let code = clean || randomCode();
     if (!/^[a-zA-Z0-9_-]{3,24}$/.test(code)) return res.status(400).json({ error: 'Alias must be 3–24 letters, numbers, hyphens or underscores.' });
     let imageUrl = null;
     const aliasCheck = alias
@@ -81,7 +80,7 @@ export default async function handler(req, res) {
     if (!insert.ok) {
       const detail = await insert.text();
       if (insert.status === 409 && !alias) {
-        payload.code = mode === 'simple' ? `S${randomCode()}` : mode === 'analytics' ? `A${randomCode()}` : randomCode();
+        payload.code = randomCode();
         const retry = await insertLink(supabaseUrl, serviceKey, payload);
         if (retry.ok) return respond(res, req, payload.code, imageUrl, youtubeUrl, mode, selectedDomain, ownerToken);
       }
@@ -245,7 +244,9 @@ function isHttpUrl(value) { try { const u = new URL(value); return u.protocol ==
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
 function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
 function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/+$/,''); return ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'].includes(domain) ? domain : null; }
-function randomCode() { return Math.random().toString(36).slice(2, 6); }
+function randomCode() {
+  return crypto.randomBytes(3).toString('base64url').replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,4);
+}
 function extension(mime) { return ({ 'image/jpeg':'jpg', 'image/png':'png', 'image/webp':'webp', 'image/gif':'gif' })[mime] || 'jpg'; }
 function parseDataUrl(value) { const m = String(value).match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([A-Za-z0-9+/=]+)$/); if (!m) return null; return { mime: m[1], buffer: Buffer.from(m[2], 'base64') }; }
 async function supabaseFetch(url, key) { return fetch(url, { headers: { Authorization: `Bearer ${key}`, apikey: key } }); }
