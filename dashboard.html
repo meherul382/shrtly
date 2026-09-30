@@ -227,6 +227,12 @@ body.panel-view .content{display:none!important}
 .referral-link-row button{height:40px;border:1px solid #3867b4;border-radius:9px;background:linear-gradient(135deg,#1e63ed,#7934ed);color:#fff;padding:0 14px;font-size:11px;font-weight:900;cursor:pointer}
 .referral-status{color:#8fa8d5;font-size:11px;line-height:1.55}
 @media(max-width:600px){.referral-stats{grid-template-columns:1fr}.referral-link-row{flex-wrap:wrap}.referral-link-row input{flex-basis:100%}.referral-link-row button{flex:1}}
+</style><style id="referral-quick-card-css">
+.referral-quick-card{display:flex!important;align-items:center;gap:10px!important;min-height:70px!important}
+.referral-quick-card .qicon{flex:0 0 34px}
+.referral-quick-card b{display:block;color:#fff;font-size:11px}
+.referral-quick-card small{display:block;color:#8fa8d5;font-size:9px;font-weight:700;margin-top:4px}
+.referral-quick-card:hover{border-color:#8b5cff!important;box-shadow:0 0 22px rgba(139,92,246,.2)}
 </style></head>
 <body class="booting">
 <div class="shell">
@@ -295,6 +301,7 @@ body.panel-view .content{display:none!important}
 <a href="/subscription.html" data-panel="subscription"><span class="qicon">⚡</span>Buy Plan</a>
 <a href="/add-fund.html" data-panel="add-fund"><span class="qicon">৳</span>Add Fund</a>
 <a href="/panel-analytics.html" data-panel="analytics"><span class="qicon">⌁</span>Analytics</a>
+<a href="#referralCard" id="referralQuickCard" class="referral-quick-card"><span class="qicon">🎁</span><span><b>Referral Rewards</b><small>10 paid referrals = 30 days free</small></span></a>
 </div>
 </section>
 </div>
