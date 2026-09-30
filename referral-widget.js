@@ -1,1 +1,38 @@
-(()=>{const URL='https://qbijrkdlaguwlvriaiky.supabase.co',KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';const boot=async()=>{if(!window.supabase)return;const sb=supabase.createClient(URL,KEY);const {data:{session}}=await sb.auth.getSession();if(!session)return;const box=document.createElement('section');box.id='referralBox';box.innerHTML='<div style="border:1px solid #26324a;border-radius:18px;padding:20px;background:linear-gradient(145deg,#0d1422,#09111d);color:#eef5ff;margin:24px 0"><div style="font-size:20px;font-weight:900">🎁 Refer & Earn</div><div style="color:#9fb0ca;font-size:13px;margin:7px 0 16px">10 successful paid referrals = ⭐ 1 FREE Monthly Unlimited</div><div id="refCode" style="font-weight:900;margin-bottom:8px">Loading…</div><div style="display:flex;gap:8px;flex-wrap:wrap"><input id="refLink" readonly style="flex:1;min-width:220px;height:42px;border:1px solid #303d55;border-radius:10px;background:#070c14;color:#dce7f7;padding:0 12px"><button id="refCopy" style="height:42px;padding:0 15px;border:0;border-radius:10px;font-weight:900;cursor:pointer">Copy</button><button id="refShare" style="height:42px;padding:0 15px;border:0;border-radius:10px;font-weight:900;cursor:pointer">Share</button></div><div id="refStats" style="color:#9fb0ca;font-size:12px;margin-top:12px">Loading referral status…</div></div>';const target=document.querySelector('.links-panel')||document.querySelector('.dashboard-overview')||document.body;target.parentNode.insertBefore(box,target);const codeEl=box.querySelector('#refCode'),linkEl=box.querySelector('#refLink'),stats=box.querySelector('#refStats');const a=await sb.rpc('shrtigo_activate_due_referral_rewards',{p_user_id:session.user.id});const {data,error}=await sb.rpc('shrtigo_get_referral_account',{p_user_id:session.user.id});if(error||!data){codeEl.textContent='Referral unavailable';return}const code=String(data.referral_code||'');const link=location.origin+'/login?signup=1&ref='+encodeURIComponent(code);codeEl.textContent='Referral Code: '+code;linkEl.value=link;stats.textContent=Number(data.count||0)+' successful referrals • '+Number(data.completed||0)+' reward(s) earned • Next reward: '+Number(data.next_target||10);box.querySelector('#refCopy').onclick=async()=>{await navigator.clipboard.writeText(link);box.querySelector('#refCopy').textContent='✓ Copied';setTimeout(()=>box.querySelector('#refCopy').textContent='Copy',1500)};box.querySelector('#refShare').onclick=async()=>{if(navigator.share)await navigator.share({title:'Join Shrtigo',text:'Join Shrtigo with my referral link',url:link});else{await navigator.clipboard.writeText(link);box.querySelector('#refShare').textContent='✓ Copied';setTimeout(()=>box.querySelector('#refShare').textContent='Share',1500)}}};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})();
+(()=>{const URL='https://qbijrkdlaguwlvriaiky.supabase.co',KEY='sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ';
+const boot=async()=>{
+  if(!window.supabase)return;
+  const sb=supabase.createClient(URL,KEY);
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session)return;
+  const card=document.getElementById('referralCard');
+  if(!card)return;
+  const codeEl=document.getElementById('refRewardBadge');
+  const countEl=document.getElementById('refCount');
+  const completedEl=document.getElementById('refCompleted');
+  const nextEl=document.getElementById('refNext');
+  const linkEl=document.getElementById('refLink');
+  const progressEl=document.getElementById('refProgressBar');
+  const statusEl=document.getElementById('refStatus');
+  try{await sb.rpc('shrtigo_activate_due_referral_rewards',{p_user_id:session.user.id})}catch(e){}
+  const {data,error}=await sb.rpc('shrtigo_get_referral_account',{p_user_id:session.user.id});
+  if(error||!data){statusEl.textContent='Referral status could not be loaded right now.';return}
+  const count=Number(data.count||0),completed=Number(data.completed||0),next=Math.max(10,Number(data.next_target||10));
+  const code=String(data.referral_code||'');
+  const link=location.origin+'/central-login.html?signup=1&ref='+encodeURIComponent(code);
+  countEl.textContent=count.toLocaleString();
+  completedEl.textContent=completed.toLocaleString();
+  nextEl.textContent=next.toLocaleString();
+  codeEl.textContent=(count%10)+' / 10';
+  progressEl.style.width=((count%10)*10)+'%';
+  linkEl.value=link;
+  statusEl.textContent=count>=10
+    ? (completed+' reward(s) earned • '+(count%10===0?'Your next reward starts with the next successful referral.':(10-(count%10))+' more successful referral(s) to the next reward.'))
+    : ((10-count)+' more successful paid referral(s) = 30 days Monthly Unlimited.');
+  const copy=async(btn)=>{try{await navigator.clipboard.writeText(link);btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy',1500)}catch(e){linkEl.select();document.execCommand('copy');btn.textContent='✓ Copied';setTimeout(()=>btn.textContent='Copy',1500)}};
+  document.getElementById('refCopy').onclick=()=>copy(document.getElementById('refCopy'));
+  document.getElementById('refShare').onclick=async()=>{
+    if(navigator.share){try{await navigator.share({title:'Join Shrtigo',text:'Create your Shrtigo account with my referral link.',url:link})}catch(e){}}
+    else await copy(document.getElementById('refShare'));
+  };
+};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot()})();
