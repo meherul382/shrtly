@@ -116,5 +116,7 @@ async function attachReferralAfterAuth(){
   if(!session?.user?.id)return;
   const {error}=await sb.rpc('shrtigo_attach_referral',{p_user_id:session.user.id,p_referral_code:code});
   if(!error||error.message==='Referral already attached.')localStorage.removeItem('shrtigo_referral_code');
+sb.auth.onAuthStateChange(()=>{setTimeout(attachReferralAfterAuth,0)});
+setTimeout(attachReferralAfterAuth,0);
 }
 </script></script><script>const bm=document.getElementById('benefitModal');if(sessionStorage.getItem('shrtigo-new-account')==='1'){sessionStorage.removeItem('shrtigo-new-account');bm.style.display='grid'}document.getElementById('benefitClose').onclick=()=>bm.style.display='none';document.getElementById('benefitGo').onclick=()=>location.href='/';</script></body></html>
