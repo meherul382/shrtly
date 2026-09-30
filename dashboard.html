@@ -208,7 +208,25 @@ body.panel-view .content{display:none!important}
 .side-link:hover{transform:none!important}
 .side-link.active{transform:none!important}
 </style><link rel="stylesheet" href="/panel-shell.css?v=20260925">
-</head>
+<style id="referral-dashboard-card-css">
+.referral-dashboard-card{margin-top:16px;background:linear-gradient(145deg,#071d40,#07122c);border-color:#2457a5!important;box-shadow:0 10px 30px rgba(0,35,120,.18)}
+.referral-dashboard-card .panel-head{margin-bottom:14px}
+.referral-dashboard-card .panel-head h2{font-size:18px}
+.referral-dashboard-card .panel-head small{display:block;margin-top:5px;color:#8fa8d5}
+#refRewardBadge{padding:7px 11px;border-radius:999px;background:linear-gradient(135deg,#1f5eea,#8b2cff);border:1px solid #5f8fff;color:#fff;font-size:11px;font-weight:900;white-space:nowrap}
+.referral-card-body{display:grid;gap:13px}
+.referral-progress{height:8px;border-radius:999px;background:#10294f;overflow:hidden;border:1px solid #1c407a}
+.referral-progress-bar{height:100%;width:0;background:linear-gradient(90deg,#24a8ff,#8b2cff);border-radius:999px;transition:width .25s ease}
+.referral-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.referral-stats>div{border:1px solid #1c417d;border-radius:11px;padding:12px;background:rgba(6,22,50,.72)}
+.referral-stats span{display:block;color:#7895c4;font-size:10px;font-weight:800}
+.referral-stats strong{display:block;margin-top:5px;color:#fff;font-size:20px}
+.referral-link-row{display:flex;gap:8px}
+.referral-link-row input{flex:1;min-width:0;height:40px;border:1px solid #244a88;border-radius:9px;background:#050f22;color:#dce8ff;padding:0 11px;font-size:11px}
+.referral-link-row button{height:40px;border:1px solid #3867b4;border-radius:9px;background:linear-gradient(135deg,#1e63ed,#7934ed);color:#fff;padding:0 14px;font-size:11px;font-weight:900;cursor:pointer}
+.referral-status{color:#8fa8d5;font-size:11px;line-height:1.55}
+@media(max-width:600px){.referral-stats{grid-template-columns:1fr}.referral-link-row{flex-wrap:wrap}.referral-link-row input{flex-basis:100%}.referral-link-row button{flex:1}}
+</style></head>
 <body class="booting">
 <div class="shell">
 <aside class="sidebar">
@@ -289,6 +307,20 @@ body.panel-view .content{display:none!important}
 <div class="account-card"><div class="small">Emergency Clicks</div><strong>0</strong></div>
 </div>
 </div>
+
+<section class="panel referral-dashboard-card" id="referralCard">
+<div class="panel-head"><div><h2>🎁 Referral Rewards</h2><small>Earn free Monthly Unlimited by inviting users who complete paid plans.</small></div><span id="refRewardBadge">0 / 10</span></div>
+<div class="referral-card-body">
+<div class="referral-progress"><div class="referral-progress-bar" id="refProgressBar"></div></div>
+<div class="referral-stats">
+  <div><span>Successful referrals</span><strong id="refCount">0</strong></div>
+  <div><span>Rewards earned</span><strong id="refCompleted">0</strong></div>
+  <div><span>Next reward</span><strong id="refNext">10</strong></div>
+</div>
+<div class="referral-link-row"><input id="refLink" readonly placeholder="Loading referral link…"><button id="refCopy" type="button">Copy</button><button id="refShare" type="button">Share</button></div>
+<div id="refStatus" class="referral-status">10 successful paid referrals = 30 days Monthly Unlimited. 20 = 60 days total.</div>
+</div>
+</section>
 
 <section class="panel links-panel">
 <div class="panel-head"><div><h2>Latest 10 Links</h2><small>Recently created links for your account</small></div><a class="top-btn" href="/links.html" data-panel="links">View All</a></div>
