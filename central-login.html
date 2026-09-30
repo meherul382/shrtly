@@ -106,4 +106,15 @@ $('google').onclick=async()=>{const{error}=await sb.auth.signInWithOAuth({provid
 $('forgot').onclick=async(e)=>{e.preventDefault();const email=$('email').value.trim();if(!email)return message('Enter your email address first.',true);$('forgot').textContent='Sending…';const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+'/reset-password.html'});$('forgot').textContent='Forgot password?';if(error)return message(error.message,true);message('Password reset link sent. Check your email.');};
 $('submit').onclick=async()=>{const email=$('email').value.trim(),password=$('password').value;if(!email||!password)return message('Enter your email and password.',true);$('submit').disabled=true;message(signup?'Creating account…':'Signing in…');try{const r=signup?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin+'/email-confirmation.html'}}):await sb.auth.signInWithPassword({email,password});if(r.error)return message(r.error.message,true);if(signup){sessionStorage.setItem('shrtigo-new-account','1');if(!r.data.session){sessionStorage.setItem('shrtigo-pending-email',email);location.replace('/check-email');return}$('benefitModal').style.display='grid';return}if(r.data.session)location.replace(next)}catch(e){message(e.message||'Something went wrong.',true)}finally{$('submit').disabled=false}};
 sb.auth.getSession().then(({data})=>{if(data.session){if(sessionStorage.getItem('shrtigo-new-account')==='1'){$('benefitModal').style.display='grid'}else location.replace(next)}});mode();
-</script><script>const bm=document.getElementById('benefitModal');if(sessionStorage.getItem('shrtigo-new-account')==='1'){sessionStorage.removeItem('shrtigo-new-account');bm.style.display='grid'}document.getElementById('benefitClose').onclick=()=>bm.style.display='none';document.getElementById('benefitGo').onclick=()=>location.href='/';</script></body></html>
+<script>
+const referralCode=new URLSearchParams(location.search).get('ref');
+if(referralCode) localStorage.setItem('shrtigo_referral_code',String(referralCode).trim().toUpperCase());
+async function attachReferralAfterAuth(){
+  const code=localStorage.getItem('shrtigo_referral_code')||'';
+  if(!/^[A-Z0-9]{8}$/.test(code))return;
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session?.user?.id)return;
+  const {error}=await sb.rpc('shrtigo_attach_referral',{p_user_id:session.user.id,p_referral_code:code});
+  if(!error||error.message==='Referral already attached.')localStorage.removeItem('shrtigo_referral_code');
+}
+</script></script><script>const bm=document.getElementById('benefitModal');if(sessionStorage.getItem('shrtigo-new-account')==='1'){sessionStorage.removeItem('shrtigo-new-account');bm.style.display='grid'}document.getElementById('benefitClose').onclick=()=>bm.style.display='none';document.getElementById('benefitGo').onclick=()=>location.href='/';</script></body></html>
