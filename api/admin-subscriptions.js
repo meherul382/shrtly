@@ -76,6 +76,14 @@ module.exports = async (req, res) => {
     try { data = JSON.parse(raw); } catch {}
 
     if (!r.ok) return json(res, r.status, { error: data?.message || data?.hint || 'Could not update subscription request.' });
+    if (action === 'approve') {
+      try {
+        await callRpc('shrtigo_process_referral_reward', admin.token, { p_subscription_id: id });
+      } catch (e) {
+        console.error('Referral reward processing failed:', e);
+      }
+    }
+
     return json(res, 200, { ok: true, request: data });
   } catch (error) {
     console.error('Admin subscription API error:', error);
