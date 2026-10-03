@@ -4,6 +4,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const { url, alias, image, youtubeUrl, linkMode, domain } = req.body || {};
+    if (alias != null && String(alias).trim() !== '' && !/^[a-zA-Z0-9_-]{1,23}$/.test(String(alias).trim())) {
+      return res.status(400).json({ error: 'Alias can only contain 1–23 letters, numbers, hyphens or underscores.' });
+    }
     if (!isHttpUrl(url)) return res.status(400).json({ error: 'Please enter a valid http:// or https:// URL.' });
     const selectedDomain = normalizeDomain(domain || 'shrtigo.xyz');
     if (!selectedDomain) return res.status(400).json({ error: 'Please select a valid Shrtigo domain.' });
