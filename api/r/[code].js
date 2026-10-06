@@ -16,9 +16,8 @@ export default async function handler(req,res){
       'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ'
     ).trim();
 
-    // The production database function currently accepts exactly two
-    // arguments: p_code and p_domain. Passing a third p_visitor_id argument
-    // causes the RPC to fail and makes every short link return HTTP 500.
+    // Use the resolver with the visitor id so analytics links can record
+    // unique visitors. The database keeps this as the single resolver RPC.
     const response=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_resolve_and_consume`,{
       method:'POST',
       headers:{
@@ -26,7 +25,7 @@ export default async function handler(req,res){
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_code:code,p_domain:requestHost})
+      body:JSON.stringify({p_code:code,p_domain:requestHost,p_visitor_id:visitorId})
     });
 
     if(!response.ok){
