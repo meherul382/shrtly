@@ -16,9 +16,9 @@ export default async function handler(req,res){
       'sb_publishable_CS7wauVRlHpbsdjJFdWl1g_cNdjogHJ'
     ).trim();
 
-    // Resolve the short link and consume its click entitlement in one
-    // atomic database call. This removes the old two-request lookup +
-    // quota/update sequence from the hot redirect path.
+    // The production database function currently accepts exactly two
+    // arguments: p_code and p_domain. Passing a third p_visitor_id argument
+    // causes the RPC to fail and makes every short link return HTTP 500.
     const response=await fetch(`${supabaseUrl}/rest/v1/rpc/shrtigo_resolve_and_consume`,{
       method:'POST',
       headers:{
@@ -26,9 +26,14 @@ export default async function handler(req,res){
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_code:code,p_domain:requestHost,p_visitor_id:visitorId})
+      body:JSON.stringify({p_code:code,p_domain:requestHost})
     });
-    if(!response.ok)return res.status(500).send('Database error');
+
+    if(!response.ok){
+      const details=await response.text().catch(()=> '');
+      console.error('Shrtigo resolve RPC failed:', response.status, details);
+      return res.status(500).send('Could not open this short link.');
+    }
 
     const result=await response.json();
     if(!result?.found)return res.status(404).send('Short link not found');
@@ -49,8 +54,8 @@ export default async function handler(req,res){
 
     if(!link.url)return res.status(500).send('Short link destination is missing.');
 
-    // Zero-delay fast path: normal links without an image/video go straight
-    // to the destination. Analytics/media links keep the HTML path.
+    // Normal short links should redirect immediately. Analytics/media links
+    // keep the HTML path so their tracking/preview behavior remains intact.
     if(link.link_mode!=='analytics'&&!link.image_url&&!link.youtube_url){
       res.writeHead(302,{'Location':link.url,'Cache-Control':'no-store'});
       return res.end();
@@ -66,7 +71,9 @@ export default async function handler(req,res){
 
     const safeImage=link.image_url?escapeHtml(link.image_url):'';
     const resolvedDomain=String(result.domain||requestHost||'shrtigo.xyz').replace(/^https?:\/\//,'').replace(/\/+$/,'');
-    const safeShortUrl=escapeHtml(`https://${resolvedDomain}/${encodeURIComponent(code)}`);\n    const previewTitle=escapeHtml(`${resolvedDomain} — Short Link`);\n    const previewDescription=escapeHtml(`Short link from ${resolvedDomain}.`);
+    const safeShortUrl=escapeHtml(`https://${resolvedDomain}/${encodeURIComponent(code)}`);
+    const previewTitle=escapeHtml(`${resolvedDomain} — Short Link`);
+    const previewDescription=escapeHtml(`Short link from ${resolvedDomain}.`);
     const image=link.image_url?`<img src="${safeImage}" alt="Shrtigo preview" loading="eager">`:'';
     const video=videoId?`<div class="video"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?rel=0&autoplay=1&mute=1" title="Shrtigo video preview" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>`:'';
     const ogImage=link.image_url?`<meta property="og:image" content="${safeImage}"><meta property="og:image:alt" content="Shrtigo preview"><meta property="og:image:type" content="image/jpeg">`:'';
@@ -76,7 +83,7 @@ export default async function handler(req,res){
 
     return res.status(200).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${previewTitle}</title><meta name="description" content="${previewDescription}"><meta name="robots" content="noindex,nofollow,noarchive"><link rel="canonical" href="${safeShortUrl}"><meta property="og:type" content="website"><meta property="og:title" content="${previewTitle}"><meta property="og:description" content="${previewDescription}"><meta property="og:url" content="${safeShortUrl}"><meta property="og:site_name" content="${escapeHtml(resolvedDomain)}"><meta property="og:locale" content="en_US">${ogImage}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${previewTitle}"><meta name="twitter:description" content="${previewDescription}">${link.image_url?`<meta name="twitter:image" content="${safeImage}">`:''}<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#fff}body{display:block;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111}.wrap{width:min(900px,100%);display:flex;flex-direction:column;gap:12px}img{display:block;width:100%;max-height:82vh;object-fit:contain;border-radius:12px;background:#fff}.video{position:relative;width:100%;padding-top:56.25%;overflow:hidden;border-radius:12px;background:#000}.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}</style></head><body><main class="wrap">${image}${video}</main>${analyticsPing}${redirectScript}</body></html>`);
   }catch(e){
-    console.error(e);
+    console.error('Shrtigo redirect error:',e);
     return res.status(500).send('Could not open this short link.');
   }
 }
