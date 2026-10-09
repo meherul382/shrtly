@@ -190,5 +190,49 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
   const p=document.querySelector('.ov-profile-copy');if(p){p.querySelector('b').textContent=name;p.querySelector('small').textContent=plan}
  }catch(e){console.warn('Profile display:',e)}
 })();
-</script></body>
+</script>
+<style id="shrtigo-update-popup-styles">
+#shrtigo-update-modal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(2,8,23,.76);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#shrtigo-update-modal[hidden]{display:none}
+.shu-card{position:relative;width:min(100%,460px);padding:30px 26px 24px;border:1px solid rgba(91,145,255,.42);border-radius:24px;background:linear-gradient(145deg,#0b1d40,#050d20);box-shadow:0 28px 90px rgba(0,0,0,.48),0 0 35px rgba(47,104,255,.16);color:#f7f9ff;text-align:center;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.shu-close{position:absolute;top:12px;right:13px;width:36px;height:36px;padding:0;border:1px solid #294674;border-radius:11px;background:#102448;color:#dce8ff;font-size:22px;line-height:1;cursor:pointer}
+.shu-mark{display:grid;place-items:center;width:66px;height:66px;margin:0 auto 18px;border-radius:20px;background:linear-gradient(135deg,#2478ff,#8b3dff);box-shadow:0 8px 30px rgba(62,104,255,.35);font-size:30px}
+.shu-status{display:inline-flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 11px;border:1px solid rgba(56,211,159,.3);border-radius:999px;background:rgba(20,184,130,.09);color:#7af0c2;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.shu-pulse{width:8px;height:8px;border-radius:50%;background:#35e6a6;box-shadow:0 0 0 0 rgba(53,230,166,.55);animation:shu-pulse 1.7s infinite}
+.shu-card h2{margin:0 0 12px;color:#fff;font-size:clamp(24px,5vw,30px);line-height:1.15;letter-spacing:-.6px}
+.shu-card p{margin:0 auto 22px;max-width:360px;color:#b6c5e2;font-size:14px;line-height:1.75}
+.shu-continue{width:100%;padding:14px 18px;border:0;border-radius:13px;background:linear-gradient(100deg,#2678ff,#753bf3);color:#fff;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 8px 22px rgba(48,100,255,.25)}
+.shu-continue:hover{filter:brightness(1.08)}
+.shu-foot{margin-top:13px;color:#7f96bd;font-size:11px}
+@keyframes shu-pulse{0%{box-shadow:0 0 0 0 rgba(53,230,166,.55)}70%{box-shadow:0 0 0 7px rgba(53,230,166,0)}100%{box-shadow:0 0 0 0 rgba(53,230,166,0)}}
+@media(prefers-reduced-motion:reduce){.shu-pulse{animation:none}}
+@media(max-width:480px){#shrtigo-update-modal{padding:14px}.shu-card{padding:27px 20px 20px;border-radius:20px}.shu-mark{width:58px;height:58px;border-radius:17px;font-size:26px}}
+</style>
+<div id="shrtigo-update-modal" role="dialog" aria-modal="true" aria-labelledby="shu-title" aria-describedby="shu-description">
+  <section class="shu-card">
+    <button class="shu-close" type="button" aria-label="Close update notice" data-shu-close>&times;</button>
+    <div class="shu-mark" aria-hidden="true">⚙️</div>
+    <div class="shu-status"><span class="shu-pulse"></span> Live update in progress</div>
+    <h2 id="shu-title">Shrtigo is being updated</h2>
+    <p id="shu-description">We're working on improvements to make Shrtigo better. Some features may be temporarily unavailable while updates are in progress. Thanks for your patience!</p>
+    <button class="shu-continue" type="button" data-shu-close>Continue to Shrtigo</button>
+    <div class="shu-foot">Your links may still be available during the update.</div>
+  </section>
+</div>
+<script>
+(function(){
+  var modal=document.getElementById('shrtigo-update-modal');
+  if(!modal)return;
+  try{if(sessionStorage.getItem('shrtigo-update-notice-dismissed')==='1'){modal.hidden=true;return;}}catch(e){}
+  function closeNotice(){
+    modal.hidden=true;
+    try{sessionStorage.setItem('shrtigo-update-notice-dismissed','1');}catch(e){}
+  }
+  modal.querySelectorAll('[data-shu-close]').forEach(function(button){button.addEventListener('click',closeNotice);});
+  modal.addEventListener('click',function(event){if(event.target===modal)closeNotice();});
+  document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!modal.hidden)closeNotice();});
+})();
+</script>
+
+</body>
 </html>
