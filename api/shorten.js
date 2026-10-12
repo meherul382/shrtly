@@ -251,7 +251,7 @@ async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) 
       }
     }
 
-    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
+    if (unlimited) selectedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'];
 
     if (!selectedDomains.length) {
       return {
@@ -343,7 +343,7 @@ function respond(res, req, code, imageUrl, youtubeUrl, mode, domain, ownerToken)
 function isHttpUrl(value) { try { const u = new URL(value); return u.protocol === 'http:' || u.protocol === 'https:'; } catch { return false; } }
 function isYouTubeUrl(value) { try { const u = new URL(value); return ['youtube.com','www.youtube.com','m.youtube.com','youtu.be','www.youtu.be'].includes(u.hostname.toLowerCase()); } catch { return false; } }
 function cleanAlias(value) { return String(value || '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 23); }
-function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/+$/,''); return ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'].includes(domain) ? domain : null; }
+function normalizeDomain(value) { const domain = String(value || '').trim().toLowerCase().replace(/^https?:\/\//,'').replace(/\/+$/,''); return ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website'].includes(domain) ? domain : null; }
 function randomCode() {
   return crypto.randomBytes(3).toString('base64url').replace(/[^a-z0-9]/gi,'').toLowerCase().slice(0,4);
 }
