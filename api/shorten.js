@@ -197,6 +197,7 @@ export default async function handler(req, res) {
 async function getDomainAccess(supabaseUrl, serviceKey, userId, selectedDomain) {
   const limits = {
     welcome: 1,
+    free_trial: 9,
     starter: 2,
     growth: 3,
     pro: 4,
