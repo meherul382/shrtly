@@ -11,8 +11,7 @@ const SUPPORTED_DOMAINS = [
   'shrtigo.world',
   'shrtigo.store',
   'shrtigourl.site',
-  'shrtigo.website',
-  'shrtigo.com'
+  'shrtigo.website'
 ];
 
 const PLAN_DOMAIN_LIMITS = {
@@ -153,7 +152,6 @@ module.exports = async (req, res) => {
         selectedDomains: cleaned.slice(0, maxDomains),
         availableDomains,
         supportedDomains: SUPPORTED_DOMAINS,
-        comAllowed: availableDomains.includes('shrtigo.com'),
         message: cleaned.length > 0 && saved?.selectionPlan === plan
           ? 'Your domain selection is locked for this plan. Change your plan to select different domains.'
           : 'Select your domains and save once. The selection will then be locked for this plan.'
