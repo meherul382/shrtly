@@ -52,12 +52,6 @@ module.exports = async (req, res) => {
       couponData=cd;
     }
 
-    if (plan === 'welcome') {
-      const existing = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions?select=id&user_id=eq.${encodeURIComponent(user.id)}&plan=eq.welcome&limit=1`, { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}` } });
-      const rows = existing.ok ? await existing.json() : [];
-      if (rows.length) return json(res, 409, { error: 'Welcome Gift has already been claimed.' });
-    }
-
     const insertResponse = await fetch(`${SUPABASE_URL}/rest/v1/subscriptions`, {
       method: 'POST',
       headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
