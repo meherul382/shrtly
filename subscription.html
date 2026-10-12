@@ -182,15 +182,12 @@ async function loadActiveSubscription(){
  try{
   const {data:{session}}=await client.auth.getSession();
   if(!session){message.textContent='Log in to view your subscription status.';panel.classList.add('show');return}
-  const {data:welcomeRows}=await client.from('subscriptions').select('id').eq('user_id',session.user.id).eq('plan','welcome').limit(1);
-  const welcomeBtn=document.getElementById('welcomeClaimBtn');
-  if(welcomeRows&&welcomeRows.length&&welcomeBtn){welcomeBtn.disabled=true;welcomeBtn.textContent='✓ Welcome Gift Already Claimed';welcomeBtn.style.opacity='.7';}
   const {data,error}=await client.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',session.user.id).eq('status','active').gt('ends_at',new Date().toISOString());
   if(error)throw error;
   const activeRows=Array.isArray(data)?data:[];
   activeRows.sort((a,b)=>{
-   const aPaid=String(a?.plan||'').toLowerCase()!=='welcome';
-   const bPaid=String(b?.plan||'').toLowerCase()!=='welcome';
+   const aPaid=!['welcome','free_trial'].includes(String(a?.plan||'').toLowerCase());
+   const bPaid=!['welcome','free_trial'].includes(String(b?.plan||'').toLowerCase());
    if(aPaid!==bPaid)return aPaid?-1:1;
    return new Date(b?.started_at||b?.ends_at||0)-new Date(a?.started_at||a?.ends_at||0);
   });
