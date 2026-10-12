@@ -16,6 +16,7 @@ const SUPPORTED_DOMAINS = [
 
 const PLAN_DOMAIN_LIMITS = {
   welcome: 1,
+  free_trial: 1,
   starter: 2,
   growth: 3,
   pro: 4,
