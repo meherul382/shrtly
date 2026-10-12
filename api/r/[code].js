@@ -25,7 +25,7 @@ export default async function handler(req,res){
         apikey:serviceKey,
         'Content-Type':'application/json'
       },
-      body:JSON.stringify({p_code:code,p_domain:requestHost})
+      body:JSON.stringify({p_code:code,p_domain:requestHost,p_visitor_id:visitorId})
     });
 
     if(!response.ok){
