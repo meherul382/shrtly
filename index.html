@@ -192,5 +192,44 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
 })();
 </script>
 
+
+<style id="shrtigo-ready-notice-style">
+#shrtigo-ready-notice{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(7,13,29,.64);backdrop-filter:blur(6px)}
+#shrtigo-ready-notice[hidden]{display:none}
+.srn-card{position:relative;width:min(100%,430px);padding:30px 25px 24px;border:1px solid #c7f0dd;border-radius:22px;background:linear-gradient(145deg,#fff,#f2fff8);box-shadow:0 24px 80px #061b1440;color:#172033;text-align:center;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.srn-icon{display:grid;place-items:center;width:62px;height:62px;margin:0 auto 16px;border-radius:19px;background:linear-gradient(135deg,#16a36a,#35d399);color:#fff;font-size:30px;font-weight:900}
+.srn-label{display:inline-flex;align-items:center;gap:7px;margin-bottom:12px;padding:7px 11px;border-radius:999px;background:#e5fbef;color:#087443;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.srn-card h2{margin:0 0 10px;font-size:clamp(23px,5vw,29px);line-height:1.2;color:#10271e}
+.srn-card p{margin:0 auto 20px;max-width:340px;color:#53675e;font-size:14px;line-height:1.7}
+.srn-close{position:absolute;top:10px;right:11px;width:34px;height:34px;border:1px solid #d8e9df;border-radius:10px;background:#fff;color:#53675e;font-size:21px;cursor:pointer}
+.srn-button{width:100%;padding:13px 18px;border:0;border-radius:12px;background:linear-gradient(100deg,#079455,#12b981);color:#fff;font-size:14px;font-weight:900;cursor:pointer}
+@media(max-width:480px){.srn-card{padding:27px 20px 21px;border-radius:19px}}
+</style>
+<div id="shrtigo-ready-notice" role="dialog" aria-modal="true" aria-labelledby="srn-title" aria-describedby="srn-description" hidden>
+ <section class="srn-card">
+  <button class="srn-close" type="button" aria-label="Close message" data-srn-close>&times;</button>
+  <div class="srn-icon" aria-hidden="true">✓</div>
+  <div class="srn-label">Shrtigo · Ready to Use</div>
+  <h2 id="srn-title">Everything Is Ready!</h2>
+  <p id="srn-description">Welcome to Shrtigo! You can now create and manage your short links as usual. Thank you for being part of Shrtigo.</p>
+  <button class="srn-button" type="button" data-srn-close>Continue to Shrtigo</button>
+ </section>
+</div>
+<script>
+(function(){
+ var modal=document.getElementById('shrtigo-ready-notice');
+ if(!modal)return;
+ try{if(sessionStorage.getItem('shrtigo-ready-notice-dismissed')==='1')return;}catch(e){}
+ modal.hidden=false;
+ function closeNotice(){
+  modal.hidden=true;
+  try{sessionStorage.setItem('shrtigo-ready-notice-dismissed','1');}catch(e){}
+ }
+ modal.querySelectorAll('[data-srn-close]').forEach(function(button){button.addEventListener('click',closeNotice);});
+ modal.addEventListener('click',function(event){if(event.target===modal)closeNotice();});
+ document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!modal.hidden)closeNotice();});
+})();
+</script>
+
 </body>
 </html>
