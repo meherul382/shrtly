@@ -62,18 +62,10 @@ module.exports = async (req, res) => {
       if (couponData.code) {
         await fetch(SUPABASE_URL + '/rest/v1/rpc/shrtigo_increment_coupon_usage', { method:'POST', headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({p_code:couponData.code}) }).catch(()=>{});
       }
-      if (plan === 'welcome') {
-        await fetch(SUPABASE_URL + '/rest/v1/user_domain_settings?on_conflict=user_id', {
-          method: 'POST',
-          headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify({ user_id: user.id, selected_domains, selection_plan: plan, updated_at: new Date().toISOString() })
-        });
-      }
-      return json(res, 200, { ok: true, message: plan === 'welcome' ? 'Welcome Gift activated: 500 free clicks.' : 'Subscription request submitted for admin approval.', selected_domains });
+      return json(res, 200, { ok: true, message: 'Subscription request submitted for admin approval.', selected_domains });
     }
 
     const raw = await insertResponse.text();
-    if (plan === 'welcome' && (insertResponse.status === 409 || raw.includes('subscriptions_one_welcome_per_user_idx'))) return json(res, 409, { error: 'Welcome Gift has already been claimed for this account.' });
     if (insertResponse.status === 409 && raw.includes('subscriptions_one_coupon_per_user_idx')) return json(res, 409, { error: 'This account has already used a coupon code. Only one coupon use is allowed per account.' });
     let details = raw;
     try { details = JSON.parse(raw); } catch (_) {}
