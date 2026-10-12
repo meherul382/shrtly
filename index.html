@@ -183,7 +183,7 @@ header.site-content .sh-profile,header.site-content #shProfile,header.site-conte
   try{
    const {data}=await sb.from('subscriptions').select('plan,status,ends_at,started_at').eq('user_id',user.id).eq('status','active').order('ends_at',{ascending:false}).limit(1);
    if(data&&data[0]){
-    const names={three_day:'3 Days','weekly':'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift'};
+    const names={three_day:'3 Days','weekly':'Weekly Unlimited',monthly:'Monthly Unlimited',starter:'Starter Pack',growth:'Growth Pack',pro:'Pro Pack',business:'Business Pack',enterprise:'Enterprise Pack',half_month:'Half-Month Unlimited',quarterly:'Quarterly Unlimited',welcome:'Welcome Gift','free_trial':'7-Day Free Trial'};
     plan=names[data[0].plan]||data[0].plan||'Free Plan';
    }
   }catch(e){}
