@@ -26,6 +26,7 @@ module.exports = async (req, res) => {
     const plan = planMap[String(body.plan || '').trim().toLowerCase()];
     const payment_method = methodMap[String(body.payment_method || '').trim().toLowerCase()];
     const transaction_id = String(body.transaction_id || '').trim();
+    if (plan === 'weekly') return json(res, 400, { error: 'Weekly Unlimited is free and automatically included for every account. No purchase request is needed.' });
     const coupon_code = String(body.coupon_code || '').trim().toUpperCase();
     const supportedDomains = ['shrtigo.xyz','shrtigo.shop','shrtigo.online','shrtigo.site','shrtigopro.site','shrtigo.world','shrtigo.store','shrtigourl.site','shrtigo.website','shrtigo.com'];
     const domainLimits = { starter:2, growth:3, pro:4, business:5, enterprise:6, weekly:7, half_month:9, monthly:9, quarterly:9 };
